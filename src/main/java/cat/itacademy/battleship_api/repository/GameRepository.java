@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface GameRepository extends MongoRepository<Game, String> {
-    // Buscar partidas activas de un jugador
     List<Game> findByPlayerIdAndStatus(Long playerId, String status);
 }
