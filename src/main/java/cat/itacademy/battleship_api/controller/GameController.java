@@ -26,4 +26,19 @@ public class GameController {
         Game game = gameService.createGame(username);
         return ResponseEntity.ok(game);
     }
+
+    @PostMapping("/{gameId}/fire")
+    public ResponseEntity<Game> fire(
+            @PathVariable String gameId,
+            @RequestBody Map<String, String> request) {
+
+        String coordinate = request.get("coordinate");
+
+        if (coordinate == null || coordinate.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Game game = gameService.playerMove(gameId, coordinate);
+        return ResponseEntity.ok(game);
+    }
 }
