@@ -53,6 +53,7 @@ public class GameService {
 
         if (!hit) {
             game.setTurn("CPU");
+            cpuMove(game);
         }
 
         checkWinner(game);
@@ -101,8 +102,8 @@ public class GameService {
 
     private boolean tryToPlaceShip(Board board, int size) {
         Random random = new Random();
-        int row = random.nextInt(10); // 0-9 (A-J)
-        int col = random.nextInt(10); // 0-9 (1-10)
+        int row = random.nextInt(10);
+        int col = random.nextInt(10);
         boolean horizontal = random.nextBoolean();
 
         List<String> shipCells = new ArrayList<>();
@@ -129,5 +130,32 @@ public class GameService {
     private String toCoordinate(int row, int col) {
         char rowChar = (char) ('A' + row);
         return rowChar + String.valueOf(col + 1);
+    }
+
+    private void cpuMove(Game game) {
+        while (game.getTurn().equals("CPU") && "PLAYING".equals(game.getStatus())) {
+
+            String target = pickRandomTarget(game.getPlayerBoard());
+
+            boolean hit = processShot(game.getPlayerBoard(), target);
+
+            checkWinner(game);
+
+            if (!hit) {
+                game.setTurn("PLAYER");
+            }
+        }
+    }
+
+    private String pickRandomTarget(Board board) {
+        Random random = new Random();
+        String coordinate;
+        do {
+            int row = random.nextInt(10);
+            int col = random.nextInt(10);
+            coordinate = toCoordinate(row, col);
+        } while (board.getShotsReceived().contains(coordinate));
+
+        return coordinate;
     }
 }
