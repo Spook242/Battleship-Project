@@ -15,19 +15,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Game {
 
     @Id
-    private String id; // Mongo usa String para IDs por defecto
+    private String id;
 
-    private Long playerId; // Referencia al ID de MySQL del humano
+    private Long playerId;
 
-    // Estados posibles: "PREPARING", "PLAYING", "FINISHED"
     private String status;
 
-    // ¿De quién es el turno? "PLAYER" o "CPU"
     private String turn;
 
-    private String winner; // null, "PLAYER" o "CPU"
+    private String winner;
 
-    // Los dos tableros
     private Board playerBoard;
     private Board cpuBoard;
 }

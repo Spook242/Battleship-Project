@@ -21,11 +21,9 @@ public class Player {
     @Column(unique = true, nullable = false)
     private String username;
 
-    // Guardaremos las estadísticas básicas aquí
     private int gamesPlayed;
     private int gamesWon;
 
-    // Constructor simple para crear jugadores rápido
     public Player(String username) {
         this.username = username;
         this.gamesPlayed = 0;
