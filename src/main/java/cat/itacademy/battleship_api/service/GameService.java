@@ -38,6 +38,56 @@ public class GameService {
         return gameRepository.save(game);
     }
 
+    public Game playerMove(String gameId, String coordinate) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        if (!game.getStatus().equals("PLAYING")) {
+            throw new RuntimeException("The game is not active");
+        }
+        if (!game.getTurn().equals("PLAYER")) {
+            throw new RuntimeException("¡It's not your turn! Wait for the CPU!");
+        }
+
+        boolean hit = processShot(game.getCpuBoard(), coordinate);
+
+        if (!hit) {
+            game.setTurn("CPU");
+        }
+
+        checkWinner(game);
+
+        return gameRepository.save(game);
+    }
+
+    private boolean processShot(Board board, String coordinate) {
+        if (board.getShotsReceived().contains(coordinate)) {
+            throw new RuntimeException("You have already shot this box");
+        }
+
+        board.getShotsReceived().add(coordinate);
+
+        for (Ship ship : board.getShips()) {
+            if (ship.getCells().contains(coordinate)) {
+                ship.getHits().add(coordinate);
+
+                if (ship.getHits().size() == ship.getSize()) {
+                    ship.setSunk(true);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void checkWinner(Game game) {
+        boolean allCpuSunk = game.getCpuBoard().getShips().stream().allMatch(Ship::isSunk);
+        if (allCpuSunk) {
+            game.setWinner("PLAYER");
+            game.setStatus("FINISHED");
+        }
+    }
+
     private void placeShipsRandomly(Board board) {
         int[] shipSizes = {5, 4, 3, 3, 2};
 
