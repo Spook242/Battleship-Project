@@ -191,7 +191,7 @@ function updateStatus(game) {
     } else {
         turnText.innerText = "Turno: CPU PENSANDO... 🔴";
         statusText.innerText = "La máquina está calculando disparo...";
-        setTimeout(() => { playCpuTurn(); }, 3000);
+        setTimeout(() => { playCpuTurn(); }, 1500);
     }
 }
 
