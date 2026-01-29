@@ -169,3 +169,49 @@ body {
 
 .win-text { color: #f1c40f !important; text-shadow: 0 0 10px #f39c12; }
 .lose-text { color: #e74c3c !important; text-shadow: 0 0 10px #c0392b; }
+
+/* =========================
+   ESTILOS DE LA PANTALLA DE INICIO
+========================= */
+
+/* El cuadro del menú principal */
+#login-panel {
+    background-color: rgba(0, 0, 0, 0.6); /* Fondo negro transparente */
+    padding: 40px;
+    border-radius: 20px;
+    display: inline-block; /* Se ajusta al contenido */
+    margin-top: 30px;
+    border: 3px solid #34495e;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5); /* Sombra para dar profundidad */
+}
+
+/* La imagen de portada */
+#login-image {
+    max-width: 600px; /* Tamaño máximo para que no se salga de la pantalla */
+    width: 90%; /* Se adapta en pantallas pequeñas */
+    height: auto;
+    border-radius: 15px; /* Bordes redondeados */
+    margin-bottom: 25px; /* Espacio debajo de la imagen */
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Pequeño ajuste a los inputs y botones para que se vean mejor dentro del panel */
+#username, button {
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    border-radius: 5px;
+    margin: 5px;
+}
+
+button {
+    background-color: #e67e22; /* Un color naranja para el botón de jugar */
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #d35400; /* Naranja más oscuro al pasar el ratón */
+}
