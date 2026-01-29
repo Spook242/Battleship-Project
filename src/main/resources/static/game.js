@@ -1,7 +1,7 @@
 const API_URL = "http://localhost:8080/game";
 let currentGameId = null;
 let gameFinished = false;
-let currentUsername = ""; // Guardamos el nombre para reiniciar rápido
+let currentUsername = "";
 
 // SONIDOS
 const soundShot = new Audio('sounds/shot.mp3');
@@ -11,7 +11,6 @@ const soundBoom = new Audio('sounds/boom.mp3');
 // 1. CREAR PARTIDA
 async function createGame() {
     const usernameInput = document.getElementById("username");
-    // Si ya tenemos un usuario guardado (reinicio), lo usamos. Si no, leemos el input.
     const username = usernameInput.value || currentUsername;
 
     if (!username) {
@@ -19,7 +18,7 @@ async function createGame() {
         return;
     }
 
-    currentUsername = username; // Guardar para luego
+    currentUsername = username;
 
     try {
         const response = await fetch(`${API_URL}/new`, {
@@ -33,11 +32,16 @@ async function createGame() {
             currentGameId = game.id;
             gameFinished = false;
 
-            // UI: Ocultar login, Ocultar modal, Mostrar juego
+            // === UI: TRANSICIÓN ===
+            // 1. Ocultar Login y Portada
             document.getElementById("login-panel").style.display = "none";
-            document.getElementById("game-panel").style.display = "block";
-            document.getElementById("game-over-modal").style.display = "none"; // Cerrar modal si estaba abierto
+            document.getElementById("full-screen-bg").style.display = "none";
 
+            // 2. Mostrar Juego
+            document.getElementById("game-panel").style.display = "block";
+            document.getElementById("game-over-modal").style.display = "none";
+
+            // 3. Pintar tableros
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
             updateStatus(game);
@@ -119,7 +123,7 @@ function updateBoard(elementId, boardData, isEnemy) {
             const coord = rowChar + (c + 1);
             cell.dataset.coord = coord;
 
-            // PINTAR BARCOS
+            // BARCOS
             if (!isEnemy) {
                 for (let ship of boardData.ships) {
                     if (ship.cells.includes(coord)) {
@@ -137,7 +141,7 @@ function updateBoard(elementId, boardData, isEnemy) {
                 }
             }
 
-            // PINTAR DISPAROS Y CALAVERAS
+            // DISPAROS Y CALAVERAS
             if (boardData.shotsReceived.includes(coord)) {
                 let hitShip = null;
                 for (let ship of boardData.ships) {
@@ -152,7 +156,7 @@ function updateBoard(elementId, boardData, isEnemy) {
                         cell.classList.add("ship");
                     } else {
                         cell.classList.add("hit");
-                        cell.innerText = "💥";
+                        // cell.innerText = "💥"; // Descomenta si quieres el icono
                         cell.classList.add("ship");
                     }
                 } else {
@@ -168,18 +172,16 @@ function updateBoard(elementId, boardData, isEnemy) {
     }
 }
 
-// 5. ACTUALIZAR ESTADO Y MOSTRAR MODAL FIN DE PARTIDA
+// 5. ESTADO
 function updateStatus(game) {
     const statusText = document.getElementById("game-status");
     const turnText = document.getElementById("turn-indicator");
 
-    // LÓGICA DE FIN DE PARTIDA
     if (game.status === "FINISHED") {
         gameFinished = true;
         statusText.innerText = "Partida finalizada";
         turnText.innerText = "";
-
-        showGameOverModal(game.winner); // <--- AQUÍ LLAMAMOS AL NUEVO MODAL
+        showGameOverModal(game.winner);
         return;
     }
 
@@ -193,13 +195,12 @@ function updateStatus(game) {
     }
 }
 
-// --- NUEVAS FUNCIONES PARA EL MODAL ---
-
+// 6. FUNCIONES MODAL Y MENÚ
 function showGameOverModal(winner) {
     const modal = document.getElementById("game-over-modal");
     const title = document.getElementById("game-result-title");
 
-    modal.style.display = "flex"; // Hacemos visible el modal
+    modal.style.display = "flex";
 
     if (winner === "PLAYER") {
         title.innerText = "YOU WIN! 🏆";
@@ -210,18 +211,18 @@ function showGameOverModal(winner) {
     }
 }
 
-// Botón "NEW GAME": Reinicia inmediatamente con el mismo usuario
 function restartGame() {
     createGame();
 }
 
-// Botón "EXIT": Vuelve a la pantalla de login
 function exitToMenu() {
     document.getElementById("game-over-modal").style.display = "none";
     document.getElementById("game-panel").style.display = "none";
-    document.getElementById("login-panel").style.display = "block";
 
-    // Limpiamos el input por si quiere cambiar de nombre
+    // VOLVER A MOSTRAR LOGIN Y PORTADA
+    document.getElementById("login-panel").style.display = "inline-block"; // O "block"
+    document.getElementById("full-screen-bg").style.display = "block";
+
     document.getElementById("username").value = "";
     currentUsername = "";
 }
