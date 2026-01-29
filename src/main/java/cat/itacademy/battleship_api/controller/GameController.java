@@ -33,7 +33,7 @@ public class GameController {
     @PostMapping("/{gameId}/cpu-turn")
     public ResponseEntity<Game> cpuTurn(@PathVariable String gameId) {
         System.out.println("🤖 CPU: Received shooting order for game " + gameId);
-        Game game = gameService.executeCpuTurn(gameId);
+        Game game = gameService.playCpuTurn(gameId);
         return ResponseEntity.ok(game);
     }
 }
