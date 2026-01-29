@@ -53,10 +53,30 @@ public class GameService {
 
         if (!hit) {
             game.setTurn("CPU");
-            cpuMove(game);
         }
 
         checkWinner(game);
+
+        return gameRepository.save(game);
+    }
+
+    public Game executeCpuTurn(String gameId) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        if (!game.getTurn().equals("CPU")) {
+            throw new RuntimeException("¡No es el turno de la CPU!");
+        }
+
+        String target = pickRandomTarget(game.getPlayerBoard());
+        boolean hit = processShot(game.getPlayerBoard(), target);
+
+        checkWinner(game);
+
+        if (!hit) {
+            game.setTurn("PLAYER");
+        } else {
+        }
 
         return gameRepository.save(game);
     }
@@ -132,21 +152,6 @@ public class GameService {
         return rowChar + String.valueOf(col + 1);
     }
 
-    private void cpuMove(Game game) {
-        while (game.getTurn().equals("CPU") && "PLAYING".equals(game.getStatus())) {
-
-            String target = pickRandomTarget(game.getPlayerBoard());
-
-            boolean hit = processShot(game.getPlayerBoard(), target);
-
-            checkWinner(game);
-
-            if (!hit) {
-                game.setTurn("PLAYER");
-            }
-        }
-    }
-
     private String pickRandomTarget(Board board) {
         Random random = new Random();
         String coordinate;
@@ -158,4 +163,5 @@ public class GameService {
 
         return coordinate;
     }
+
 }
