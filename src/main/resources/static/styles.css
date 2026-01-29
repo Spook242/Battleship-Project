@@ -13,19 +13,23 @@ body {
 
 /* ESTILO ÉPICO PARA EL TÍTULO PRINCIPAL */
 .main-title {
-    font-size: 5rem; /* Letra gigante */
-    margin-top: 10vh; /* Separación desde arriba */
+    font-size: 5rem;
+    margin-top: 10vh;
     margin-bottom: 30px;
     text-transform: uppercase;
     font-weight: 900;
     letter-spacing: 5px;
-    /* Sombra fuerte para que se lea bien sobre la imagen */
-    text-shadow: 4px 4px 10px #000000, 0 0 20px rgba(0,0,0,0.5);
-    /* Un ligero degradado en el texto (opcional, queda pro) */
-    background: -webkit-linear-gradient(#fff, #bdc3c7);
+
+    /* AQUÍ ESTÁ EL CAMBIO: Sombra y resplandor DORADOS en lugar de negros */
+    text-shadow:
+        3px 3px 0px #b8860b,  /* Sombra sólida dorada oscura */
+        0 0 20px #ffd700,     /* Resplandor dorado brillante */
+        0 0 40px rgba(255, 215, 0, 0.6); /* Resplandor exterior difuminado */
+
+    /* El relleno sigue siendo un degradado metálico claro */
+    background: -webkit-linear-gradient(#ffffff, #f0e68c);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    /* Si el degradado falla en algún navegador, se verá blanco por la sombra */
 }
 
 /* =========================
