@@ -1,16 +1,31 @@
+/* =========================
+   1. BODY GENERAL
+========================= */
 body {
     font-family: 'Segoe UI', sans-serif;
-    background-color: #2c3e50;
     color: white;
     text-align: center;
+    overflow-x: hidden;
+    margin: 0;
+
+    /* FONDO SÓLIDO (Azul Naval Oscuro) */
+    background-color: #2c3e50;
 }
 
+/* =========================
+   2. CONTENEDOR PRINCIPAL
+========================= */
 .container {
+    position: relative;
+    z-index: 1;
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
 
+/* =========================
+   3. TABLEROS
+========================= */
 .boards-container {
     display: flex;
     justify-content: center;
@@ -23,16 +38,23 @@ body {
     grid-template-columns: repeat(10, 40px);
     grid-template-rows: repeat(10, 40px);
     gap: 2px;
-    background-color: #34495e;
-    border: 5px solid #2c3e50;
+    /* Fondo semitransparente para resaltar sobre el azul de fondo */
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 5px solid #34495e;
     padding: 5px;
 }
 
+/* =========================
+   4. CELDAS (Agua)
+========================= */
 .cell {
     width: 40px;
     height: 40px;
-    background-color: #3498db; /* Azul agua */
-    border: 1px solid #2980b9;
+    /* Tu imagen de agua estilo cartoon */
+    background-image: url('agua_cartoon.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -41,14 +63,109 @@ body {
 }
 
 .cell:hover {
-    background-color: #5dade2;
+    filter: brightness(1.2);
 }
 
-.ship { background-color: #95a5a6; }
-.hit { background-color: #e74c3c !important; }
-.water { background-color: #1abc9c !important; }
-.sunk { background-color: #2c3e50 !important; border: 2px solid red; }
+/* =========================
+   5. BARCOS Y ESTADOS
+========================= */
+.ship {
+    background-image: url('Acorazado_2.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: rgba(41, 128, 185, 0.6);
+    border: 1px solid #1a5276;
+}
+
+.hit {
+    background-color: rgba(231, 76, 60, 0.9) !important;
+}
+
+.water {
+    background-color: #3498db !important;
+    background-image: none !important;
+    border: 1px solid #5dade2 !important;
+}
+
+.sunk {
+    background-color: rgba(44, 62, 80, 0.9) !important;
+    border: 2px solid red;
+}
+
+.skull-cell {
+    background-image: url('calavera.png') !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-size: 90% !important;
+    background-color: transparent !important;
+    border: 2px solid #c0392b !important;
+    color: transparent !important;
+}
 
 .enemy-board .cell {
     cursor: crosshair;
 }
+
+/* =========================
+   6. MODAL GAME OVER
+========================= */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #2c3e50, #000000);
+    padding: 40px;
+    border-radius: 15px;
+    border: 2px solid #ecf0f1;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    animation: popIn 0.5s ease;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+#game-result-title {
+    font-size: 3rem;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 0px #000;
+    font-weight: bold;
+    font-family: 'Arial Black', sans-serif;
+    color: white;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.modal-buttons button {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.modal-buttons button:hover { transform: scale(1.1); }
+
+.btn-new { background-color: #27ae60; color: white; }
+.btn-exit { background-color: #c0392b; color: white; }
+
+.win-text { color: #f1c40f !important; text-shadow: 0 0 10px #f39c12; }
+.lose-text { color: #e74c3c !important; text-shadow: 0 0 10px #c0392b; }

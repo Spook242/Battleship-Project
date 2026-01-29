@@ -1,14 +1,25 @@
 const API_URL = "http://localhost:8080/game";
 let currentGameId = null;
 let gameFinished = false;
+let currentUsername = ""; // Guardamos el nombre para reiniciar rápido
 
-// 1. FUNCIÓN PARA CREAR NUEVA PARTIDA
+// SONIDOS
+const soundShot = new Audio('sounds/shot.mp3');
+const soundWater = new Audio('sounds/water.mp3');
+const soundBoom = new Audio('sounds/boom.mp3');
+
+// 1. CREAR PARTIDA
 async function createGame() {
-    const username = document.getElementById("username").value;
+    const usernameInput = document.getElementById("username");
+    // Si ya tenemos un usuario guardado (reinicio), lo usamos. Si no, leemos el input.
+    const username = usernameInput.value || currentUsername;
+
     if (!username) {
         alert("¡Por favor, introduce tu nombre de Capitán!");
         return;
     }
+
+    currentUsername = username; // Guardar para luego
 
     try {
         const response = await fetch(`${API_URL}/new`, {
@@ -22,11 +33,11 @@ async function createGame() {
             currentGameId = game.id;
             gameFinished = false;
 
-            // Mostrar el panel de juego y ocultar login
+            // UI: Ocultar login, Ocultar modal, Mostrar juego
             document.getElementById("login-panel").style.display = "none";
             document.getElementById("game-panel").style.display = "block";
+            document.getElementById("game-over-modal").style.display = "none"; // Cerrar modal si estaba abierto
 
-            // Pintar los tableros iniciales
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
             updateStatus(game);
@@ -39,9 +50,11 @@ async function createGame() {
     }
 }
 
-// 2. FUNCIÓN PARA DISPARAR (Turno Jugador)
+// 2. DISPARAR
 async function fire(coordinate) {
     if (gameFinished) return;
+
+    soundShot.play();
 
     try {
         const response = await fetch(`${API_URL}/${currentGameId}/fire`, {
@@ -52,19 +65,27 @@ async function fire(coordinate) {
 
         if (response.ok) {
             const game = await response.json();
+
+            // SONIDOS
+            let hit = false;
+            for(let ship of game.cpuBoard.ships) {
+                if(ship.cells.includes(coordinate)) {
+                    hit = true; break;
+                }
+            }
+            if(hit) soundBoom.play();
+            else soundWater.play();
+
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
             updateStatus(game);
-        } else {
-            const error = await response.text();
-            alert("Error: " + error);
         }
     } catch (error) {
         console.error("Error disparando:", error);
     }
 }
 
-// 3. FUNCIÓN PARA EL TURNO DE LA CPU (Con retraso)
+// 3. TURNO CPU
 async function playCpuTurn() {
     if (gameFinished) return;
 
@@ -85,7 +106,7 @@ async function playCpuTurn() {
     }
 }
 
-// 4. FUNCIÓN PARA PINTAR TABLEROS
+// 4. PINTAR TABLEROS
 function updateBoard(elementId, boardData, isEnemy) {
     const boardElement = document.getElementById(elementId);
     boardElement.innerHTML = "";
@@ -94,12 +115,11 @@ function updateBoard(elementId, boardData, isEnemy) {
         for (let c = 0; c < 10; c++) {
             const cell = document.createElement("div");
             cell.className = "cell";
-
             const rowChar = String.fromCharCode(65 + r);
             const coord = rowChar + (c + 1);
-
             cell.dataset.coord = coord;
 
+            // PINTAR BARCOS
             if (!isEnemy) {
                 for (let ship of boardData.ships) {
                     if (ship.cells.includes(coord)) {
@@ -112,48 +132,54 @@ function updateBoard(elementId, boardData, isEnemy) {
                 for (let ship of boardData.ships) {
                     if (ship.sunk && ship.cells.includes(coord)) {
                         cell.classList.add("sunk");
+                        cell.classList.add("ship");
                     }
                 }
             }
 
+            // PINTAR DISPAROS Y CALAVERAS
             if (boardData.shotsReceived.includes(coord)) {
-                let isHit = false;
+                let hitShip = null;
                 for (let ship of boardData.ships) {
                     if (ship.cells.includes(coord)) {
-                        isHit = true;
-                        break;
+                        hitShip = ship; break;
                     }
                 }
 
-                if (isHit) {
-                    cell.classList.add("hit");
-                    cell.innerText = "💥";
+                if (hitShip) {
+                    if (hitShip.sunk) {
+                        cell.classList.add("skull-cell");
+                        cell.classList.add("ship");
+                    } else {
+                        cell.classList.add("hit");
+                        cell.innerText = "💥";
+                        cell.classList.add("ship");
+                    }
                 } else {
                     cell.classList.add("water");
-                    cell.innerText = "💧";
                 }
             }
 
             if (isEnemy) {
                 cell.onclick = () => fire(coord);
             }
-
             boardElement.appendChild(cell);
         }
     }
 }
 
-// 5. ACTUALIZAR ESTADO (Con el temporizador de 3 seg)
+// 5. ACTUALIZAR ESTADO Y MOSTRAR MODAL FIN DE PARTIDA
 function updateStatus(game) {
     const statusText = document.getElementById("game-status");
     const turnText = document.getElementById("turn-indicator");
 
+    // LÓGICA DE FIN DE PARTIDA
     if (game.status === "FINISHED") {
         gameFinished = true;
-        statusText.innerText = "GANADOR: " + game.winner + " 🎉";
-        turnText.innerText = "Partida terminada";
-        if (game.winner === "PLAYER") alert("¡HAS GANADO! 🏆");
-        else alert("¡TE HAN DERROTADO! ☠️");
+        statusText.innerText = "Partida finalizada";
+        turnText.innerText = "";
+
+        showGameOverModal(game.winner); // <--- AQUÍ LLAMAMOS AL NUEVO MODAL
         return;
     }
 
@@ -163,9 +189,39 @@ function updateStatus(game) {
     } else {
         turnText.innerText = "Turno: CPU PENSANDO... 🔴";
         statusText.innerText = "La máquina está calculando disparo...";
-
-        setTimeout(() => {
-            playCpuTurn();
-        }, 3000);
+        setTimeout(() => { playCpuTurn(); }, 3000);
     }
+}
+
+// --- NUEVAS FUNCIONES PARA EL MODAL ---
+
+function showGameOverModal(winner) {
+    const modal = document.getElementById("game-over-modal");
+    const title = document.getElementById("game-result-title");
+
+    modal.style.display = "flex"; // Hacemos visible el modal
+
+    if (winner === "PLAYER") {
+        title.innerText = "YOU WIN! 🏆";
+        title.className = "win-text";
+    } else {
+        title.innerText = "YOU LOSE ☠️";
+        title.className = "lose-text";
+    }
+}
+
+// Botón "NEW GAME": Reinicia inmediatamente con el mismo usuario
+function restartGame() {
+    createGame();
+}
+
+// Botón "EXIT": Vuelve a la pantalla de login
+function exitToMenu() {
+    document.getElementById("game-over-modal").style.display = "none";
+    document.getElementById("game-panel").style.display = "none";
+    document.getElementById("login-panel").style.display = "block";
+
+    // Limpiamos el input por si quiere cambiar de nombre
+    document.getElementById("username").value = "";
+    currentUsername = "";
 }
