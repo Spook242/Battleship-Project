@@ -2,33 +2,33 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Battleship - Hundir la Flota</title>
+    <title>Battleship - Battleship</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
 <div class="container">
-    <h1>🚢 Hundir la Flota 💣</h1>
+    <h1>🚢 Battleship 💣</h1>
 
     <div id="login-panel">
-        <input type="text" id="username" placeholder="Tu nombre de Capitán">
-        <button onclick="createGame()">¡Nueva Partida!</button>
+        <input type="text" id="username" placeholder="Your Captain Nickname">
+        <button onclick="createGame()">¡New Game!</button>
     </div>
 
     <div id="game-panel" style="display:none;">
         <div class="status-bar">
-            <span id="turn-indicator">Turno: PREPARANDO...</span>
-            <span id="game-status">Estado: EN CURSO</span>
+            <span id="turn-indicator">Shift: PREPARING...</span>
+            <span id="game-status">Status: IN PROGRESS</span>
         </div>
 
         <div class="boards-container">
             <div class="board-section">
-                <h2>Tu Flota (Jugador)</h2>
+                <h2>Your Fleet (Player)</h2>
                 <div id="player-board" class="board"></div>
             </div>
 
             <div class="board-section">
-                <h2>Aguas Enemigas (CPU)</h2>
+                <h2>Enemy Waters (CPU)</h2>
                 <div id="cpu-board" class="board enemy-board"></div>
             </div>
         </div>
