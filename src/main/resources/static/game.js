@@ -33,16 +33,13 @@ async function createGame() {
             gameFinished = false;
 
             // === UI: TRANSICIÓN ===
-            // 1. Ocultar Login y Portada
             document.getElementById("login-panel").style.display = "none";
             document.getElementById("full-screen-bg").style.display = "none";
-            document.getElementById("game-title").style.display = "none"; // <--- ¡NUEVA LÍNEA!
+            document.getElementById("game-title").style.display = "none";
 
-            // 2. Mostrar Juego
             document.getElementById("game-panel").style.display = "block";
             document.getElementById("game-over-modal").style.display = "none";
 
-            // 3. Pintar tableros
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
             updateStatus(game);
@@ -55,7 +52,7 @@ async function createGame() {
     }
 }
 
-// 2. DISPARAR
+// 2. DISPARAR (TURNO JUGADOR)
 async function fire(coordinate) {
     if (gameFinished) return;
 
@@ -71,26 +68,33 @@ async function fire(coordinate) {
         if (response.ok) {
             const game = await response.json();
 
-            // SONIDOS
+            // 1. Actualizamos tableros
+            updateBoard("player-board", game.playerBoard, false);
+            updateBoard("cpu-board", game.cpuBoard, true);
+            updateStatus(game);
+
+            // 2. Calculamos si acertamos
             let hit = false;
             for(let ship of game.cpuBoard.ships) {
                 if(ship.cells.includes(coordinate)) {
                     hit = true; break;
                 }
             }
-            if(hit) soundBoom.play();
-            else soundWater.play();
 
-            updateBoard("player-board", game.playerBoard, false);
-            updateBoard("cpu-board", game.cpuBoard, true);
-            updateStatus(game);
+            // 3. Efectos (Explosión en CPU-BOARD)
+            if(hit) {
+                soundBoom.play();
+                showExplosion(coordinate, "cpu-board"); // <--- Pasamos el ID del tablero enemigo
+            } else {
+                soundWater.play();
+            }
         }
     } catch (error) {
         console.error("Error disparando:", error);
     }
 }
 
-// 3. TURNO CPU
+// 3. TURNO CPU (AHORA CON EXPLOSIONES)
 async function playCpuTurn() {
     if (gameFinished) return;
 
@@ -102,9 +106,34 @@ async function playCpuTurn() {
 
         if (response.ok) {
             const game = await response.json();
+
+            // 1. Actualizamos tableros
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
             updateStatus(game);
+
+            // 2. ¡NUEVO! Detectar si la CPU acertó
+            const shots = game.playerBoard.shotsReceived;
+            if (shots.length > 0) {
+                // El último disparo es el que acaba de hacer la CPU
+                const lastShot = shots[shots.length - 1];
+
+                let hit = false;
+                for (let ship of game.playerBoard.ships) {
+                    if (ship.cells.includes(lastShot)) {
+                        hit = true;
+                        break;
+                    }
+                }
+
+                if (hit) {
+                    soundBoom.play();
+                    // Mostramos explosión en PLAYER-BOARD (¡Porque nos han dado!)
+                    showExplosion(lastShot, "player-board");
+                } else {
+                    soundWater.play();
+                }
+            }
         }
     } catch (error) {
         console.error("Error CPU:", error);
@@ -124,7 +153,6 @@ function updateBoard(elementId, boardData, isEnemy) {
             const coord = rowChar + (c + 1);
             cell.dataset.coord = coord;
 
-            // BARCOS
             if (!isEnemy) {
                 for (let ship of boardData.ships) {
                     if (ship.cells.includes(coord)) {
@@ -142,7 +170,6 @@ function updateBoard(elementId, boardData, isEnemy) {
                 }
             }
 
-            // DISPAROS Y CALAVERAS
             if (boardData.shotsReceived.includes(coord)) {
                 let hitShip = null;
                 for (let ship of boardData.ships) {
@@ -157,7 +184,6 @@ function updateBoard(elementId, boardData, isEnemy) {
                         cell.classList.add("ship");
                     } else {
                         cell.classList.add("hit");
-                        // cell.innerText = "💥"; // Descomenta si quieres el icono
                         cell.classList.add("ship");
                     }
                 } else {
@@ -187,7 +213,7 @@ function updateStatus(game) {
     }
 
     if (game.turn === "PLAYER") {
-        turnText.innerText = "PLAYER TURN 🟢";
+        turnText.innerText = "PLAYER TURN... 🟢";
         statusText.innerText = "WAITING FOR COORDINATES...";
     } else {
         turnText.innerText = "CPU TURN... 🔴";
@@ -205,10 +231,7 @@ function showGameOverModal(winner) {
     if (winner === "PLAYER") {
         title.innerText = "YOU WIN! 🏆";
         title.className = "win-text";
-
-        // ¡AQUÍ ESTÁ LA MAGIA! 🎉
         launchConfetti();
-
     } else {
         title.innerText = "YOU LOSE ☠️";
         title.className = "lose-text";
@@ -216,59 +239,68 @@ function showGameOverModal(winner) {
 }
 
 function restartGame() {
-    stopConfetti(); // <--- AÑADIR ESTO (Para el confeti antes de empezar)
+    stopConfetti();
     createGame();
 }
 
 function exitToMenu() {
-    stopConfetti(); // <--- AÑADIR ESTO
+    stopConfetti();
 
     document.getElementById("game-over-modal").style.display = "none";
     document.getElementById("game-panel").style.display = "none";
 
-    // VOLVER A MOSTRAR LOGIN Y PORTADA
     document.getElementById("login-panel").style.display = "inline-block";
     document.getElementById("full-screen-bg").style.display = "block";
-    document.getElementById("game-title").style.display = "block"; // <--- ¡NUEVA LÍNEA!
+    document.getElementById("game-title").style.display = "block";
 
     document.getElementById("username").value = "";
     currentUsername = "";
 }
 
-// Variable para controlar si el confeti está encendido o apagado
+// CONFETI
 let confettiActive = false;
 
-// FUNCION PARA LANZAR CONFETI (INFINITO)
 function launchConfetti() {
-    confettiActive = true; // Encendemos el interruptor
-
+    confettiActive = true;
     (function frame() {
-        // Si el interruptor se apaga, dejamos de lanzar
         if (!confettiActive) return;
-
-        confetti({
-            particleCount: 7,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            zIndex: 9999,
-            colors: ['#27ae60', '#f1c40f', '#e74c3c']
-        });
-        confetti({
-            particleCount: 7,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 },
-            zIndex: 9999,
-            colors: ['#27ae60', '#f1c40f', '#e74c3c']
-        });
-
+        confetti({ particleCount: 7, angle: 60, spread: 55, origin: { x: 0 }, zIndex: 9999, colors: ['#27ae60', '#f1c40f', '#e74c3c'] });
+        confetti({ particleCount: 7, angle: 120, spread: 55, origin: { x: 1 }, zIndex: 9999, colors: ['#27ae60', '#f1c40f', '#e74c3c'] });
         requestAnimationFrame(frame);
     }());
 }
 
-// FUNCION PARA PARAR EL CONFETI Y LIMPIAR PANTALLA
 function stopConfetti() {
-    confettiActive = false; // Apagamos el interruptor
-    confetti.reset();       // Borramos el confeti de la pantalla al instante
+    confettiActive = false;
+    confetti.reset();
+}
+
+// --- FUNCIÓN PARA MOSTRAR EXPLOSIÓN (MEJORADA) ---
+// Ahora acepta 'boardId' para saber en qué tablero pintar
+function showExplosion(coordinate, boardId) {
+    const board = document.getElementById(boardId); // "cpu-board" o "player-board"
+    if (!board) return;
+
+    const cell = board.querySelector(`.cell[data-coord="${coordinate}"]`);
+
+    if (cell) {
+        const explosionImg = document.createElement("img");
+        explosionImg.src = "explosion.png";
+        explosionImg.style.position = "absolute";
+        explosionImg.style.top = "0";
+        explosionImg.style.left = "0";
+        explosionImg.style.width = "100%";
+        explosionImg.style.height = "100%";
+        explosionImg.style.zIndex = "10";
+        explosionImg.style.pointerEvents = "none";
+
+        cell.style.position = "relative";
+        cell.appendChild(explosionImg);
+
+        setTimeout(() => {
+            if (cell.contains(explosionImg)) {
+                cell.removeChild(explosionImg);
+            }
+        }, 500);
+    }
 }
