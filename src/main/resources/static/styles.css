@@ -29,6 +29,7 @@ body {
     background: -webkit-linear-gradient(#ffffff, #f0e68c);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    display: block;
 }
 
 /* =========================
@@ -80,11 +81,10 @@ h2 {
     display: grid;
     /* 1 columna estrecha (30px) para letras + 10 columnas de juego (40px) */
     grid-template-columns: 30px repeat(10, 40px);
-    /* El alto se ajustará automáticamente */
     gap: 2px;
     background-color: rgba(0, 0, 0, 0.3);
     border: 5px solid #34495e;
-    padding: 10px; /* Un poco más de padding */
+    padding: 10px;
 }
 
 /* NUEVA CLASE: Para los números y letras */
@@ -93,10 +93,9 @@ h2 {
     justify-content: center;
     align-items: center;
     font-weight: bold;
-    color: #f1c40f; /* Color dorado para que resalte */
+    color: #f1c40f;
     font-size: 18px;
     text-shadow: 1px 1px 2px black;
-    /* Sin bordes ni fondo de agua */
 }
 
 /* =========================
@@ -143,10 +142,7 @@ h2 {
 }
 
 .sunk {
-    /* Fondo oscuro semitransparente para indicar que está hundido */
     background-color: rgba(0, 0, 0, 0.6) !important;
-
-    /* Borde normal (igual que el agua) para que no haga líneas gruesas */
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
@@ -154,37 +150,21 @@ h2 {
     background-image: url('calavera.png') !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
-    background-size: 80% !important; /* Un poco más pequeña para que no toque los bordes */
-
+    background-size: 80% !important;
     background-color: transparent !important;
-
-    /* IMPORTANTE: Quitamos el borde rojo que tenías aquí */
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-
     color: transparent !important;
 }
 
 /* =========================
    6. CURSOR PERSONALIZADO
 ========================= */
-/*
-   Cuando pasas el ratón por encima de las celdas enemigas.
-   - url('mira.png'): Usa tu imagen.
-   - 16 16: Le dice al navegador que el punto exacto del "clic" es el centro de la imagen (suponiendo que mide 32x32).
-   - crosshair: Si la imagen falla, usa la mira por defecto.
-*/
-/* =========================
-   6. CURSOR TIPO "DEFAULT" PERO GRANDE
-========================= */
 .enemy-board .cell {
-    /* Esto dibuja una cruz de 32px (más grande que la normal)
-       con borde blanco para que resalte en el agua.
-    */
     cursor: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 0 V32 M0 16 H32" stroke="white" stroke-width="4"/><path d="M16 0 V32 M0 16 H32" stroke="black" stroke-width="2"/></svg>') 16 16, crosshair;
 }
 
 /* =========================
-   6. MODAL GAME OVER
+   7. MODAL GAME OVER
 ========================= */
 .modal-overlay {
     display: none;
@@ -247,80 +227,109 @@ h2 {
 .lose-text { color: #e74c3c !important; text-shadow: 0 0 10px #c0392b; }
 
 /* =========================
-   7. ESTILOS DE PORTADA (LOGIN)
+   8. ESTILOS DE PORTADA (LOGIN SLIM FIT)
+   ¡AQUÍ ESTÁ LA CORRECCIÓN!
 ========================= */
 
 /* El vídeo de fondo a pantalla completa */
 #full-screen-bg {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     object-fit: cover;
     z-index: -10;
     filter: brightness(0.8) contrast(1.1);
 }
 
-/* El cuadro del menú de login */
+/* 1. EL PANEL (Se adapta al contenido) */
 #login-panel {
-    background-color: rgba(0, 0, 0, 0.75);
-    padding: 40px 60px;
-    border-radius: 15px;
-    display: inline-block;
+    background-color: rgba(0, 0, 0, 0.85);
+
+    /* Flexbox en columna para apilar */
+    display: inline-flex;
+    flex-direction: column;
+
+    /* El ancho lo define el elemento más ancho (EL TÍTULO) */
+    width: max-content;
+
+    padding: 12px; /* Margen de 3mm alrededor */
+
+    border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 15px 35px rgba(0,0,0,0.8);
     backdrop-filter: blur(5px);
 }
 
-/* Inputs */
+/* 2. EL TÍTULO (El jefe del ancho) */
+#login-panel h1 {
+    margin-top: 0;
+    margin-bottom: 10px;
+
+    font-size: 1.1rem;      /* Tamaño pequeño (igual al error) */
+    white-space: nowrap;    /* IMPORTANTE: No permite saltos de línea */
+
+    color: white;
+    text-transform: uppercase;
+    font-family: 'Arial Black', sans-serif;
+    text-shadow: 1px 1px 2px #000;
+    text-align: center;
+}
+
+/* 3. INPUT (Se adapta al ancho del título) */
 #login-panel input {
-    padding: 15px;
-    font-size: 1.2rem;
+    width: 100%;             /* Llena el ancho disponible */
+    box-sizing: border-box;
+    min-width: 0;            /* Permite encogerse */
+
+    padding: 8px;
+    font-size: 0.9rem;
     border-radius: 5px;
     border: none;
-    margin-bottom: 20px;
-    width: 80%;
+    margin-bottom: 10px;
     text-align: center;
     background-color: rgba(255,255,255,0.9);
 }
 
-/* Botón START BATTLE */
+/* 4. BOTÓN START (Se adapta al ancho del título) */
 #login-panel button {
-    padding: 15px 40px;
-    font-size: 1.3rem;
+    width: 100%;             /* Llena el ancho disponible */
+    box-sizing: border-box;
+    min-width: 0;
+
+    padding: 8px 0;          /* Padding ajustado para no engordar */
+    font-size: 1rem;
     border-radius: 5px;
     border: none;
-    background-color: #e67e22; /* Naranja inicial */
+
+    background-color: #e67e22;
     color: white;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
     text-transform: uppercase;
-    letter-spacing: 1px;
     box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4);
+
+    margin-bottom: 0;        /* Pegado al borde de abajo (respetando padding del panel) */
+    transition: all 0.3s ease;
 }
 
-/* HOVER DEL BOTÓN - AQUÍ ESTÁ EL ARREGLO */
 #login-panel button:hover {
-    background-color: #27ae60; /* ¡AHORA SÍ ES VERDE! */
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(39, 174, 96, 0.6); /* Sombra verde */
+    background-color: #27ae60;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(39, 174, 96, 0.6);
 }
 
 /* MENSAJE DE ERROR EN EL LOGIN */
 .error-msg {
-    color: #e74c3c; /* Rojo intenso */
+    color: #e74c3c;
     font-weight: bold;
     font-size: 1.1rem;
-    margin-bottom: 15px; /* Espacio antes del botón */
-    display: none; /* Oculto al principio */
+    margin-bottom: 15px;
+    display: none;
     text-transform: uppercase;
-    text-shadow: 1px 1px 2px black; /* Sombra para que se lea bien */
-    animation: shake 0.3s ease-in-out; /* Pequeña animación de vibración */
+    text-shadow: 1px 1px 2px black;
+    animation: shake 0.3s ease-in-out;
 }
 
-/* Animación de vibración para cuando te equivocas */
 @keyframes shake {
     0% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
@@ -333,18 +342,18 @@ h2 {
    9. MENSAJE FLOTANTE (RESULTADO DISPARO)
 ========================= */
 .shot-message {
-    display: none; /* Oculto por defecto */
+    display: none;
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Centrado perfecto */
+    transform: translate(-50%, -50%);
 
-    font-size: 4rem; /* Texto GIGANTE */
+    font-size: 4rem;
     font-weight: 900;
     text-transform: uppercase;
     padding: 20px 40px;
     border-radius: 15px;
-    z-index: 5000; /* Por encima de todo */
+    z-index: 5000;
     box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     text-align: center;
     border: 3px solid white;
@@ -352,28 +361,26 @@ h2 {
     animation: popInMessage 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Animación de entrada */
 @keyframes popInMessage {
     0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
     100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
-/* ESTILOS SEGÚN RESULTADO */
 .msg-water {
-    background: rgba(52, 152, 219, 0.9); /* Azul */
+    background: rgba(52, 152, 219, 0.9);
     color: white;
     text-shadow: 2px 2px 0 #2980b9;
 }
 
 .msg-hit {
-    background: rgba(230, 126, 34, 0.95); /* Naranja */
+    background: rgba(230, 126, 34, 0.95);
     color: white;
     text-shadow: 2px 2px 0 #d35400;
 }
 
 .msg-sunk {
-    background: rgba(192, 57, 43, 0.95); /* Rojo Sangre */
-    color: #f1c40f; /* Texto Dorado */
+    background: rgba(192, 57, 43, 0.95);
+    color: #f1c40f;
     border-color: #f1c40f;
     text-shadow: 3px 3px 0 #000;
 }
