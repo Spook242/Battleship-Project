@@ -53,6 +53,7 @@ async function createGame() {
 }
 
 // 2. DISPARAR (TURNO JUGADOR)
+// 2. DISPARAR (TURNO JUGADOR)
 async function fire(coordinate) {
     if (gameFinished) return;
 
@@ -70,13 +71,12 @@ async function fire(coordinate) {
 
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
-            updateStatus(game);
+            updateStatus(game); // Aquí se decide si la partida acabó
 
             // --- LÓGICA DEL MENSAJE Y EFECTOS ---
             let hit = false;
             let sunk = false;
 
-            // Buscamos en los barcos de la CPU si hemos dado
             for(let ship of game.cpuBoard.ships) {
                 if(ship.cells.includes(coordinate)) {
                     hit = true;
@@ -89,13 +89,13 @@ async function fire(coordinate) {
                 soundBoom.play();
                 showExplosion(coordinate, "cpu-board");
 
-                // SOLO MOSTRAMOS MENSAJE SI HUNDIMOS EL BARCO
-                if (sunk) {
+                // CORRECCIÓN: Solo mostramos texto si hundimos Y la partida SIGUE VIVA.
+                // Si la partida ha terminado ("FINISHED"), no ponemos texto para que no tape el modal.
+                if (sunk && game.status !== "FINISHED") {
                     showShotMessage(`${coordinate} HIT AND SUNK! ☠️`, "sunk");
                 }
             } else {
                 soundWater.play();
-                // Aquí ya no mostramos mensaje de agua
             }
         }
     } catch (error) {
@@ -103,6 +103,7 @@ async function fire(coordinate) {
     }
 }
 
+// 3. TURNO CPU
 // 3. TURNO CPU
 async function playCpuTurn() {
     if (gameFinished) return;
@@ -128,7 +129,6 @@ async function playCpuTurn() {
                 let hit = false;
                 let sunk = false;
 
-                // Miramos en TUS barcos (Player)
                 for (let ship of game.playerBoard.ships) {
                     if (ship.cells.includes(lastShot)) {
                         hit = true;
@@ -141,13 +141,12 @@ async function playCpuTurn() {
                     soundBoom.play();
                     showExplosion(lastShot, "player-board");
 
-                    // SOLO MOSTRAMOS MENSAJE SI LA CPU TE HUNDE UN BARCO
-                    if(sunk) {
+                    // CORRECCIÓN: Lo mismo aquí, si la CPU te mata, que no salga el texto encima del Game Over
+                    if(sunk && game.status !== "FINISHED") {
                         showShotMessage(`CPU: ${lastShot} HIT AND SUNK! ☠️`, "sunk");
                     }
                 } else {
                     soundWater.play();
-                    // Aquí ya no mostramos mensaje de agua
                 }
             }
         }
