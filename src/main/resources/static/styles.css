@@ -120,17 +120,24 @@ body {
 }
 
 .sunk {
-    background-color: rgba(44, 62, 80, 0.9) !important;
-    border: 2px solid red;
+    /* Fondo oscuro semitransparente para indicar que está hundido */
+    background-color: rgba(0, 0, 0, 0.6) !important;
+
+    /* Borde normal (igual que el agua) para que no haga líneas gruesas */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .skull-cell {
     background-image: url('calavera.png') !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
-    background-size: 90% !important;
+    background-size: 80% !important; /* Un poco más pequeña para que no toque los bordes */
+
     background-color: transparent !important;
-    border: 2px solid #c0392b !important;
+
+    /* IMPORTANTE: Quitamos el borde rojo que tenías aquí */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
     color: transparent !important;
 }
 
