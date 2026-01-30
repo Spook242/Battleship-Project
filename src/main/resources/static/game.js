@@ -195,7 +195,6 @@ function updateStatus(game) {
     }
 }
 
-// 6. FUNCIONES MODAL Y MENÚ
 function showGameOverModal(winner) {
     const modal = document.getElementById("game-over-modal");
     const title = document.getElementById("game-result-title");
@@ -205,6 +204,10 @@ function showGameOverModal(winner) {
     if (winner === "PLAYER") {
         title.innerText = "YOU WIN! 🏆";
         title.className = "win-text";
+
+        // ¡AQUÍ ESTÁ LA MAGIA! 🎉
+        launchConfetti();
+
     } else {
         title.innerText = "YOU LOSE ☠️";
         title.className = "lose-text";
@@ -212,17 +215,58 @@ function showGameOverModal(winner) {
 }
 
 function restartGame() {
+    stopConfetti(); // <--- AÑADIR ESTO (Para el confeti antes de empezar)
     createGame();
 }
 
 function exitToMenu() {
+    stopConfetti(); // <--- AÑADIR ESTO
+
     document.getElementById("game-over-modal").style.display = "none";
     document.getElementById("game-panel").style.display = "none";
 
     // VOLVER A MOSTRAR LOGIN Y PORTADA
-    document.getElementById("login-panel").style.display = "inline-block"; // O "block"
+    document.getElementById("login-panel").style.display = "inline-block";
     document.getElementById("full-screen-bg").style.display = "block";
 
     document.getElementById("username").value = "";
     currentUsername = "";
+}
+
+// Variable para controlar si el confeti está encendido o apagado
+let confettiActive = false;
+
+// FUNCION PARA LANZAR CONFETI (INFINITO)
+function launchConfetti() {
+    confettiActive = true; // Encendemos el interruptor
+
+    (function frame() {
+        // Si el interruptor se apaga, dejamos de lanzar
+        if (!confettiActive) return;
+
+        confetti({
+            particleCount: 7,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            zIndex: 9999,
+            colors: ['#27ae60', '#f1c40f', '#e74c3c']
+        });
+        confetti({
+            particleCount: 7,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            zIndex: 9999,
+            colors: ['#27ae60', '#f1c40f', '#e74c3c']
+        });
+
+        requestAnimationFrame(frame);
+    }());
+}
+
+// FUNCION PARA PARAR EL CONFETI Y LIMPIAR PANTALLA
+function stopConfetti() {
+    confettiActive = false; // Apagamos el interruptor
+    confetti.reset();       // Borramos el confeti de la pantalla al instante
 }
