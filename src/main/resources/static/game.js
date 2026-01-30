@@ -36,6 +36,7 @@ async function createGame() {
             // 1. Ocultar Login y Portada
             document.getElementById("login-panel").style.display = "none";
             document.getElementById("full-screen-bg").style.display = "none";
+            document.getElementById("game-title").style.display = "none"; // <--- ¡NUEVA LÍNEA!
 
             // 2. Mostrar Juego
             document.getElementById("game-panel").style.display = "block";
@@ -186,11 +187,11 @@ function updateStatus(game) {
     }
 
     if (game.turn === "PLAYER") {
-        turnText.innerText = "Turno: TU TURNO 🟢";
-        statusText.innerText = "Esperando tus órdenes...";
+        turnText.innerText = "PLAYER TURN 🟢";
+        statusText.innerText = "WAITING FOR COORDINATES...";
     } else {
-        turnText.innerText = "Turno: CPU PENSANDO... 🔴";
-        statusText.innerText = "La máquina está calculando disparo...";
+        turnText.innerText = "CPU TURN... 🔴";
+        statusText.innerText = "CALCULATING COORDINATES...";
         setTimeout(() => { playCpuTurn(); }, 1500);
     }
 }
@@ -228,6 +229,7 @@ function exitToMenu() {
     // VOLVER A MOSTRAR LOGIN Y PORTADA
     document.getElementById("login-panel").style.display = "inline-block";
     document.getElementById("full-screen-bg").style.display = "block";
+    document.getElementById("game-title").style.display = "block"; // <--- ¡NUEVA LÍNEA!
 
     document.getElementById("username").value = "";
     currentUsername = "";
