@@ -9,23 +9,36 @@ const soundWater = new Audio('sounds/water.mp3');
 const soundBoom = new Audio('sounds/boom.mp3');
 
 // 1. CREAR PARTIDA
+// 1. CREAR PARTIDA
 async function createGame() {
     const usernameInput = document.getElementById("username");
+    const errorMsg = document.getElementById("login-error"); // Referencia al mensaje
+
     const username = usernameInput.value || currentUsername;
 
+    // --- CAMBIO: VALIDACIÓN VISUAL ---
     if (!username) {
-        alert("¡Por favor, introduce tu nombre de Capitán!");
-        return;
+        // En vez de alert, mostramos el texto en el HTML
+        errorMsg.innerText = "Please enter your captain's name ⚠️";
+        errorMsg.style.display = "block";
+        return; // Paramos aquí
+    } else {
+        // Si hay nombre, ocultamos el error por si estaba visible de antes
+        errorMsg.style.display = "none";
     }
+    // ----------------------------------
 
     currentUsername = username;
 
     try {
+        // ... (El resto de la función sigue igual que antes) ...
         const response = await fetch(`${API_URL}/new`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: username })
         });
+
+        // ... etc ...
 
         if (response.ok) {
             const game = await response.json();

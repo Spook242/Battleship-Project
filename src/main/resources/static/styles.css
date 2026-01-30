@@ -308,6 +308,27 @@ h2 {
     box-shadow: 0 8px 20px rgba(39, 174, 96, 0.6); /* Sombra verde */
 }
 
+/* MENSAJE DE ERROR EN EL LOGIN */
+.error-msg {
+    color: #e74c3c; /* Rojo intenso */
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 15px; /* Espacio antes del botón */
+    display: none; /* Oculto al principio */
+    text-transform: uppercase;
+    text-shadow: 1px 1px 2px black; /* Sombra para que se lea bien */
+    animation: shake 0.3s ease-in-out; /* Pequeña animación de vibración */
+}
+
+/* Animación de vibración para cuando te equivocas */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
 /* =========================
    9. MENSAJE FLOTANTE (RESULTADO DISPARO)
 ========================= */
