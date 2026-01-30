@@ -134,8 +134,23 @@ body {
     color: transparent !important;
 }
 
+/* =========================
+   6. CURSOR PERSONALIZADO
+========================= */
+/*
+   Cuando pasas el ratón por encima de las celdas enemigas.
+   - url('mira.png'): Usa tu imagen.
+   - 16 16: Le dice al navegador que el punto exacto del "clic" es el centro de la imagen (suponiendo que mide 32x32).
+   - crosshair: Si la imagen falla, usa la mira por defecto.
+*/
+/* =========================
+   6. CURSOR TIPO "DEFAULT" PERO GRANDE
+========================= */
 .enemy-board .cell {
-    cursor: crosshair;
+    /* Esto dibuja una cruz de 32px (más grande que la normal)
+       con borde blanco para que resalte en el agua.
+    */
+    cursor: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 0 V32 M0 16 H32" stroke="white" stroke-width="4"/><path d="M16 0 V32 M0 16 H32" stroke="black" stroke-width="2"/></svg>') 16 16, crosshair;
 }
 
 /* =========================
