@@ -140,19 +140,44 @@ async function playCpuTurn() {
     }
 }
 
-// 4. PINTAR TABLEROS
+// 4. PINTAR TABLEROS (CON COORDENADAS)
 function updateBoard(elementId, boardData, isEnemy) {
     const boardElement = document.getElementById(elementId);
     boardElement.innerHTML = "";
 
+    // --- A. FILA SUPERIOR (NÚMEROS 1-10) ---
+
+    // 1. Esquina vacía (arriba a la izquierda)
+    const corner = document.createElement("div");
+    corner.className = "label-cell";
+    boardElement.appendChild(corner);
+
+    // 2. Números del 1 al 10
+    for (let i = 1; i <= 10; i++) {
+        const label = document.createElement("div");
+        label.className = "label-cell";
+        label.innerText = i;
+        boardElement.appendChild(label);
+    }
+
+    // --- B. FILAS DEL JUEGO (LETRA + CASILLAS) ---
+
     for (let r = 0; r < 10; r++) {
+        // 1. Letra de la fila (A, B, C...)
+        const rowChar = String.fromCharCode(65 + r); // 65 es 'A'
+        const label = document.createElement("div");
+        label.className = "label-cell";
+        label.innerText = rowChar;
+        boardElement.appendChild(label);
+
+        // 2. Las 10 celdas de esa fila (Lógica normal)
         for (let c = 0; c < 10; c++) {
             const cell = document.createElement("div");
             cell.className = "cell";
-            const rowChar = String.fromCharCode(65 + r);
             const coord = rowChar + (c + 1);
             cell.dataset.coord = coord;
 
+            // --- LÓGICA DE PINTADO (IGUAL QUE ANTES) ---
             if (!isEnemy) {
                 for (let ship of boardData.ships) {
                     if (ship.cells.includes(coord)) {
@@ -194,6 +219,8 @@ function updateBoard(elementId, boardData, isEnemy) {
             if (isEnemy) {
                 cell.onclick = () => fire(coord);
             }
+            // --- FIN LÓGICA ---
+
             boardElement.appendChild(cell);
         }
     }

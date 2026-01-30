@@ -52,14 +52,28 @@ body {
     margin-top: 20px;
 }
 
+/* MODIFICACIÓN: El tablero ahora tiene espacio para etiquetas */
 .board {
     display: grid;
-    grid-template-columns: repeat(10, 40px);
-    grid-template-rows: repeat(10, 40px);
+    /* 1 columna estrecha (30px) para letras + 10 columnas de juego (40px) */
+    grid-template-columns: 30px repeat(10, 40px);
+    /* El alto se ajustará automáticamente */
     gap: 2px;
     background-color: rgba(0, 0, 0, 0.3);
     border: 5px solid #34495e;
-    padding: 5px;
+    padding: 10px; /* Un poco más de padding */
+}
+
+/* NUEVA CLASE: Para los números y letras */
+.label-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: #f1c40f; /* Color dorado para que resalte */
+    font-size: 18px;
+    text-shadow: 1px 1px 2px black;
+    /* Sin bordes ni fondo de agua */
 }
 
 /* =========================
