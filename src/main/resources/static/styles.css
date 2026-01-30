@@ -284,3 +284,52 @@ body {
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(39, 174, 96, 0.6); /* Sombra verde */
 }
+
+/* =========================
+   9. MENSAJE FLOTANTE (RESULTADO DISPARO)
+========================= */
+.shot-message {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centrado perfecto */
+
+    font-size: 4rem; /* Texto GIGANTE */
+    font-weight: 900;
+    text-transform: uppercase;
+    padding: 20px 40px;
+    border-radius: 15px;
+    z-index: 5000; /* Por encima de todo */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    text-align: center;
+    border: 3px solid white;
+
+    animation: popInMessage 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Animación de entrada */
+@keyframes popInMessage {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* ESTILOS SEGÚN RESULTADO */
+.msg-water {
+    background: rgba(52, 152, 219, 0.9); /* Azul */
+    color: white;
+    text-shadow: 2px 2px 0 #2980b9;
+}
+
+.msg-hit {
+    background: rgba(230, 126, 34, 0.95); /* Naranja */
+    color: white;
+    text-shadow: 2px 2px 0 #d35400;
+}
+
+.msg-sunk {
+    background: rgba(192, 57, 43, 0.95); /* Rojo Sangre */
+    color: #f1c40f; /* Texto Dorado */
+    border-color: #f1c40f;
+    text-shadow: 3px 3px 0 #000;
+}

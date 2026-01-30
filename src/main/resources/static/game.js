@@ -68,25 +68,34 @@ async function fire(coordinate) {
         if (response.ok) {
             const game = await response.json();
 
-            // 1. Actualizamos tableros
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
             updateStatus(game);
 
-            // 2. Calculamos si acertamos
+            // --- LÓGICA DEL MENSAJE Y EFECTOS ---
             let hit = false;
+            let sunk = false;
+
+            // Buscamos en los barcos de la CPU si hemos dado
             for(let ship of game.cpuBoard.ships) {
                 if(ship.cells.includes(coordinate)) {
-                    hit = true; break;
+                    hit = true;
+                    if(ship.sunk) sunk = true;
+                    break;
                 }
             }
 
-            // 3. Efectos (Explosión en CPU-BOARD)
             if(hit) {
                 soundBoom.play();
-                showExplosion(coordinate, "cpu-board"); // <--- Pasamos el ID del tablero enemigo
+                showExplosion(coordinate, "cpu-board");
+
+                // SOLO MOSTRAMOS MENSAJE SI HUNDIMOS EL BARCO
+                if (sunk) {
+                    showShotMessage(`${coordinate} HIT AND SUNK! ☠️`, "sunk");
+                }
             } else {
                 soundWater.play();
+                // Aquí ya no mostramos mensaje de agua
             }
         }
     } catch (error) {
@@ -94,7 +103,7 @@ async function fire(coordinate) {
     }
 }
 
-// 3. TURNO CPU (AHORA CON EXPLOSIONES)
+// 3. TURNO CPU
 async function playCpuTurn() {
     if (gameFinished) return;
 
@@ -107,31 +116,38 @@ async function playCpuTurn() {
         if (response.ok) {
             const game = await response.json();
 
-            // 1. Actualizamos tableros
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
             updateStatus(game);
 
-            // 2. ¡NUEVO! Detectar si la CPU acertó
+            // --- DETECTAR QUÉ HIZO LA CPU ---
             const shots = game.playerBoard.shotsReceived;
             if (shots.length > 0) {
-                // El último disparo es el que acaba de hacer la CPU
                 const lastShot = shots[shots.length - 1];
 
                 let hit = false;
+                let sunk = false;
+
+                // Miramos en TUS barcos (Player)
                 for (let ship of game.playerBoard.ships) {
                     if (ship.cells.includes(lastShot)) {
                         hit = true;
+                        if(ship.sunk) sunk = true;
                         break;
                     }
                 }
 
                 if (hit) {
                     soundBoom.play();
-                    // Mostramos explosión en PLAYER-BOARD (¡Porque nos han dado!)
                     showExplosion(lastShot, "player-board");
+
+                    // SOLO MOSTRAMOS MENSAJE SI LA CPU TE HUNDE UN BARCO
+                    if(sunk) {
+                        showShotMessage(`CPU: ${lastShot} HIT AND SUNK! ☠️`, "sunk");
+                    }
                 } else {
                     soundWater.play();
+                    // Aquí ya no mostramos mensaje de agua
                 }
             }
         }
@@ -146,13 +162,10 @@ function updateBoard(elementId, boardData, isEnemy) {
     boardElement.innerHTML = "";
 
     // --- A. FILA SUPERIOR (NÚMEROS 1-10) ---
-
-    // 1. Esquina vacía (arriba a la izquierda)
     const corner = document.createElement("div");
     corner.className = "label-cell";
     boardElement.appendChild(corner);
 
-    // 2. Números del 1 al 10
     for (let i = 1; i <= 10; i++) {
         const label = document.createElement("div");
         label.className = "label-cell";
@@ -161,23 +174,19 @@ function updateBoard(elementId, boardData, isEnemy) {
     }
 
     // --- B. FILAS DEL JUEGO (LETRA + CASILLAS) ---
-
     for (let r = 0; r < 10; r++) {
-        // 1. Letra de la fila (A, B, C...)
-        const rowChar = String.fromCharCode(65 + r); // 65 es 'A'
+        const rowChar = String.fromCharCode(65 + r);
         const label = document.createElement("div");
         label.className = "label-cell";
         label.innerText = rowChar;
         boardElement.appendChild(label);
 
-        // 2. Las 10 celdas de esa fila (Lógica normal)
         for (let c = 0; c < 10; c++) {
             const cell = document.createElement("div");
             cell.className = "cell";
             const coord = rowChar + (c + 1);
             cell.dataset.coord = coord;
 
-            // --- LÓGICA DE PINTADO (IGUAL QUE ANTES) ---
             if (!isEnemy) {
                 for (let ship of boardData.ships) {
                     if (ship.cells.includes(coord)) {
@@ -219,8 +228,6 @@ function updateBoard(elementId, boardData, isEnemy) {
             if (isEnemy) {
                 cell.onclick = () => fire(coord);
             }
-            // --- FIN LÓGICA ---
-
             boardElement.appendChild(cell);
         }
     }
@@ -302,10 +309,9 @@ function stopConfetti() {
     confetti.reset();
 }
 
-// --- FUNCIÓN PARA MOSTRAR EXPLOSIÓN (MEJORADA) ---
-// Ahora acepta 'boardId' para saber en qué tablero pintar
+// --- FUNCIÓN PARA MOSTRAR EXPLOSIÓN ---
 function showExplosion(coordinate, boardId) {
-    const board = document.getElementById(boardId); // "cpu-board" o "player-board"
+    const board = document.getElementById(boardId);
     if (!board) return;
 
     const cell = board.querySelector(`.cell[data-coord="${coordinate}"]`);
@@ -330,4 +336,20 @@ function showExplosion(coordinate, boardId) {
             }
         }, 500);
     }
+}
+
+// --- NUEVA FUNCIÓN: MOSTRAR MENSAJE EN PANTALLA ---
+function showShotMessage(text, type) {
+    const msgDiv = document.getElementById("shot-message");
+
+    msgDiv.innerText = text;
+
+    msgDiv.className = "shot-message";
+    msgDiv.classList.add("msg-" + type);
+
+    msgDiv.style.display = "block";
+
+    setTimeout(() => {
+        msgDiv.style.display = "none";
+    }, 1500);
 }
