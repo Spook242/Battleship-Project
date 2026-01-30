@@ -42,6 +42,29 @@ body {
     padding: 20px;
 }
 
+/* TEXTOS "YOUR FLEET" Y "ENEMY WATERS" ESTILO TOON */
+h2 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    margin-top: 10px;
+
+    /* MAYÚSCULAS Y FUENTE GORDITA */
+    text-transform: uppercase;
+    font-family: 'Arial Black', 'Impact', sans-serif;
+    letter-spacing: 2px;
+
+    /* COLOR DORADO */
+    color: #f1c40f;
+
+    /* BORDE NEGRO (Efecto Cartoon) */
+    text-shadow:
+        3px 3px 0 #000,
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000;
+}
+
 /* =========================
    3. TABLEROS
 ========================= */
