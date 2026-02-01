@@ -11,6 +11,11 @@ const soundBoom = new Audio('sounds/boom.mp3');
 // 1. CREAR PARTIDA
 // 1. CREAR PARTIDA
 async function createGame() {
+const audio = document.getElementById("introAudio");
+    if (audio) {
+        // Efecto "Fade": Bajamos al 20% para jugar concentrados
+        audio.volume = 0.2;
+    }
     const usernameInput = document.getElementById("username");
     const errorMsg = document.getElementById("login-error"); // Referencia al mensaje
 
@@ -256,6 +261,11 @@ function updateStatus(game) {
     const turnText = document.getElementById("turn-indicator");
 
     if (game.status === "FINISHED") {
+    const audio = document.getElementById("introAudio");
+        if (audio) {
+            audio.pause();       // Pausa la música
+            audio.currentTime = 0; // Rebobina al principio (opcional)
+        }
         gameFinished = true;
         statusText.innerText = "Partida finalizada";
         turnText.innerText = "";

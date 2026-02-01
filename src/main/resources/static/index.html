@@ -60,5 +60,31 @@
 
 <div id="shot-message" class="shot-message"></div>
 
+<audio id="introAudio" loop>
+    <source src="/Intro.mp3" type="audio/mpeg">
+    Tu navegador no soporta audio.
+</audio>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var audio = document.getElementById("introAudio");
+
+        // 🔉 INICIO: Volumen al 40% (0.4)
+        audio.volume = 0.4;
+
+        // Intentar reproducir automáticamente
+        var playPromise = audio.play();
+
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("Autoplay bloqueado. Esperando interacción...");
+                document.addEventListener('click', function() {
+                    audio.play();
+                }, { once: true });
+            });
+        }
+    });
+</script>
+
 </body>
 </html>
