@@ -216,26 +216,31 @@ function updateBoard(elementId, boardData, isEnemy) {
                 }
             }
 
-            if (boardData.shotsReceived.includes(coord)) {
-                let hitShip = null;
-                for (let ship of boardData.ships) {
-                    if (ship.cells.includes(coord)) {
-                        hitShip = ship; break;
-                    }
-                }
+            // VERIFICAR SI ESA CASILLA HA RECIBIDO UN DISPARO
+                        if (boardData.shotsReceived.includes(coord)) {
+                            let hitShip = null;
+                            // Comprobamos si el disparo tocó algún barco
+                            for (let ship of boardData.ships) {
+                                if (ship.cells.includes(coord)) {
+                                    hitShip = ship;
+                                    break;
+                                }
+                            }
 
-                if (hitShip) {
-                    if (hitShip.sunk) {
-                        cell.classList.add("skull-cell");
-                        cell.classList.add("ship");
-                    } else {
-                        cell.classList.add("hit");
-                        cell.classList.add("ship");
-                    }
-                } else {
-                    cell.classList.add("water");
-                }
-            }
+                            if (hitShip) {
+                                // SI ES TOCADO
+                                if (hitShip.sunk) {
+                                    cell.classList.add("skull-cell"); // Calavera si hundido
+                                    cell.classList.add("ship");
+                                } else {
+                                    cell.classList.add("hit"); // Explosión/Rojo si tocado
+                                    cell.classList.add("ship");
+                                }
+                            } else {
+                                // 💧 AQUÍ ESTÁ EL CAMBIO: ES AGUA 💧
+                                cell.classList.add("water-shot");
+                            }
+                        }
 
             if (isEnemy) {
                 cell.onclick = () => fire(coord);

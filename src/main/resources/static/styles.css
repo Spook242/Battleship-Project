@@ -396,3 +396,36 @@ h2 {
     border-color: #f1c40f;
     text-shadow: 3px 3px 0 #000;
 }
+
+/* ... resto de tu CSS ... */
+
+/* ... resto de tu CSS ... */
+
+/* ESTILO PARA EL AGUA (FALLO) */
+/* ... resto de tu CSS ... */
+
+/* ESTILO PARA EL AGUA (FALLO) - VERSIÓN FUERTE */
+/* ... resto de tu CSS ... */
+
+/* ESTILO PARA EL AGUA (NUEVAS GOTAS) */
+/* ... resto de tu CSS ... */
+
+/* ESTILO PARA EL AGUA (Gotas encima de azul) */
+/* ... resto de tu CSS ... */
+
+/* ESTILO PARA EL AGUA (Nueva salpicadura) */
+/* ... resto de tu CSS ... */
+
+/* ESTILO PARA EL AGUA (Gota Azul Minimalista) */
+.water-shot {
+    /* 1. Tu nueva imagen */
+    background-image: url('gota_azul.jpg');
+
+    /* 2. COVER: Hace que la imagen llene la casilla por completo sin deformarse */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    /* Un borde suave para separar las casillas */
+    border: 1px solid #81d4fa;
+}
