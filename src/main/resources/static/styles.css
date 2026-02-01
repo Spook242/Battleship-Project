@@ -159,9 +159,9 @@ h2 {
 /* =========================
    6. CURSOR PERSONALIZADO
 ========================= */
-.enemy-board .cell {
+/*.enemy-board .cell {
     cursor: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 0 V32 M0 16 H32" stroke="white" stroke-width="4"/><path d="M16 0 V32 M0 16 H32" stroke="black" stroke-width="2"/></svg>') 16 16, crosshair;
-}
+}*/
 
 /* =========================
    7. MODAL GAME OVER
@@ -428,4 +428,25 @@ h2 {
 
     /* Un borde suave para separar las casillas */
     border: 1px solid #81d4fa;
+}
+
+/* ... resto de tu CSS ... */
+
+/* --- PUNTO DE MIRA (Aiming) --- */
+
+/* Solo aplicamos el efecto si la celda NO ha recibido disparo todavía */
+.cell:not(.shot):not(.ship):hover,
+.enemy-board .cell:not(.shot):hover {
+
+    /* 1. Fondo amarillo semitransparente (estilo radar) */
+    background-color: rgba(255, 235, 59, 0.6);
+
+    /* 2. Borde amarillo brillante */
+    border: 2px solid #FFEB3B;
+
+    /* 3. Cambiar el cursor a una cruz de precisión */
+    cursor: crosshair;
+
+    /* (Opcional) Un poco de brillo extra */
+    box-shadow: 0 0 10px #FFEB3B;
 }
