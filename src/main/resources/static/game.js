@@ -3,54 +3,59 @@ let currentGameId = null;
 let gameFinished = false;
 let currentUsername = "";
 
-// SONIDOS
+// SONIDOS EFECTOS
 const soundShot = new Audio('sounds/shot.mp3');
 const soundWater = new Audio('sounds/water.mp3');
 const soundBoom = new Audio('sounds/boom.mp3');
 
 // 1. CREAR PARTIDA
-// 1. CREAR PARTIDA
 async function createGame() {
-const audio = document.getElementById("introAudio");
-    if (audio) {
-        // Efecto "Fade": Bajamos al 20% para jugar concentrados
-        audio.volume = 0.2;
-    }
-    const usernameInput = document.getElementById("username");
-    const errorMsg = document.getElementById("login-error"); // Referencia al mensaje
+    console.log("🟢 Botón Start Battle pulsado");
+    stopConfetti();
 
+    // 1. Gestionar Audio Intro
+    try {
+        const audio = document.getElementById("introAudio");
+        if (audio) {
+            audio.volume = 0.4; // Bajar volumen al empezar
+        }
+        stopWinMusic(); // Asegurar que no suena la de victoria
+    } catch (e) {
+        console.log("Error audio:", e);
+    }
+
+    // 2. Validar Usuario
+    const usernameInput = document.getElementById("username");
+    const errorMsg = document.getElementById("login-error");
     const username = usernameInput.value || currentUsername;
 
-    // --- CAMBIO: VALIDACIÓN VISUAL ---
     if (!username) {
-        // En vez de alert, mostramos el texto en el HTML
-        errorMsg.innerText = "Please enter your captain's name ⚠️";
-        errorMsg.style.display = "block";
-        return; // Paramos aquí
-    } else {
-        // Si hay nombre, ocultamos el error por si estaba visible de antes
-        errorMsg.style.display = "none";
+        if(errorMsg) {
+            errorMsg.innerText = "Please enter your captain's name ⚠️";
+            errorMsg.style.display = "block";
+        } else {
+            alert("Please enter a nickname");
+        }
+        return;
     }
-    // ----------------------------------
 
+    if(errorMsg) errorMsg.style.display = "none";
     currentUsername = username;
 
+    // 3. Petición al Servidor
     try {
-        // ... (El resto de la función sigue igual que antes) ...
         const response = await fetch(`${API_URL}/new`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: username })
         });
 
-        // ... etc ...
-
         if (response.ok) {
             const game = await response.json();
             currentGameId = game.id;
             gameFinished = false;
 
-            // === UI: TRANSICIÓN ===
+            // UI: Cambiar de pantalla
             document.getElementById("login-panel").style.display = "none";
             document.getElementById("full-screen-bg").style.display = "none";
             document.getElementById("game-title").style.display = "none";
@@ -71,7 +76,6 @@ const audio = document.getElementById("introAudio");
 }
 
 // 2. DISPARAR (TURNO JUGADOR)
-// 2. DISPARAR (TURNO JUGADOR)
 async function fire(coordinate) {
     if (gameFinished) return;
 
@@ -89,12 +93,11 @@ async function fire(coordinate) {
 
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
-            updateStatus(game); // Aquí se decide si la partida acabó
+            updateStatus(game);
 
-            // --- LÓGICA DEL MENSAJE Y EFECTOS ---
+            // Efectos visuales/sonoros
             let hit = false;
             let sunk = false;
-
             for(let ship of game.cpuBoard.ships) {
                 if(ship.cells.includes(coordinate)) {
                     hit = true;
@@ -106,9 +109,6 @@ async function fire(coordinate) {
             if(hit) {
                 soundBoom.play();
                 showExplosion(coordinate, "cpu-board");
-
-                // CORRECCIÓN: Solo mostramos texto si hundimos Y la partida SIGUE VIVA.
-                // Si la partida ha terminado ("FINISHED"), no ponemos texto para que no tape el modal.
                 if (sunk && game.status !== "FINISHED") {
                     showShotMessage(`${coordinate} HIT AND SUNK! ☠️`, "sunk");
                 }
@@ -121,7 +121,6 @@ async function fire(coordinate) {
     }
 }
 
-// 3. TURNO CPU
 // 3. TURNO CPU
 async function playCpuTurn() {
     if (gameFinished) return;
@@ -139,14 +138,12 @@ async function playCpuTurn() {
             updateBoard("cpu-board", game.cpuBoard, true);
             updateStatus(game);
 
-            // --- DETECTAR QUÉ HIZO LA CPU ---
+            // Efectos CPU
             const shots = game.playerBoard.shotsReceived;
             if (shots.length > 0) {
                 const lastShot = shots[shots.length - 1];
-
                 let hit = false;
                 let sunk = false;
-
                 for (let ship of game.playerBoard.ships) {
                     if (ship.cells.includes(lastShot)) {
                         hit = true;
@@ -158,8 +155,6 @@ async function playCpuTurn() {
                 if (hit) {
                     soundBoom.play();
                     showExplosion(lastShot, "player-board");
-
-                    // CORRECCIÓN: Lo mismo aquí, si la CPU te mata, que no salga el texto encima del Game Over
                     if(sunk && game.status !== "FINISHED") {
                         showShotMessage(`CPU: ${lastShot} HIT AND SUNK! ☠️`, "sunk");
                     }
@@ -173,12 +168,12 @@ async function playCpuTurn() {
     }
 }
 
-// 4. PINTAR TABLEROS (CON COORDENADAS)
+// 4. PINTAR TABLEROS
 function updateBoard(elementId, boardData, isEnemy) {
     const boardElement = document.getElementById(elementId);
     boardElement.innerHTML = "";
 
-    // --- A. FILA SUPERIOR (NÚMEROS 1-10) ---
+    // Header números
     const corner = document.createElement("div");
     corner.className = "label-cell";
     boardElement.appendChild(corner);
@@ -190,7 +185,7 @@ function updateBoard(elementId, boardData, isEnemy) {
         boardElement.appendChild(label);
     }
 
-    // --- B. FILAS DEL JUEGO (LETRA + CASILLAS) ---
+    // Filas
     for (let r = 0; r < 10; r++) {
         const rowChar = String.fromCharCode(65 + r);
         const label = document.createElement("div");
@@ -204,6 +199,7 @@ function updateBoard(elementId, boardData, isEnemy) {
             const coord = rowChar + (c + 1);
             cell.dataset.coord = coord;
 
+            // Pintar barcos
             if (!isEnemy) {
                 for (let ship of boardData.ships) {
                     if (ship.cells.includes(coord)) {
@@ -221,31 +217,28 @@ function updateBoard(elementId, boardData, isEnemy) {
                 }
             }
 
-            // VERIFICAR SI ESA CASILLA HA RECIBIDO UN DISPARO
-                        if (boardData.shotsReceived.includes(coord)) {
-                            let hitShip = null;
-                            // Comprobamos si el disparo tocó algún barco
-                            for (let ship of boardData.ships) {
-                                if (ship.cells.includes(coord)) {
-                                    hitShip = ship;
-                                    break;
-                                }
-                            }
+            // Pintar disparos
+            if (boardData.shotsReceived.includes(coord)) {
+                let hitShip = null;
+                for (let ship of boardData.ships) {
+                    if (ship.cells.includes(coord)) {
+                        hitShip = ship;
+                        break;
+                    }
+                }
 
-                            if (hitShip) {
-                                // SI ES TOCADO
-                                if (hitShip.sunk) {
-                                    cell.classList.add("skull-cell"); // Calavera si hundido
-                                    cell.classList.add("ship");
-                                } else {
-                                    cell.classList.add("hit"); // Explosión/Rojo si tocado
-                                    cell.classList.add("ship");
-                                }
-                            } else {
-                                // 💧 AQUÍ ESTÁ EL CAMBIO: ES AGUA 💧
-                                cell.classList.add("water-shot");
-                            }
-                        }
+                if (hitShip) {
+                    if (hitShip.sunk) {
+                        cell.classList.add("skull-cell");
+                        cell.classList.add("ship");
+                    } else {
+                        cell.classList.add("hit");
+                        cell.classList.add("ship");
+                    }
+                } else {
+                    cell.classList.add("water-shot");
+                }
+            }
 
             if (isEnemy) {
                 cell.onclick = () => fire(coord);
@@ -255,20 +248,23 @@ function updateBoard(elementId, boardData, isEnemy) {
     }
 }
 
-// 5. ESTADO
+// 5. ESTADO DEL JUEGO
 function updateStatus(game) {
     const statusText = document.getElementById("game-status");
     const turnText = document.getElementById("turn-indicator");
 
     if (game.status === "FINISHED") {
-    const audio = document.getElementById("introAudio");
+        // PARAR MÚSICA INTRO
+        const audio = document.getElementById("introAudio");
         if (audio) {
-            audio.pause();       // Pausa la música
-            audio.currentTime = 0; // Rebobina al principio (opcional)
+            audio.pause();
+            audio.currentTime = 0;
         }
+
         gameFinished = true;
         statusText.innerText = "Partida finalizada";
         turnText.innerText = "";
+
         showGameOverModal(game.winner);
         return;
     }
@@ -293,6 +289,13 @@ function showGameOverModal(winner) {
         title.innerText = "YOU WIN! 🏆";
         title.className = "win-text";
         launchConfetti();
+
+        // 🏆 SONAR VICTORIA
+        const winAudio = document.getElementById("winAudio");
+        if (winAudio) {
+            winAudio.volume = 0.4;
+            winAudio.play().catch(e => console.log(e));
+        }
     } else {
         title.innerText = "YOU LOSE ☠️";
         title.className = "lose-text";
@@ -300,11 +303,13 @@ function showGameOverModal(winner) {
 }
 
 function restartGame() {
+    stopWinMusic();
     stopConfetti();
     createGame();
 }
 
 function exitToMenu() {
+    stopWinMusic();
     stopConfetti();
 
     document.getElementById("game-over-modal").style.display = "none";
@@ -316,11 +321,26 @@ function exitToMenu() {
 
     document.getElementById("username").value = "";
     currentUsername = "";
+
+    // Reactivar Intro si quieres
+    const audio = document.getElementById("introAudio");
+    if(audio) {
+        audio.volume = 0.4;
+        audio.play().catch(e=>{});
+    }
+}
+
+// UTILIDADES
+function stopWinMusic() {
+    const winAudio = document.getElementById("winAudio");
+    if (winAudio) {
+        winAudio.pause();
+        winAudio.currentTime = 0;
+    }
 }
 
 // CONFETI
 let confettiActive = false;
-
 function launchConfetti() {
     confettiActive = true;
     (function frame() {
@@ -336,11 +356,10 @@ function stopConfetti() {
     confetti.reset();
 }
 
-// --- FUNCIÓN PARA MOSTRAR EXPLOSIÓN ---
+// EXPLOSION
 function showExplosion(coordinate, boardId) {
     const board = document.getElementById(boardId);
     if (!board) return;
-
     const cell = board.querySelector(`.cell[data-coord="${coordinate}"]`);
 
     if (cell) {
@@ -353,30 +372,19 @@ function showExplosion(coordinate, boardId) {
         explosionImg.style.height = "100%";
         explosionImg.style.zIndex = "10";
         explosionImg.style.pointerEvents = "none";
-
         cell.style.position = "relative";
         cell.appendChild(explosionImg);
-
-        setTimeout(() => {
-            if (cell.contains(explosionImg)) {
-                cell.removeChild(explosionImg);
-            }
-        }, 500);
+        setTimeout(() => { if (cell.contains(explosionImg)) cell.removeChild(explosionImg); }, 500);
     }
 }
 
-// --- NUEVA FUNCIÓN: MOSTRAR MENSAJE EN PANTALLA ---
+// MENSAJES
 function showShotMessage(text, type) {
     const msgDiv = document.getElementById("shot-message");
-
+    if(!msgDiv) return;
     msgDiv.innerText = text;
-
     msgDiv.className = "shot-message";
     msgDiv.classList.add("msg-" + type);
-
     msgDiv.style.display = "block";
-
-    setTimeout(() => {
-        msgDiv.style.display = "none";
-    }, 1500);
+    setTimeout(() => { msgDiv.style.display = "none"; }, 1500);
 }
