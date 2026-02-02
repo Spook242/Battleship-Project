@@ -286,19 +286,28 @@ function showGameOverModal(winner) {
     modal.style.display = "flex";
 
     if (winner === "PLAYER") {
+        // --- CASO VICTORIA ---
         title.innerText = "YOU WIN! 🏆";
         title.className = "win-text";
         launchConfetti();
 
-        // 🏆 SONAR VICTORIA
         const winAudio = document.getElementById("winAudio");
         if (winAudio) {
             winAudio.volume = 0.4;
             winAudio.play().catch(e => console.log(e));
         }
+
     } else {
+        // --- CASO DERROTA (AQUÍ ESTÁ EL CAMBIO) ---
         title.innerText = "YOU LOSE ☠️";
         title.className = "lose-text";
+
+        // 🎻 SONAR MÚSICA TRISTE
+        const loseAudio = document.getElementById("loseAudio");
+        if (loseAudio) {
+            loseAudio.volume = 0.7; // Volumen al 40%
+            loseAudio.play().catch(e => console.log(e));
+        }
     }
 }
 
