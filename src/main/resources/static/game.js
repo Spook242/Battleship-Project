@@ -19,7 +19,7 @@ async function createGame() {
         if (audio) {
             audio.volume = 0.4; // Bajar volumen al empezar
         }
-        stopWinMusic(); // Asegurar que no suena la de victoria
+        stopWinMusic(); // Asegurar que no suenan músicas de fin de partida
     } catch (e) {
         console.log("Error audio:", e);
     }
@@ -114,8 +114,11 @@ async function fire(coordinate) {
                 soundBoom.play();
                 showExplosion(coordinate, "cpu-board");
 
-                // Opcional: Limpiar panel si aciertas
-                playerAlertPanel.innerHTML = "";
+                // 🔥 PINTAR EL HIT EN ROJO (He borrado la línea que lo borraba)
+                playerAlertPanel.innerHTML = `
+                    <div class="hit-text">${coordinate}</div>
+                    <img src="explosion.png" class="hit-icon" alt="BOOM">
+                `;
 
                 if (sunk && game.status !== "FINISHED") {
                     showShotMessage(`${coordinate} HIT AND SUNK! ☠️`, "sunk");
@@ -124,7 +127,6 @@ async function fire(coordinate) {
                 // 💧 FALLO DEL JUGADOR -> PANEL DERECHO 💧
                 soundWater.play();
 
-                // 👇 PINTAMOS EN EL PANEL DERECHO 👇
                 playerAlertPanel.innerHTML = `
                     <div class="miss-text">${coordinate}</div>
                     <img src="agua_cartoon.png" class="miss-icon" alt="Water Drop">
@@ -136,7 +138,6 @@ async function fire(coordinate) {
     }
 }
 
-// 3. TURNO CPU
 // 3. TURNO CPU
 async function playCpuTurn() {
     if (gameFinished) return;
@@ -156,7 +157,7 @@ async function playCpuTurn() {
 
             // --- LÓGICA VISUAL CPU ---
             const shots = game.playerBoard.shotsReceived;
-            const alertPanel = document.getElementById("cpu-alert-panel"); // Nuestro nuevo panel
+            const cpuAlertPanel = document.getElementById("cpu-alert-panel"); // Panel IZQUIERDO
 
             if (shots.length > 0) {
                 const lastShot = shots[shots.length - 1];
@@ -172,23 +173,24 @@ async function playCpuTurn() {
                 }
 
                 if (hit) {
-                    // SI ACIERTA: Sonido bum y limpiamos el panel de agua
+                    // SI ACIERTA
                     soundBoom.play();
                     showExplosion(lastShot, "player-board");
 
-                    // Opcional: Si quieres limpiar el aviso de agua cuando acierta:
-                    alertPanel.innerHTML = "";
+                    // 🔥 PINTAR EL HIT EN ROJO (He borrado la línea que lo borraba)
+                    cpuAlertPanel.innerHTML = `
+                        <div class="hit-text">${lastShot}</div>
+                        <img src="explosion.png" class="hit-icon" alt="BOOM">
+                    `;
 
                     if(sunk && game.status !== "FINISHED") {
                         showShotMessage(`CPU: ${lastShot} HIT AND SUNK! ☠️`, "sunk");
                     }
                 } else {
-                    // 💧 SI FALLA: Sonido agua y PINTAMOS EL PANEL LATERAL 💧
+                    // 💧 SI FALLA
                     soundWater.play();
 
-                    // 👇 AQUÍ ESTÁ EL CAMBIO 👇
-                    // Usamos 'agua_cartoon.png' o la imagen de gota que prefieras
-                    alertPanel.innerHTML = `
+                    cpuAlertPanel.innerHTML = `
                         <div class="cpu-miss-text">${lastShot}</div>
                         <img src="agua_cartoon.png" class="cpu-miss-icon" alt="Water Drop">
                     `;
@@ -330,14 +332,15 @@ function showGameOverModal(winner) {
         }
 
     } else {
-        // --- CASO DERROTA (AQUÍ ESTÁ EL CAMBIO) ---
+        // --- CASO DERROTA ---
         title.innerText = "YOU LOSE ☠️";
         title.className = "lose-text";
 
         // 🎻 SONAR MÚSICA TRISTE
         const loseAudio = document.getElementById("loseAudio");
         if (loseAudio) {
-            loseAudio.volume = 0.7; // Volumen al 40%
+            loseAudio.loop = true; // Aseguramos el bucle
+            loseAudio.volume = 0.7;
             loseAudio.play().catch(e => console.log(e));
         }
     }
@@ -371,12 +374,20 @@ function exitToMenu() {
     }
 }
 
-// UTILIDADES
+// UTILIDADES (CORREGIDA PARA PARAR AMBOS AUDIOS)
 function stopWinMusic() {
+    // 1. Parar Victoria
     const winAudio = document.getElementById("winAudio");
     if (winAudio) {
         winAudio.pause();
         winAudio.currentTime = 0;
+    }
+
+    // 2. Parar Derrota (¡AÑADIDO!)
+    const loseAudio = document.getElementById("loseAudio");
+    if (loseAudio) {
+        loseAudio.pause();
+        loseAudio.currentTime = 0;
     }
 }
 

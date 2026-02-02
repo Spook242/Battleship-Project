@@ -84,6 +84,39 @@ h2 {
     margin-bottom: 5px;
 }
 
+/* --- ESTILOS PARA CUANDO HAY IMPACTO (HIT) --- */
+
+/* Texto de la coordenada en ROJO (ej: "A5") */
+.hit-text {
+    color: #FF4500;          /* Rojo anaranjado brillante (OrangeRed) */
+    font-size: 2.5rem;       /* Mismo tamaño que el fallo */
+    font-weight: 900;
+    font-family: 'Arial Black', sans-serif;
+    text-shadow: 0 0 15px #FF0000; /* Resplandor rojo intenso */
+    margin-bottom: 5px;
+    animation: pulseRed 0.5s infinite alternate; /* Efecto de parpadeo */
+}
+
+/* Animación de parpadeo para darle urgencia */
+@keyframes pulseRed {
+    from { text-shadow: 0 0 10px #FF0000; transform: scale(1); }
+    to { text-shadow: 0 0 25px #FF4500; transform: scale(1.1); }
+}
+
+/* (Opcional) Si quieres que la explosión del panel tenga un efecto extra */
+.hit-icon {
+    width: 60px;
+    height: auto;
+    filter: drop-shadow(0 0 10px #FF0000); /* Resplandor tras la explosión */
+    animation: boomShake 0.3s ease-in-out;
+}
+
+@keyframes boomShake {
+    0% { transform: scale(0); }
+    80% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
 /* ICONO GOTA (Sirve para ambos lados) */
 .miss-icon, .cpu-miss-icon {
     width: 50px;
