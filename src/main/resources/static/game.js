@@ -3,10 +3,11 @@ let currentGameId = null;
 let gameFinished = false;
 let currentUsername = "";
 
-// SONIDOS EFECTOS
+// --- SONIDOS Y EFECTOS ---
 const soundShot = new Audio('sounds/shot.mp3');
-const soundWater = new Audio('sounds/water.mp3');
-const soundBoom = new Audio('sounds/boom.mp3');
+const soundWater = new Audio('/water_drop.mp3');
+const soundBoom = new Audio('/explosion_2.mp3');
+soundBoom.volume = 1.0;
 
 // 1. CREAR PARTIDA
 async function createGame() {
