@@ -95,9 +95,12 @@ async function fire(coordinate) {
             updateBoard("cpu-board", game.cpuBoard, true);
             updateStatus(game);
 
-            // Efectos visuales/sonoros
+            // --- LÓGICA VISUAL JUGADOR ---
+            const playerAlertPanel = document.getElementById("player-alert-panel"); // Panel DERECHO
+
             let hit = false;
             let sunk = false;
+
             for(let ship of game.cpuBoard.ships) {
                 if(ship.cells.includes(coordinate)) {
                     hit = true;
@@ -107,13 +110,25 @@ async function fire(coordinate) {
             }
 
             if(hit) {
+                // ACIERTO
                 soundBoom.play();
                 showExplosion(coordinate, "cpu-board");
+
+                // Opcional: Limpiar panel si aciertas
+                playerAlertPanel.innerHTML = "";
+
                 if (sunk && game.status !== "FINISHED") {
                     showShotMessage(`${coordinate} HIT AND SUNK! ☠️`, "sunk");
                 }
             } else {
+                // 💧 FALLO DEL JUGADOR -> PANEL DERECHO 💧
                 soundWater.play();
+
+                // 👇 PINTAMOS EN EL PANEL DERECHO 👇
+                playerAlertPanel.innerHTML = `
+                    <div class="miss-text">${coordinate}</div>
+                    <img src="agua_cartoon.png" class="miss-icon" alt="Water Drop">
+                `;
             }
         }
     } catch (error) {
@@ -121,6 +136,7 @@ async function fire(coordinate) {
     }
 }
 
+// 3. TURNO CPU
 // 3. TURNO CPU
 async function playCpuTurn() {
     if (gameFinished) return;
@@ -138,12 +154,15 @@ async function playCpuTurn() {
             updateBoard("cpu-board", game.cpuBoard, true);
             updateStatus(game);
 
-            // Efectos CPU
+            // --- LÓGICA VISUAL CPU ---
             const shots = game.playerBoard.shotsReceived;
+            const alertPanel = document.getElementById("cpu-alert-panel"); // Nuestro nuevo panel
+
             if (shots.length > 0) {
                 const lastShot = shots[shots.length - 1];
                 let hit = false;
                 let sunk = false;
+
                 for (let ship of game.playerBoard.ships) {
                     if (ship.cells.includes(lastShot)) {
                         hit = true;
@@ -153,13 +172,26 @@ async function playCpuTurn() {
                 }
 
                 if (hit) {
+                    // SI ACIERTA: Sonido bum y limpiamos el panel de agua
                     soundBoom.play();
                     showExplosion(lastShot, "player-board");
+
+                    // Opcional: Si quieres limpiar el aviso de agua cuando acierta:
+                    alertPanel.innerHTML = "";
+
                     if(sunk && game.status !== "FINISHED") {
                         showShotMessage(`CPU: ${lastShot} HIT AND SUNK! ☠️`, "sunk");
                     }
                 } else {
+                    // 💧 SI FALLA: Sonido agua y PINTAMOS EL PANEL LATERAL 💧
                     soundWater.play();
+
+                    // 👇 AQUÍ ESTÁ EL CAMBIO 👇
+                    // Usamos 'agua_cartoon.png' o la imagen de gota que prefieras
+                    alertPanel.innerHTML = `
+                        <div class="cpu-miss-text">${lastShot}</div>
+                        <img src="agua_cartoon.png" class="cpu-miss-icon" alt="Water Drop">
+                    `;
                 }
             }
         }

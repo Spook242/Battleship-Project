@@ -13,19 +13,15 @@ body {
 /* ESTILO ÉPICO PARA EL TÍTULO PRINCIPAL */
 .main-title {
     font-size: 5rem;
-    margin-top: 10vh;
-    margin-bottom: 30px;
+    margin-top: 5vh; /* Un poco más arriba para dejar sitio a los tableros */
+    margin-bottom: 20px;
     text-transform: uppercase;
     font-weight: 900;
     letter-spacing: 5px;
-
-    /* Sombra y resplandor DORADOS */
     text-shadow:
         3px 3px 0px #b8860b,
         0 0 20px #ffd700,
         0 0 40px rgba(255, 215, 0, 0.6);
-
-    /* Relleno metálico claro */
     background: -webkit-linear-gradient(#ffffff, #f0e68c);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -38,48 +34,72 @@ body {
 .container {
     position: relative;
     z-index: 1;
-    max-width: 1200px;
+    /* Aumentamos el ancho máximo para que quepan los 4 elementos */
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
 }
 
-/* TEXTOS "YOUR FLEET" Y "ENEMY WATERS" ESTILO TOON */
 h2 {
-    font-size: 2rem;
-    margin-bottom: 15px;
-    margin-top: 10px;
-
-    /* MAYÚSCULAS Y FUENTE GORDITA */
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    margin-top: 5px;
     text-transform: uppercase;
     font-family: 'Arial Black', 'Impact', sans-serif;
     letter-spacing: 2px;
-
-    /* COLOR DORADO */
     color: #f1c40f;
-
-    /* BORDE NEGRO (Efecto Cartoon) */
-    text-shadow:
-        3px 3px 0 #000,
-        -1px -1px 0 #000,
-        1px -1px 0 #000,
-        -1px 1px 0 #000,
-        1px 1px 0 #000;
+    text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 }
 
 /* =========================
-   3. TABLEROS
+   3. ESTRUCTURA DE JUEGO (Paneles y Tableros)
 ========================= */
 .boards-container {
     display: flex;
+    flex-direction: row;
     justify-content: center;
-    gap: 50px;
-    margin-top: 20px;
+    align-items: center; /* Alineados al centro verticalmente */
+    gap: 20px;           /* Reducimos el hueco para que quepa todo */
+    margin-top: 10px;
+    width: 100%;
 }
 
-/* MODIFICACIÓN: El tablero ahora tiene espacio para etiquetas */
+/* PANELES LATERALES (Alertas) */
+.side-panel {
+    width: 110px;             /* Ancho fijo */
+    min-width: 110px;         /* Que no se aplaste */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* TEXTO DE COORDENADA (Sirve para ambos lados) */
+.miss-text, .cpu-miss-text {
+    color: #00BFFF;
+    font-size: 2.5rem;
+    font-weight: 900;
+    font-family: 'Arial Black', sans-serif;
+    text-shadow: 0 0 10px #00BFFF;
+    margin-bottom: 5px;
+}
+
+/* ICONO GOTA (Sirve para ambos lados) */
+.miss-icon, .cpu-miss-icon {
+    width: 50px;
+    height: auto;
+    filter: drop-shadow(0 0 5px #00BFFF);
+    animation: dropFall 0.5s ease-out;
+}
+
+@keyframes dropFall {
+    0% { transform: translateY(-20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+/* TABLEROS */
 .board {
     display: grid;
-    /* 1 columna estrecha (30px) para letras + 10 columnas de juego (40px) */
     grid-template-columns: 30px repeat(10, 40px);
     gap: 2px;
     background-color: rgba(0, 0, 0, 0.3);
@@ -87,7 +107,6 @@ h2 {
     padding: 10px;
 }
 
-/* NUEVA CLASE: Para los números y letras */
 .label-cell {
     display: flex;
     justify-content: center;
@@ -96,10 +115,12 @@ h2 {
     color: #f1c40f;
     font-size: 18px;
     text-shadow: 1px 1px 2px black;
+    width: 37px;  /* Forzamos consistencia */
+    height: 37px;
 }
 
 /* =========================
-   4. CELDAS (Agua)
+   4. CELDAS
 ========================= */
 .cell {
     width: 37px;
@@ -115,12 +136,19 @@ h2 {
     font-size: 20px;
 }
 
-.cell:hover {
-    filter: brightness(1.2);
+.cell:hover { filter: brightness(1.2); }
+
+/* --- EFECTOS DE CURSOR Y HOVER --- */
+.cell:not(.shot):not(.ship):hover,
+.enemy-board .cell:not(.shot):hover {
+    background-color: rgba(255, 235, 59, 0.6);
+    border: 2px solid #FFEB3B;
+    cursor: crosshair;
+    box-shadow: 0 0 10px #FFEB3B;
 }
 
 /* =========================
-   5. BARCOS Y ESTADOS
+   5. ESTADOS (Barcos, Hits, Miss)
 ========================= */
 .ship {
     background-image: url('Acorazado_2.png');
@@ -131,15 +159,7 @@ h2 {
     border: 1px solid #1a5276;
 }
 
-.hit {
-    background-color: rgba(231, 76, 60, 0.9) !important;
-}
-
-.water {
-    background-color: #3498db !important;
-    background-image: none !important;
-    border: 1px solid #5dade2 !important;
-}
+.hit { background-color: rgba(231, 76, 60, 0.9) !important; }
 
 .sunk {
     background-color: rgba(0, 0, 0, 0.6) !important;
@@ -156,15 +176,17 @@ h2 {
     color: transparent !important;
 }
 
-/* =========================
-   6. CURSOR PERSONALIZADO
-========================= */
-/*.enemy-board .cell {
-    cursor: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 0 V32 M0 16 H32" stroke="white" stroke-width="4"/><path d="M16 0 V32 M0 16 H32" stroke="black" stroke-width="2"/></svg>') 16 16, crosshair;
-}*/
+/* AGUA CON GOTA (Disparo fallido en tablero) */
+.water-shot {
+    background-image: url('gota_azul.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 1px solid #81d4fa;
+}
 
 /* =========================
-   7. MODAL GAME OVER
+   6. MODALES Y MENSAJES
 ========================= */
 .modal-overlay {
     display: none;
@@ -219,80 +241,49 @@ h2 {
 }
 
 .modal-buttons button:hover { transform: scale(1.1); }
-
 .btn-new { background-color: #27ae60; color: white; }
 .btn-exit { background-color: #c0392b; color: white; }
-
 .win-text { color: #f1c40f !important; text-shadow: 0 0 10px #f39c12; }
 .lose-text { color: #e74c3c !important; text-shadow: 0 0 10px #c0392b; }
 
 /* =========================
-   8. ESTILOS DE PORTADA (LOGIN SLIM FIT)
-   ¡AQUÍ ESTÁ LA CORRECCIÓN!
+   7. PORTADA (LOGIN)
 ========================= */
-
-/* El vídeo de fondo a pantalla completa */
-/* El vídeo de fondo a pantalla completa (SIN BORDES) */
 #full-screen-bg {
     position: fixed;
-    top: 0;
-    left: 0;
-
-    /* Aseguramos que ocupe toda la ventana del navegador */
-    width: 100vw;
-    height: 100vh;
-
-    /* Ajuste inteligente para cubrir todo el hueco */
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
     object-fit: cover;
-
-    /* TRUCO: Hacemos zoom al 120% (scale 1.2) para empujar los bordes negros fuera de la pantalla */
     transform: scale(1.2);
-    transform-origin: center center; /* El zoom se hace desde el centro */
-
+    transform-origin: center center;
     z-index: -10;
     filter: brightness(0.8) contrast(1.1);
 }
 
-/* 1. EL PANEL (Se adapta al contenido) */
 #login-panel {
     background-color: rgba(0, 0, 0, 0.85);
-
-    /* Flexbox en columna para apilar */
     display: inline-flex;
     flex-direction: column;
-
-    /* El ancho lo define el elemento más ancho (EL TÍTULO) */
     width: max-content;
-
-    padding: 12px; /* Margen de 3mm alrededor */
-
+    padding: 12px;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 15px 35px rgba(0,0,0,0.8);
     backdrop-filter: blur(5px);
 }
 
-/* 2. EL TÍTULO (El jefe del ancho) */
 #login-panel h1 {
-    margin-top: 0;
-    margin-bottom: 10px;
-
-    font-size: 1.1rem;      /* Tamaño pequeño (igual al error) */
-    white-space: nowrap;    /* IMPORTANTE: No permite saltos de línea */
-
+    margin: 0 0 10px 0;
+    font-size: 1.1rem;
+    white-space: nowrap;
     color: white;
     text-transform: uppercase;
     font-family: 'Arial Black', sans-serif;
-    text-shadow: 1px 1px 2px #000;
-    text-align: center;
 }
 
-/* 3. INPUT (Se adapta al ancho del título) */
 #login-panel input {
-    width: 100%;             /* Llena el ancho disponible */
+    width: 100%;
     box-sizing: border-box;
-    min-width: 0;            /* Permite encogerse */
-
     padding: 8px;
     font-size: 0.9rem;
     border-radius: 5px;
@@ -302,35 +293,26 @@ h2 {
     background-color: rgba(255,255,255,0.9);
 }
 
-/* 4. BOTÓN START (Se adapta al ancho del título) */
 #login-panel button {
-    width: 100%;             /* Llena el ancho disponible */
-    box-sizing: border-box;
-    min-width: 0;
-
-    padding: 8px 0;          /* Padding ajustado para no engordar */
+    width: 100%;
+    padding: 8px 0;
     font-size: 1rem;
     border-radius: 5px;
     border: none;
-
     background-color: #e67e22;
     color: white;
     font-weight: bold;
     cursor: pointer;
     text-transform: uppercase;
-    box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4);
-
-    margin-bottom: 0;        /* Pegado al borde de abajo (respetando padding del panel) */
+    margin-bottom: 0;
     transition: all 0.3s ease;
 }
 
 #login-panel button:hover {
     background-color: #27ae60;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(39, 174, 96, 0.6);
 }
 
-/* MENSAJE DE ERROR EN EL LOGIN */
 .error-msg {
     color: #e74c3c;
     font-weight: bold;
@@ -345,21 +327,16 @@ h2 {
 @keyframes shake {
     0% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
     75% { transform: translateX(-5px); }
     100% { transform: translateX(0); }
 }
 
-/* =========================
-   9. MENSAJE FLOTANTE (RESULTADO DISPARO)
-========================= */
+/* MENSAJES FLOTANTES (CENTRALES) */
 .shot-message {
     display: none;
     position: fixed;
-    top: 50%;
-    left: 50%;
+    top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-
     font-size: 4rem;
     font-weight: 900;
     text-transform: uppercase;
@@ -369,7 +346,6 @@ h2 {
     box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     text-align: center;
     border: 3px solid white;
-
     animation: popInMessage 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -378,75 +354,6 @@ h2 {
     100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
-.msg-water {
-    background: rgba(52, 152, 219, 0.9);
-    color: white;
-    text-shadow: 2px 2px 0 #2980b9;
-}
-
-.msg-hit {
-    background: rgba(230, 126, 34, 0.95);
-    color: white;
-    text-shadow: 2px 2px 0 #d35400;
-}
-
-.msg-sunk {
-    background: rgba(192, 57, 43, 0.95);
-    color: #f1c40f;
-    border-color: #f1c40f;
-    text-shadow: 3px 3px 0 #000;
-}
-
-/* ... resto de tu CSS ... */
-
-/* ... resto de tu CSS ... */
-
-/* ESTILO PARA EL AGUA (FALLO) */
-/* ... resto de tu CSS ... */
-
-/* ESTILO PARA EL AGUA (FALLO) - VERSIÓN FUERTE */
-/* ... resto de tu CSS ... */
-
-/* ESTILO PARA EL AGUA (NUEVAS GOTAS) */
-/* ... resto de tu CSS ... */
-
-/* ESTILO PARA EL AGUA (Gotas encima de azul) */
-/* ... resto de tu CSS ... */
-
-/* ESTILO PARA EL AGUA (Nueva salpicadura) */
-/* ... resto de tu CSS ... */
-
-/* ESTILO PARA EL AGUA (Gota Azul Minimalista) */
-.water-shot {
-    /* 1. Tu nueva imagen */
-    background-image: url('gota_azul.jpg');
-
-    /* 2. COVER: Hace que la imagen llene la casilla por completo sin deformarse */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-
-    /* Un borde suave para separar las casillas */
-    border: 1px solid #81d4fa;
-}
-
-/* ... resto de tu CSS ... */
-
-/* --- PUNTO DE MIRA (Aiming) --- */
-
-/* Solo aplicamos el efecto si la celda NO ha recibido disparo todavía */
-.cell:not(.shot):not(.ship):hover,
-.enemy-board .cell:not(.shot):hover {
-
-    /* 1. Fondo amarillo semitransparente (estilo radar) */
-    background-color: rgba(255, 235, 59, 0.6);
-
-    /* 2. Borde amarillo brillante */
-    border: 2px solid #FFEB3B;
-
-    /* 3. Cambiar el cursor a una cruz de precisión */
-    cursor: crosshair;
-
-    /* (Opcional) Un poco de brillo extra */
-    box-shadow: 0 0 10px #FFEB3B;
-}
+.msg-water { background: rgba(52, 152, 219, 0.9); color: white; text-shadow: 2px 2px 0 #2980b9; }
+.msg-hit { background: rgba(230, 126, 34, 0.95); color: white; text-shadow: 2px 2px 0 #d35400; }
+.msg-sunk { background: rgba(192, 57, 43, 0.95); color: #f1c40f; border-color: #f1c40f; text-shadow: 3px 3px 0 #000; }
