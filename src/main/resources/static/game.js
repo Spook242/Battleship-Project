@@ -18,9 +18,9 @@ async function createGame() {
     try {
         const audio = document.getElementById("introAudio");
         if (audio) {
-            audio.volume = 0.3; // Bajar volumen al empezar
+            audio.volume = 0.3;
         }
-        stopWinMusic(); // Asegurar que no suenan músicas de fin de partida
+        stopWinMusic();
     } catch (e) {
         console.log("Error audio:", e);
     }
@@ -45,6 +45,7 @@ async function createGame() {
 
     // 3. Petición al Servidor
     try {
+        // 👇 CAMBIO IMPORTANTE: Ahora enviamos el objeto JSON correcto
         const response = await fetch(`${API_URL}/new`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -52,8 +53,16 @@ async function createGame() {
         });
 
         if (response.ok) {
-            const game = await response.json();
-            currentGameId = game.id;
+            const data = await response.json(); // 1. Recibimos el PAQUETE completo (Game + Token)
+
+            // 👇 2. SEPARAMOS EL JUEGO DEL TOKEN
+            const gameObj = data.game;
+            const token = data.token;
+
+            // Guardamos el token por si lo necesitas luego (opcional por ahora)
+            localStorage.setItem("jwt_token", token);
+
+            currentGameId = gameObj.id; // Usamos el objeto desempaquetado
             gameFinished = false;
 
             // UI: Cambiar de pantalla
@@ -64,9 +73,10 @@ async function createGame() {
             document.getElementById("game-panel").style.display = "block";
             document.getElementById("game-over-modal").style.display = "none";
 
-            updateBoard("player-board", game.playerBoard, false);
-            updateBoard("cpu-board", game.cpuBoard, true);
-            updateStatus(game);
+            // 👇 3. ACTUALIZAMOS TABLEROS USANDO 'gameObj'
+            updateBoard("player-board", gameObj.playerBoard, false);
+            updateBoard("cpu-board", gameObj.cpuBoard, true);
+            updateStatus(gameObj);
         } else {
             alert("Error al crear la partida");
         }
