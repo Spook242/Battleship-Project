@@ -13,7 +13,7 @@ body {
 /* ESTILO ÉPICO PARA EL TÍTULO PRINCIPAL */
 .main-title {
     font-size: 5rem;
-    margin-top: 5vh; /* Un poco más arriba para dejar sitio a los tableros */
+    margin-top: 5vh;
     margin-bottom: 20px;
     text-transform: uppercase;
     font-weight: 900;
@@ -34,7 +34,6 @@ body {
 .container {
     position: relative;
     z-index: 1;
-    /* Aumentamos el ancho máximo para que quepan los 4 elementos */
     max-width: 1400px;
     margin: 0 auto;
     padding: 10px;
@@ -58,16 +57,16 @@ h2 {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: center; /* Alineados al centro verticalmente */
-    gap: 20px;           /* Reducimos el hueco para que quepa todo */
+    align-items: center;
+    gap: 20px;
     margin-top: 10px;
     width: 100%;
 }
 
 /* PANELES LATERALES (Alertas) */
 .side-panel {
-    width: 110px;             /* Ancho fijo */
-    min-width: 110px;         /* Que no se aplaste */
+    width: 110px;
+    min-width: 110px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -85,29 +84,25 @@ h2 {
 }
 
 /* --- ESTILOS PARA CUANDO HAY IMPACTO (HIT) --- */
-
-/* Texto de la coordenada en ROJO (ej: "A5") */
 .hit-text {
-    color: #FF4500;          /* Rojo anaranjado brillante (OrangeRed) */
-    font-size: 2.5rem;       /* Mismo tamaño que el fallo */
+    color: #FF4500;
+    font-size: 2.5rem;
     font-weight: 900;
     font-family: 'Arial Black', sans-serif;
-    text-shadow: 0 0 15px #FF0000; /* Resplandor rojo intenso */
+    text-shadow: 0 0 15px #FF0000;
     margin-bottom: 5px;
-    animation: pulseRed 0.5s infinite alternate; /* Efecto de parpadeo */
+    animation: pulseRed 0.5s infinite alternate;
 }
 
-/* Animación de parpadeo para darle urgencia */
 @keyframes pulseRed {
     from { text-shadow: 0 0 10px #FF0000; transform: scale(1); }
     to { text-shadow: 0 0 25px #FF4500; transform: scale(1.1); }
 }
 
-/* (Opcional) Si quieres que la explosión del panel tenga un efecto extra */
 .hit-icon {
     width: 60px;
     height: auto;
-    filter: drop-shadow(0 0 10px #FF0000); /* Resplandor tras la explosión */
+    filter: drop-shadow(0 0 10px #FF0000);
     animation: boomShake 0.3s ease-in-out;
 }
 
@@ -117,7 +112,7 @@ h2 {
     100% { transform: scale(1); }
 }
 
-/* ICONO GOTA (Sirve para ambos lados) */
+/* ICONO GOTA */
 .miss-icon, .cpu-miss-icon {
     width: 50px;
     height: auto;
@@ -148,7 +143,7 @@ h2 {
     color: #f1c40f;
     font-size: 18px;
     text-shadow: 1px 1px 2px black;
-    width: 37px;  /* Forzamos consistencia */
+    width: 37px;
     height: 37px;
 }
 
@@ -233,51 +228,11 @@ h2 {
     backdrop-filter: blur(5px);
 }
 
-.modal-content {
-    background: linear-gradient(135deg, #2c3e50, #000000);
-    padding: 40px;
-    border-radius: 15px;
-    border: 2px solid #ecf0f1;
-    text-align: center;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    animation: popIn 0.5s ease;
-}
-
+/* Animación de entrada */
 @keyframes popIn {
     0% { transform: scale(0.5); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
 }
-
-#game-result-title {
-    font-size: 3rem;
-    margin-bottom: 30px;
-    text-shadow: 2px 2px 0px #000;
-    font-weight: bold;
-    font-family: 'Arial Black', sans-serif;
-    color: white;
-}
-
-.modal-buttons {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-}
-
-.modal-buttons button {
-    padding: 15px 30px;
-    font-size: 1.2rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: transform 0.2s;
-}
-
-.modal-buttons button:hover { transform: scale(1.1); }
-.btn-new { background-color: #27ae60; color: white; }
-.btn-exit { background-color: #c0392b; color: white; }
-.win-text { color: #f1c40f !important; text-shadow: 0 0 10px #f39c12; }
-.lose-text { color: #e74c3c !important; text-shadow: 0 0 10px #c0392b; }
 
 /* =========================
    7. PORTADA (LOGIN)
@@ -390,3 +345,68 @@ h2 {
 .msg-water { background: rgba(52, 152, 219, 0.9); color: white; text-shadow: 2px 2px 0 #2980b9; }
 .msg-hit { background: rgba(230, 126, 34, 0.95); color: white; text-shadow: 2px 2px 0 #d35400; }
 .msg-sunk { background: rgba(192, 57, 43, 0.95); color: #f1c40f; border-color: #f1c40f; text-shadow: 3px 3px 0 #000; }
+
+/* =========================================================
+   8. MODAL TIPO PÓSTER (POPEYE) - VERSIÓN DEFINITIVA
+========================================================= */
+
+/* =========================================================
+   8. MODAL TIPO PÓSTER (CORREGIDO PARA IMAGEN VERTICAL)
+========================================================= */
+
+.modal-content-image {
+    position: relative;
+
+    /* 👇 EL CAMBIO CLAVE: Controlamos la altura, no el ancho */
+    height: 80vh;             /* Ocupa el 80% de la altura de la pantalla */
+    width: auto;              /* El ancho se ajusta solo */
+    max-width: 90%;           /* Que no se salga por los lados en móviles */
+
+    margin: auto;
+    background: transparent;
+    border: none;
+    padding: 0;
+
+    /* Para que el div se ajuste exactamente al tamaño de la imagen */
+    display: inline-block;
+
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    animation: popIn 0.5s ease;
+}
+
+/* LA FOTO */
+.modal-content-image img {
+    height: 100%;             /* Llena la altura del contenedor (80vh) */
+    width: auto;              /* Mantiene la proporción perfecta */
+    display: block;
+    border-radius: 15px;
+    border: 4px solid #f1c40f;
+}
+
+/* LOS BOTONES */
+.buttons-overlay {
+    position: absolute;
+    bottom: 15px;             /* 15px desde el borde inferior de la foto */
+    left: 0;
+    width: 100%;
+    padding: 0 20px;          /* Separación de los lados */
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: space-between; /* Izquierda y Derecha */
+
+    z-index: 1000;            /* ¡ENCIMA DE TODO! */
+}
+
+.buttons-overlay button {
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 0 15px rgba(0,0,0,1); /* Sombra negra fuerte para que se lea */
+    border: 2px solid white;
+    cursor: pointer;
+}
+
+.buttons-overlay button:hover {
+    transform: scale(1.1);
+}

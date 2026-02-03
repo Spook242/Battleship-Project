@@ -77,11 +77,10 @@ async function createGame() {
 }
 
 // 2. DISPARAR (TURNO JUGADOR)
-// 2. DISPARAR (TURNO JUGADOR)
 async function fire(coordinate) {
     if (gameFinished) return;
 
-    soundShot.currentTime = 0; // Rebobinar disparo también
+    soundShot.currentTime = 0;
     soundShot.play().catch(e => console.log(e));
 
     try {
@@ -114,7 +113,7 @@ async function fire(coordinate) {
 
             if(hit) {
                 // 🔥 ACIERTO
-                soundBoom.currentTime = 0; // <--- REBOBINAR SIEMPRE
+                soundBoom.currentTime = 0;
                 soundBoom.play().catch(e => console.error("Error audio boom:", e));
 
                 showExplosion(coordinate, "cpu-board");
@@ -128,8 +127,8 @@ async function fire(coordinate) {
                     showShotMessage(`${coordinate} HIT AND SUNK! ☠️`, "sunk");
                 }
             } else {
-                // 💧 FALLO (AQUÍ ESTABA EL PROBLEMA)
-                soundWater.currentTime = 0; // <--- ¡SOLUCIONADO!
+                // 💧 FALLO
+                soundWater.currentTime = 0;
                 soundWater.play().catch(e => console.error("Error audio water:", e));
 
                 playerAlertPanel.innerHTML = `
@@ -143,7 +142,6 @@ async function fire(coordinate) {
     }
 }
 
-// 3. TURNO CPU
 // 3. TURNO CPU
 async function playCpuTurn() {
     if (gameFinished) return;
@@ -180,7 +178,7 @@ async function playCpuTurn() {
 
                 if (hit) {
                     // 🔥 ACIERTO CPU
-                    soundBoom.currentTime = 0; // <--- REBOBINAR SIEMPRE
+                    soundBoom.currentTime = 0;
                     soundBoom.play().catch(e => console.error("Error audio boom:", e));
 
                     showExplosion(lastShot, "player-board");
@@ -195,7 +193,7 @@ async function playCpuTurn() {
                     }
                 } else {
                     // 💧 FALLO CPU
-                    soundWater.currentTime = 0; // <--- ¡AQUÍ ESTÁ LA SOLUCIÓN! (REBOBINAR)
+                    soundWater.currentTime = 0;
                     soundWater.play().catch(e => console.error("Error audio water:", e));
 
                     cpuAlertPanel.innerHTML = `
@@ -296,7 +294,6 @@ function updateStatus(game) {
     const turnText = document.getElementById("turn-indicator");
 
     if (game.status === "FINISHED") {
-        // PARAR MÚSICA INTRO
         const audio = document.getElementById("introAudio");
         if (audio) {
             audio.pause();
@@ -307,7 +304,7 @@ function updateStatus(game) {
         statusText.innerText = "Partida finalizada";
         turnText.innerText = "";
 
-        showGameOverModal(game.winner);
+        showGameOverModal(game.winner); // <--- ESTA FUNCIÓN FALTABA
         return;
     }
 
@@ -321,16 +318,18 @@ function updateStatus(game) {
     }
 }
 
+// 👇👇👇 AQUÍ ESTÁ LA FUNCIÓN QUE FALTABA Y QUE MUESTRA A POPEYE 👇👇👇
 function showGameOverModal(winner) {
     const modal = document.getElementById("game-over-modal");
-    const title = document.getElementById("game-result-title");
+    const resultImg = document.getElementById("result-img"); // Referencia a la IMAGEN
 
     modal.style.display = "flex";
 
     if (winner === "PLAYER") {
-        // --- CASO VICTORIA ---
-        title.innerText = "YOU WIN! 🏆";
-        title.className = "win-text";
+        // --- VICTORIA: FOTO POPEYE ---
+        resultImg.src = "/popeye.png";
+        resultImg.style.borderColor = "#f1c40f"; // Borde dorado
+
         launchConfetti();
 
         const winAudio = document.getElementById("winAudio");
@@ -340,19 +339,20 @@ function showGameOverModal(winner) {
         }
 
     } else {
-        // --- CASO DERROTA ---
-        title.innerText = "YOU LOSE ☠️";
-        title.className = "lose-text";
+        // --- DERROTA ---
+        resultImg.src = "/popeye.png";
+        resultImg.style.borderColor = "#c0392b"; // Borde rojo
 
-        // 🎻 SONAR MÚSICA TRISTE
         const loseAudio = document.getElementById("loseAudio");
         if (loseAudio) {
-            loseAudio.loop = true; // Aseguramos el bucle
-            loseAudio.volume = 0.8;
+            loseAudio.loop = true;
+            loseAudio.volume = 0.7;
             loseAudio.play().catch(e => console.log(e));
         }
     }
 }
+// 👆👆👆 FIN DE LA FUNCIÓN RECUPERADA 👆👆👆
+
 
 function restartGame() {
     stopWinMusic();
@@ -374,7 +374,6 @@ function exitToMenu() {
     document.getElementById("username").value = "";
     currentUsername = "";
 
-    // Reactivar Intro si quieres
     const audio = document.getElementById("introAudio");
     if(audio) {
         audio.volume = 0.4;
@@ -382,16 +381,12 @@ function exitToMenu() {
     }
 }
 
-// UTILIDADES (CORREGIDA PARA PARAR AMBOS AUDIOS)
 function stopWinMusic() {
-    // 1. Parar Victoria
     const winAudio = document.getElementById("winAudio");
     if (winAudio) {
         winAudio.pause();
         winAudio.currentTime = 0;
     }
-
-    // 2. Parar Derrota (¡AÑADIDO!)
     const loseAudio = document.getElementById("loseAudio");
     if (loseAudio) {
         loseAudio.pause();

@@ -51,19 +51,16 @@
 </div>
 
 <div id="game-over-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-        <h1 id="game-result-title">GAME OVER</h1>
+    <div class="modal-content-image">
 
-        <div class="modal-buttons">
-            <audio id="winAudio">
-                <source src="/win.mp3" type="audio/mpeg">
-            </audio>
+        <img id="result-img" src="" alt="Game Result">
 
-            <audio id="loseAudio" loop>
-                <source src="/lose.mp3" type="audio/mpeg">
-            </audio>
-
+        <div class="buttons-overlay">
             <button class="btn-new" onclick="stopWinMusic(); createGame()">NEW GAME</button>
+
+            <audio id="winAudio"><source src="/win.mp3" type="audio/mpeg"></audio>
+            <audio id="loseAudio" loop><source src="/lose.mp3" type="audio/mpeg"></audio>
+
             <button class="btn-exit" onclick="stopWinMusic(); location.reload()">EXIT</button>
         </div>
     </div>
