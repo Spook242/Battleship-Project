@@ -7,7 +7,7 @@ let currentUsername = "";
 const soundShot = new Audio('sounds/shot.mp3');
 const soundWater = new Audio('/water_drop.mp3');
 const soundBoom = new Audio('/explosion_2.mp3');
-soundBoom.volume = 1.0;
+soundBoom.volume = 0.8;
 
 // 1. CREAR PARTIDA
 async function createGame() {
