@@ -358,7 +358,7 @@ h2 {
     position: relative;
 
     /* 👇 EL CAMBIO CLAVE: Controlamos la altura, no el ancho */
-    height: 80vh;             /* Ocupa el 80% de la altura de la pantalla */
+    height: 95vh;             /* Ocupa el 95% de la altura de la pantalla */
     width: auto;              /* El ancho se ajusta solo */
     max-width: 90%;           /* Que no se salga por los lados en móviles */
 
