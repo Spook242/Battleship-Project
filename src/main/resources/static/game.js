@@ -140,6 +140,7 @@ async function fire(coordinate) {
 }
 
 // 3. TURNO CPU
+// 3. TURNO CPU
 async function playCpuTurn() {
     if (gameFinished) return;
 
@@ -158,7 +159,7 @@ async function playCpuTurn() {
 
             // --- LÓGICA VISUAL CPU ---
             const shots = game.playerBoard.shotsReceived;
-            const cpuAlertPanel = document.getElementById("cpu-alert-panel"); // Panel IZQUIERDO
+            const cpuAlertPanel = document.getElementById("cpu-alert-panel");
 
             if (shots.length > 0) {
                 const lastShot = shots[shots.length - 1];
@@ -174,11 +175,12 @@ async function playCpuTurn() {
                 }
 
                 if (hit) {
-                    // SI ACIERTA
-                    soundBoom.play();
+                    // 🔥 ACIERTO CPU
+                    soundBoom.currentTime = 0; // <--- REBOBINAR SIEMPRE
+                    soundBoom.play().catch(e => console.error("Error audio boom:", e));
+
                     showExplosion(lastShot, "player-board");
 
-                    // 🔥 PINTAR EL HIT EN ROJO (He borrado la línea que lo borraba)
                     cpuAlertPanel.innerHTML = `
                         <div class="hit-text">${lastShot}</div>
                         <img src="explosion.png" class="hit-icon" alt="BOOM">
@@ -188,8 +190,9 @@ async function playCpuTurn() {
                         showShotMessage(`CPU: ${lastShot} HIT AND SUNK! ☠️`, "sunk");
                     }
                 } else {
-                    // 💧 SI FALLA
-                    soundWater.play();
+                    // 💧 FALLO CPU
+                    soundWater.currentTime = 0; // <--- ¡AQUÍ ESTÁ LA SOLUCIÓN! (REBOBINAR)
+                    soundWater.play().catch(e => console.error("Error audio water:", e));
 
                     cpuAlertPanel.innerHTML = `
                         <div class="cpu-miss-text">${lastShot}</div>
