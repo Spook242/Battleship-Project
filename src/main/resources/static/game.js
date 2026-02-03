@@ -341,17 +341,22 @@ function updateStatus(game) {
 }
 
 // MODAL DE FIN DE PARTIDA
+// MODAL FIN DE PARTIDA
 function showGameOverModal(winner) {
     const modal = document.getElementById("game-over-modal");
     const resultImg = document.getElementById("result-img");
+    const resultVideo = document.getElementById("result-video"); // Referencia al vídeo
 
     modal.style.display = "flex";
 
     if (winner === "PLAYER") {
-        // --- VICTORIA: POPEYE REY ---
-        // Asegúrate de que tu imagen de victoria se llama así
+        // --- VICTORIA (JUGADOR) -> MOSTRAR FOTO ---
+        resultVideo.style.display = "none"; // Ocultar vídeo
+        resultVideo.pause();                // Parar vídeo por si acaso
+
+        resultImg.style.display = "block";  // Mostrar foto
         resultImg.src = "/popeye.png";
-        resultImg.style.borderColor = "#f1c40f"; // Borde Dorado
+        resultImg.style.borderColor = "#f1c40f";
 
         launchConfetti();
 
@@ -362,11 +367,21 @@ function showGameOverModal(winner) {
         }
 
     } else {
-        // 👇👇👇 AQUÍ ESTÁ EL CAMBIO PARA LA DERROTA 👇👇👇
-        // --- DERROTA: TUMBA "YOU LOSE" ---
-        resultImg.src = "/you_lose.jpg";  // <--- Nombre de la nueva imagen
-        resultImg.style.borderColor = "#8B0000"; // Borde Rojo Oscuro (sangre)
+        // --- DERROTA (CPU) -> MOSTRAR VÍDEO ---
+        resultImg.style.display = "none";   // Ocultar foto
 
+        resultVideo.style.display = "block"; // Mostrar vídeo
+        // ⚠️ Asegúrate de que el nombre del archivo es EXACTO (Mayúsculas importan)
+        resultVideo.src = "/Video_You_Lose.mp4";
+
+        resultVideo.muted = true;  // 🔇 SIN SONIDO (como pediste)
+        resultVideo.currentTime = 0;
+        resultVideo.play().catch(e => console.log("Error vídeo:", e));
+
+        // Borde rojo
+        resultVideo.style.border = "4px solid #8B0000";
+
+        // Audio de fondo (lose.mp3) sí suena
         const loseAudio = document.getElementById("loseAudio");
         if (loseAudio) {
             loseAudio.loop = true;

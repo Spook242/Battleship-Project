@@ -347,62 +347,62 @@ h2 {
 .msg-sunk { background: rgba(192, 57, 43, 0.95); color: #f1c40f; border-color: #f1c40f; text-shadow: 3px 3px 0 #000; }
 
 /* =========================================================
-   8. MODAL TIPO PÓSTER (POPEYE) - VERSIÓN DEFINITIVA
+   8. MODAL TIPO PÓSTER (Ajustes para Vídeo e Imagen)
 ========================================================= */
 
-/* =========================================================
-   8. MODAL TIPO PÓSTER (CORREGIDO PARA IMAGEN VERTICAL)
-========================================================= */
-
+/* CONTENEDOR PRINCIPAL */
 .modal-content-image {
     position: relative;
-
-    /* 👇 EL CAMBIO CLAVE: Controlamos la altura, no el ancho */
-    height: 95vh;             /* Ocupa el 95% de la altura de la pantalla */
-    width: auto;              /* El ancho se ajusta solo */
-    max-width: 90%;           /* Que no se salga por los lados en móviles */
-
+    /* Altura controlada para vertical (ajustado a 95vh para que sea muy grande) */
+    height: 95vh;
+    width: auto;
+    max-width: 90%; /* Para móviles */
     margin: auto;
     background: transparent;
     border: none;
     padding: 0;
-
-    /* Para que el div se ajuste exactamente al tamaño de la imagen */
     display: inline-block;
-
     box-shadow: 0 0 50px rgba(0,0,0,0.8);
     animation: popIn 0.5s ease;
 }
 
-/* LA FOTO */
-.modal-content-image img {
-    height: 100%;             /* Llena la altura del contenedor (80vh) */
-    width: auto;              /* Mantiene la proporción perfecta */
+/* ESTILO COMPARTIDO: Sirve tanto para la FOTO como para el VÍDEO */
+.modal-content-image img,
+.modal-content-image video {
+    height: 100%;
+    width: auto;
     display: block;
     border-radius: 15px;
-    border: 4px solid #f1c40f;
+    margin: 0 auto;           /* Centrado */
+    object-fit: cover;        /* Asegura que rellene bien */
 }
 
-/* LOS BOTONES */
+/* Bordes por defecto (aunque JS los cambia) */
+.modal-content-image img {
+    border: 4px solid #f1c40f; /* Dorado por defecto */
+}
+.modal-content-image video {
+    border: 4px solid #8B0000; /* Rojo por defecto */
+}
+
+/* LOS BOTONES (Flotando encima) */
 .buttons-overlay {
     position: absolute;
-    bottom: 15px;             /* 15px desde el borde inferior de la foto */
+    bottom: 15px;
     left: 0;
     width: 100%;
-    padding: 0 20px;          /* Separación de los lados */
+    padding: 0 20px;
     box-sizing: border-box;
-
     display: flex;
-    justify-content: space-between; /* Izquierda y Derecha */
-
-    z-index: 1000;            /* ¡ENCIMA DE TODO! */
+    justify-content: space-between;
+    z-index: 1000;
 }
 
 .buttons-overlay button {
     padding: 12px 25px;
     font-size: 1rem;
     font-weight: bold;
-    box-shadow: 0 0 15px rgba(0,0,0,1); /* Sombra negra fuerte para que se lea */
+    box-shadow: 0 0 15px rgba(0,0,0,1);
     border: 2px solid white;
     cursor: pointer;
 }
