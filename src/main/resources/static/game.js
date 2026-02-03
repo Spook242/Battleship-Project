@@ -77,10 +77,12 @@ async function createGame() {
 }
 
 // 2. DISPARAR (TURNO JUGADOR)
+// 2. DISPARAR (TURNO JUGADOR)
 async function fire(coordinate) {
     if (gameFinished) return;
 
-    soundShot.play();
+    soundShot.currentTime = 0; // Rebobinar disparo también
+    soundShot.play().catch(e => console.log(e));
 
     try {
         const response = await fetch(`${API_URL}/${currentGameId}/fire`, {
@@ -97,7 +99,7 @@ async function fire(coordinate) {
             updateStatus(game);
 
             // --- LÓGICA VISUAL JUGADOR ---
-            const playerAlertPanel = document.getElementById("player-alert-panel"); // Panel DERECHO
+            const playerAlertPanel = document.getElementById("player-alert-panel");
 
             let hit = false;
             let sunk = false;
@@ -111,11 +113,12 @@ async function fire(coordinate) {
             }
 
             if(hit) {
-                // ACIERTO
-                soundBoom.play();
+                // 🔥 ACIERTO
+                soundBoom.currentTime = 0; // <--- REBOBINAR SIEMPRE
+                soundBoom.play().catch(e => console.error("Error audio boom:", e));
+
                 showExplosion(coordinate, "cpu-board");
 
-                // 🔥 PINTAR EL HIT EN ROJO (He borrado la línea que lo borraba)
                 playerAlertPanel.innerHTML = `
                     <div class="hit-text">${coordinate}</div>
                     <img src="explosion.png" class="hit-icon" alt="BOOM">
@@ -125,8 +128,9 @@ async function fire(coordinate) {
                     showShotMessage(`${coordinate} HIT AND SUNK! ☠️`, "sunk");
                 }
             } else {
-                // 💧 FALLO DEL JUGADOR -> PANEL DERECHO 💧
-                soundWater.play();
+                // 💧 FALLO (AQUÍ ESTABA EL PROBLEMA)
+                soundWater.currentTime = 0; // <--- ¡SOLUCIONADO!
+                soundWater.play().catch(e => console.error("Error audio water:", e));
 
                 playerAlertPanel.innerHTML = `
                     <div class="miss-text">${coordinate}</div>
