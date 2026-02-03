@@ -7,7 +7,7 @@ let currentUsername = "";
 const soundShot = new Audio('sounds/shot.mp3');
 const soundWater = new Audio('/water_drop.mp3');
 const soundBoom = new Audio('/explosion_2.mp3');
-soundBoom.volume = 0.8;
+soundBoom.volume = 0.25;
 
 // 1. CREAR PARTIDA
 async function createGame() {
@@ -18,7 +18,7 @@ async function createGame() {
     try {
         const audio = document.getElementById("introAudio");
         if (audio) {
-            audio.volume = 0.4; // Bajar volumen al empezar
+            audio.volume = 0.3; // Bajar volumen al empezar
         }
         stopWinMusic(); // Asegurar que no suenan músicas de fin de partida
     } catch (e) {
@@ -310,7 +310,7 @@ function updateStatus(game) {
     } else {
         turnText.innerText = "CPU TURN... 🔴";
         statusText.innerText = "CALCULATING COORDINATES...";
-        setTimeout(() => { playCpuTurn(); }, 1500);
+        setTimeout(() => { playCpuTurn(); }, 2000);
     }
 }
 
@@ -341,7 +341,7 @@ function showGameOverModal(winner) {
         const loseAudio = document.getElementById("loseAudio");
         if (loseAudio) {
             loseAudio.loop = true; // Aseguramos el bucle
-            loseAudio.volume = 0.7;
+            loseAudio.volume = 0.8;
             loseAudio.play().catch(e => console.log(e));
         }
     }
