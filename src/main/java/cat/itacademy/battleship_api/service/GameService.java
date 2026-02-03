@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -33,7 +34,7 @@ public class GameService {
                 .turn("PLAYER")
                 .playerBoard(new Board())
                 .cpuBoard(new Board())
-                .cpuPendingTargets(new ArrayList<>()) // Inicializamos la lista vacía
+                // .cpuPendingTargets(...) <- YA NO HACE FALTA USAR ESTO, LA IA LO CALCULA AL VUELO
                 .build();
 
         placeShipsRandomly(game.getPlayerBoard());
@@ -53,65 +54,42 @@ public class GameService {
             throw new RuntimeException("The game is not active");
         }
         if (!game.getTurn().equals("PLAYER")) {
-            throw new RuntimeException("¡It's not your turn! Wait for the CPU!");
+            throw new RuntimeException("It's not your turn! Wait for the CPU!");
         }
 
         boolean hit = processShot(game.getCpuBoard(), coordinate);
 
-        // Si fallamos, cambio de turno. Si acertamos, seguimos tirando (opcional, aquí he puesto que cambia si falla)
         if (!hit) {
             game.setTurn("CPU");
         }
 
-        checkWinner(game); // Comprobar si el jugador ganó
+        checkWinner(game);
 
         return gameRepository.save(game);
     }
 
     // ==========================================
-    // 3. TURNO DE LA CPU (INTELIGENTE)
+    // 3. TURNO DE LA CPU (CORREGIDO)
     // ==========================================
     public Game playCpuTurn(String gameId) {
         Game game = gameRepository.findById(gameId).orElse(null);
         if (game == null) return null;
 
-        String targetCoordinate = null;
+        // 1. PEDIMOS AL CEREBRO QUE CALCULE EL MEJOR DISPARO
+        // (Ya incluye lógica de línea, vecinos o aleatorio)
+        String targetCoordinate = calculateCpuTarget(game.getPlayerBoard());
 
-        // A. MODO CAZA: Buscar objetivos pendientes
-        while (!game.getCpuPendingTargets().isEmpty()) {
-            String candidate = game.getCpuPendingTargets().remove(0);
-            if (!game.getPlayerBoard().getShotsReceived().contains(candidate)) {
-                targetCoordinate = candidate;
-                break;
-            }
-        }
-
-        // B. MODO ALEATORIO: Si no hay objetivos, disparo al azar
-        if (targetCoordinate == null) {
-            do {
-                targetCoordinate = getRandomCoordinate();
-            } while (game.getPlayerBoard().getShotsReceived().contains(targetCoordinate));
-        }
-
-        // C. EJECUTAR EL DISPARO
+        // 2. EJECUTAMOS EL DISPARO
         boolean isHit = processShot(game.getPlayerBoard(), targetCoordinate);
-        // Nota: Reutilizo processShot que ya tenías, hace lo mismo que checkHit y guarda el hit
 
-        // D. SI ACIERTA -> AÑADIR VECINOS
-        if (isHit) {
-            List<String> neighbors = getNeighbors(targetCoordinate);
-            for (String neighbor : neighbors) {
-                if (!game.getPlayerBoard().getShotsReceived().contains(neighbor)
-                        && !game.getCpuPendingTargets().contains(neighbor)) {
-                    game.getCpuPendingTargets().add(neighbor);
-                }
-            }
-        } else {
-            // SI FALLA -> Turno del jugador
+        // 3. GESTIONAR TURNO
+        if (!isHit) {
             game.setTurn("PLAYER");
         }
+        // Si acierta (isHit), la CPU mantiene el turno (no cambiamos a PLAYER)
+        // y en la siguiente llamada volverá a calcular targets basándose en el acierto.
 
-        checkWinner(game); // Comprobar si la CPU ganó
+        checkWinner(game);
 
         return gameRepository.save(game);
     }
@@ -120,9 +98,6 @@ public class GameService {
     // 4. LÓGICA DE DISPARO (COMÚN)
     // ==========================================
     private boolean processShot(Board board, String coordinate) {
-        // En la CPU no lanzamos excepción si repite, solo en el player.
-        // Pero como la lógica de CPU ya evita repetir, esto está bien.
-
         board.getShotsReceived().add(coordinate);
 
         for (Ship ship : board.getShips()) {
@@ -141,7 +116,6 @@ public class GameService {
     // 5. COMPROBAR GANADOR
     // ==========================================
     private void checkWinner(Game game) {
-        // 1. ¿Ganó el Player? (Todos los barcos de la CPU hundidos)
         boolean allCpuSunk = game.getCpuBoard().getShips().stream().allMatch(Ship::isSunk);
         if (allCpuSunk) {
             game.setWinner("PLAYER");
@@ -149,7 +123,6 @@ public class GameService {
             return;
         }
 
-        // 2. ¿Ganó la CPU? (Todos los barcos del Player hundidos)
         boolean allPlayerSunk = game.getPlayerBoard().getShips().stream().allMatch(Ship::isSunk);
         if (allPlayerSunk) {
             game.setWinner("CPU");
@@ -158,39 +131,129 @@ public class GameService {
     }
 
     // ==========================================
-    // 6. MÉTODOS AUXILIARES DE LA IA
+    // 6. IA: CEREBRO (LÓGICA NUEVA)
     // ==========================================
 
-    // Obtener vecinos válidos (Arriba, Abajo, Izq, Der)
+    private String calculateCpuTarget(Board opponentBoard) {
+        // A. Buscar aciertos en barcos que NO se han hundido todavía ("Heridos")
+        List<String> openHits = new ArrayList<>();
+
+        for (Ship ship : opponentBoard.getShips()) {
+            if (!ship.isSunk()) {
+                for (String cell : ship.getCells()) {
+                    // Si la celda fue disparada, es un "Hit abierto"
+                    if (opponentBoard.getShotsReceived().contains(cell)) {
+                        openHits.add(cell);
+                    }
+                }
+            }
+        }
+
+        // B. ESTRATEGIA DE LÍNEA: Si hay 2 o más aciertos en el mismo barco vivo
+        if (openHits.size() >= 2) {
+            String lineTarget = getLineStrategyTarget(openHits, opponentBoard.getShotsReceived());
+            if (lineTarget != null) return lineTarget;
+        }
+
+        // C. ESTRATEGIA DE VECINOS: Si hay aciertos pero no formamos línea aún
+        if (!openHits.isEmpty()) {
+            // Probamos vecinos de todos los aciertos encontrados
+            for (String hit : openHits) {
+                List<String> neighbors = getNeighbors(hit);
+                for (String neighbor : neighbors) {
+                    if (!opponentBoard.getShotsReceived().contains(neighbor)) {
+                        return neighbor; // Disparar a un vecino válido
+                    }
+                }
+            }
+        }
+
+        // D. MODO CAZA: Aleatorio puro
+        return generateRandomCoordinate(opponentBoard.getShotsReceived());
+    }
+
+    // LÓGICA DE LÍNEA (Horizontal/Vertical)
+    private String getLineStrategyTarget(List<String> hits, List<String> alreadyShot) {
+        hits.sort(String::compareTo); // Ordenar coordenadas
+
+        String first = hits.get(0);
+        String second = hits.get(1);
+
+        char row1 = first.charAt(0);
+        char row2 = second.charAt(0);
+
+        // Extraer columnas (Ojo con el substring para números de 2 dígitos como '10')
+        int col1 = Integer.parseInt(first.substring(1));
+        int col2 = Integer.parseInt(second.substring(1));
+
+        // 1. MISMA FILA (Horizontal) -> A4, A5
+        if (row1 == row2) {
+            int minCol = 11, maxCol = 0;
+            // Buscar los extremos reales de todos los impactos de este barco
+            for(String h : hits) {
+                int c = Integer.parseInt(h.substring(1));
+                if(c < minCol) minCol = c;
+                if(c > maxCol) maxCol = c;
+            }
+
+            // Probar Izquierda
+            String left = "" + row1 + (minCol - 1);
+            if (minCol > 1 && !alreadyShot.contains(left)) return left;
+
+            // Probar Derecha
+            String right = "" + row1 + (maxCol + 1);
+            if (maxCol < 10 && !alreadyShot.contains(right)) return right;
+        }
+
+        // 2. MISMA COLUMNA (Vertical) -> B4, C4
+        else if (col1 == col2) {
+            char minRow = 'Z', maxRow = 'A';
+            for(String h : hits) {
+                char r = h.charAt(0);
+                if(r < minRow) minRow = r;
+                if(r > maxRow) maxRow = r;
+            }
+
+            // Probar Arriba
+            String up = "" + (char)(minRow - 1) + col1;
+            if (minRow > 'A' && !alreadyShot.contains(up)) return up;
+
+            // Probar Abajo
+            String down = "" + (char)(maxRow + 1) + col1;
+            if (maxRow < 'J' && !alreadyShot.contains(down)) return down;
+        }
+
+        return null; // Línea bloqueada o confusa, volver a vecinos
+    }
+
     private List<String> getNeighbors(String coord) {
         List<String> neighbors = new ArrayList<>();
         try {
             char row = coord.charAt(0);
             int col = Integer.parseInt(coord.substring(1));
 
-            // ARRIBA
             if (row > 'A') neighbors.add("" + (char)(row - 1) + col);
-            // ABAJO
             if (row < 'J') neighbors.add("" + (char)(row + 1) + col);
-            // IZQUIERDA
             if (col > 1) neighbors.add("" + row + (col - 1));
-            // DERECHA
             if (col < 10) neighbors.add("" + row + (col + 1));
-        } catch (Exception e) {
-            // Ignorar error de parseo
-        }
+
+            Collections.shuffle(neighbors); // Aleatorizar para no ser predecible
+        } catch (Exception e) {}
         return neighbors;
     }
 
-    private String getRandomCoordinate() {
-        Random random = new Random();
-        char row = (char) ('A' + random.nextInt(10));
-        int col = 1 + random.nextInt(10);
-        return "" + row + col;
+    private String generateRandomCoordinate(List<String> shots) {
+        String coord;
+        do {
+            char row = (char) ('A' + (int)(Math.random() * 10));
+            int col = 1 + (int)(Math.random() * 10);
+            coord = "" + row + col;
+        } while (shots.contains(coord));
+        return coord;
     }
 
     // ==========================================
-    // 7. COLOCACIÓN DE BARCOS (SETUP)
+    // 7. SETUP DE BARCOS
     // ==========================================
     private void placeShipsRandomly(Board board) {
         int[] shipSizes = {5, 4, 3, 3, 2};
@@ -212,7 +275,7 @@ public class GameService {
 
         for (int i = 0; i < size; i++) {
             int r = horizontal ? row : row + i;
-            int c = horizontal ? col + i : col; // El array va de 0-9, la lógica de coords de 1-10
+            int c = horizontal ? col + i : col;
 
             if (r > 9 || c > 9) return false;
 
