@@ -9,7 +9,7 @@ const soundWater = new Audio('/water_drop.mp3');
 const soundBoom = new Audio('/explosion_2.mp3');
 soundBoom.volume = 0.25;
 
-// 1. CREAR PARTIDA
+// 1. CREAR PARTIDA (Recibe Token)
 async function createGame() {
     console.log("🟢 Botón Start Battle pulsado");
     stopConfetti();
@@ -45,7 +45,6 @@ async function createGame() {
 
     // 3. Petición al Servidor
     try {
-        // 👇 CAMBIO IMPORTANTE: Ahora enviamos el objeto JSON correcto
         const response = await fetch(`${API_URL}/new`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -53,16 +52,16 @@ async function createGame() {
         });
 
         if (response.ok) {
-            const data = await response.json(); // 1. Recibimos el PAQUETE completo (Game + Token)
+            const data = await response.json();
 
-            // 👇 2. SEPARAMOS EL JUEGO DEL TOKEN
+            // DESEMPAQUETAR (Juego + Token)
             const gameObj = data.game;
             const token = data.token;
 
-            // Guardamos el token por si lo necesitas luego (opcional por ahora)
+            // GUARDAR TOKEN
             localStorage.setItem("jwt_token", token);
 
-            currentGameId = gameObj.id; // Usamos el objeto desempaquetado
+            currentGameId = gameObj.id;
             gameFinished = false;
 
             // UI: Cambiar de pantalla
@@ -73,10 +72,15 @@ async function createGame() {
             document.getElementById("game-panel").style.display = "block";
             document.getElementById("game-over-modal").style.display = "none";
 
-            // 👇 3. ACTUALIZAMOS TABLEROS USANDO 'gameObj'
+            // Actualizar tableros
             updateBoard("player-board", gameObj.playerBoard, false);
             updateBoard("cpu-board", gameObj.cpuBoard, true);
             updateStatus(gameObj);
+
+            // Sonido Start
+            const startAudio = document.getElementById("startAudio");
+            if(startAudio) startAudio.play().catch(e => console.log(e));
+
         } else {
             alert("Error al crear la partida");
         }
@@ -86,17 +90,23 @@ async function createGame() {
     }
 }
 
-// 2. DISPARAR (TURNO JUGADOR)
+// 2. DISPARAR (Envía Token)
 async function fire(coordinate) {
     if (gameFinished) return;
 
     soundShot.currentTime = 0;
     soundShot.play().catch(e => console.log(e));
 
+    // RECUPERAR TOKEN
+    const token = localStorage.getItem("jwt_token");
+
     try {
         const response = await fetch(`${API_URL}/${currentGameId}/fire`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token // <--- ¡AQUÍ VA EL TOKEN!
+            },
             body: JSON.stringify({ coordinate: coordinate })
         });
 
@@ -109,7 +119,6 @@ async function fire(coordinate) {
 
             // --- LÓGICA VISUAL JUGADOR ---
             const playerAlertPanel = document.getElementById("player-alert-panel");
-
             let hit = false;
             let sunk = false;
 
@@ -125,7 +134,6 @@ async function fire(coordinate) {
                 // 🔥 ACIERTO
                 soundBoom.currentTime = 0;
                 soundBoom.play().catch(e => console.error("Error audio boom:", e));
-
                 showExplosion(coordinate, "cpu-board");
 
                 playerAlertPanel.innerHTML = `
@@ -152,14 +160,19 @@ async function fire(coordinate) {
     }
 }
 
-// 3. TURNO CPU
+// 3. TURNO CPU (Envía Token)
 async function playCpuTurn() {
     if (gameFinished) return;
+
+    const token = localStorage.getItem("jwt_token");
 
     try {
         const response = await fetch(`${API_URL}/${currentGameId}/cpu-turn`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" }
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token // <--- ¡AQUÍ TAMBIÉN!
+            }
         });
 
         if (response.ok) {
@@ -190,7 +203,6 @@ async function playCpuTurn() {
                     // 🔥 ACIERTO CPU
                     soundBoom.currentTime = 0;
                     soundBoom.play().catch(e => console.error("Error audio boom:", e));
-
                     showExplosion(lastShot, "player-board");
 
                     cpuAlertPanel.innerHTML = `
@@ -314,7 +326,7 @@ function updateStatus(game) {
         statusText.innerText = "Partida finalizada";
         turnText.innerText = "";
 
-        showGameOverModal(game.winner); // <--- ESTA FUNCIÓN FALTABA
+        showGameOverModal(game.winner);
         return;
     }
 
@@ -328,17 +340,18 @@ function updateStatus(game) {
     }
 }
 
-// 👇👇👇 AQUÍ ESTÁ LA FUNCIÓN QUE FALTABA Y QUE MUESTRA A POPEYE 👇👇👇
+// MODAL POPEYE
 function showGameOverModal(winner) {
     const modal = document.getElementById("game-over-modal");
-    const resultImg = document.getElementById("result-img"); // Referencia a la IMAGEN
+    const resultImg = document.getElementById("result-img");
 
     modal.style.display = "flex";
 
     if (winner === "PLAYER") {
         // --- VICTORIA: FOTO POPEYE ---
+        // ⚠️ Asegúrate de que el nombre coincide con tu archivo (Popeye.jpg o popeye.png)
         resultImg.src = "/popeye.png";
-        resultImg.style.borderColor = "#f1c40f"; // Borde dorado
+        resultImg.style.borderColor = "#f1c40f";
 
         launchConfetti();
 
@@ -351,7 +364,7 @@ function showGameOverModal(winner) {
     } else {
         // --- DERROTA ---
         resultImg.src = "/popeye.png";
-        resultImg.style.borderColor = "#c0392b"; // Borde rojo
+        resultImg.style.borderColor = "#c0392b";
 
         const loseAudio = document.getElementById("loseAudio");
         if (loseAudio) {
@@ -361,8 +374,6 @@ function showGameOverModal(winner) {
         }
     }
 }
-// 👆👆👆 FIN DE LA FUNCIÓN RECUPERADA 👆👆👆
-
 
 function restartGame() {
     stopWinMusic();
