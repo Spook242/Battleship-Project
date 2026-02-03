@@ -91,7 +91,7 @@ public class GameService {
             do {
                 targetCoordinate = getRandomCoordinate();
             } while (game.getPlayerBoard().getShotsReceived().contains(targetCoordinate));
-        } // <--- ¡AQUÍ FALTABA ESTA LLAVE!
+        }
 
         // C. EJECUTAR EL DISPARO
         boolean isHit = processShot(game.getPlayerBoard(), targetCoordinate);
