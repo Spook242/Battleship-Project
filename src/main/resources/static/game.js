@@ -340,7 +340,7 @@ function updateStatus(game) {
     }
 }
 
-// MODAL POPEYE
+// MODAL DE FIN DE PARTIDA
 function showGameOverModal(winner) {
     const modal = document.getElementById("game-over-modal");
     const resultImg = document.getElementById("result-img");
@@ -348,10 +348,10 @@ function showGameOverModal(winner) {
     modal.style.display = "flex";
 
     if (winner === "PLAYER") {
-        // --- VICTORIA: FOTO POPEYE ---
-        // ⚠️ Asegúrate de que el nombre coincide con tu archivo (Popeye.jpg o popeye.png)
+        // --- VICTORIA: POPEYE REY ---
+        // Asegúrate de que tu imagen de victoria se llama así
         resultImg.src = "/popeye.png";
-        resultImg.style.borderColor = "#f1c40f";
+        resultImg.style.borderColor = "#f1c40f"; // Borde Dorado
 
         launchConfetti();
 
@@ -362,9 +362,10 @@ function showGameOverModal(winner) {
         }
 
     } else {
-        // --- DERROTA ---
-        resultImg.src = "/popeye.png";
-        resultImg.style.borderColor = "#c0392b";
+        // 👇👇👇 AQUÍ ESTÁ EL CAMBIO PARA LA DERROTA 👇👇👇
+        // --- DERROTA: TUMBA "YOU LOSE" ---
+        resultImg.src = "/you_lose.jpg";  // <--- Nombre de la nueva imagen
+        resultImg.style.borderColor = "#8B0000"; // Borde Rojo Oscuro (sangre)
 
         const loseAudio = document.getElementById("loseAudio");
         if (loseAudio) {
