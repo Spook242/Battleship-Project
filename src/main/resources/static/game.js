@@ -341,54 +341,43 @@ function updateStatus(game) {
 }
 
 // MODAL DE FIN DE PARTIDA
-// MODAL FIN DE PARTIDA
+// MODAL DE FIN DE PARTIDA
 function showGameOverModal(winner) {
     const modal = document.getElementById("game-over-modal");
-    const resultImg = document.getElementById("result-img");
-    const resultVideo = document.getElementById("result-video"); // Referencia al vídeo
+    const resultVideo = document.getElementById("result-video");
 
     modal.style.display = "flex";
+    resultVideo.muted = true; // Aseguramos que el vídeo no tenga sonido
+    resultVideo.currentTime = 0;
 
     if (winner === "PLAYER") {
-        // --- VICTORIA (JUGADOR) -> MOSTRAR FOTO ---
-        resultVideo.style.display = "none"; // Ocultar vídeo
-        resultVideo.pause();                // Parar vídeo por si acaso
-
-        resultImg.style.display = "block";  // Mostrar foto
-        resultImg.src = "/popeye.png";
-        resultImg.style.borderColor = "#f1c40f";
+        // --- VICTORIA: VÍDEO POPEYE ---
+        resultVideo.src = "/you_win.mp4";
+        resultVideo.style.border = "4px solid #f1c40f"; // Borde Dorado
 
         launchConfetti();
 
         const winAudio = document.getElementById("winAudio");
         if (winAudio) {
             winAudio.volume = 0.4;
-            winAudio.play().catch(e => console.log(e));
+            winAudio.play().catch(e => console.log("Error audio victoria:", e));
         }
 
     } else {
-        // --- DERROTA (CPU) -> MOSTRAR VÍDEO ---
-        resultImg.style.display = "none";   // Ocultar foto
-
-        resultVideo.style.display = "block"; // Mostrar vídeo
-        // ⚠️ Asegúrate de que el nombre del archivo es EXACTO (Mayúsculas importan)
+        // --- DERROTA: VÍDEO TUMBA ---
         resultVideo.src = "/Video_You_Lose.mp4";
+        resultVideo.style.border = "4px solid #8B0000"; // Borde Rojo Sangre
 
-        resultVideo.muted = true;  // 🔇 SIN SONIDO (como pediste)
-        resultVideo.currentTime = 0;
-        resultVideo.play().catch(e => console.log("Error vídeo:", e));
-
-        // Borde rojo
-        resultVideo.style.border = "4px solid #8B0000";
-
-        // Audio de fondo (lose.mp3) sí suena
         const loseAudio = document.getElementById("loseAudio");
         if (loseAudio) {
             loseAudio.loop = true;
             loseAudio.volume = 0.7;
-            loseAudio.play().catch(e => console.log(e));
+            loseAudio.play().catch(e => console.log("Error audio derrota:", e));
         }
     }
+
+    // Reproducir el vídeo seleccionado
+    resultVideo.play().catch(e => console.log("Error al reproducir vídeo:", e));
 }
 
 function restartGame() {

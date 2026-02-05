@@ -366,47 +366,54 @@ h2 {
     animation: popIn 0.5s ease;
 }
 
-/* ESTILO COMPARTIDO: Sirve tanto para la FOTO como para el VÍDEO */
-.modal-content-image img,
+/* =========================================================
+   8. MODAL TIPO PÓSTER (VÍDEOS A PANTALLA CASI COMPLETA)
+========================================================= */
+
+.modal-content-image {
+    position: relative;
+    /* Ajustado para ocupar casi toda la altura disponible */
+    height: 95vh;
+    width: auto;
+    max-width: 95%;
+    margin: auto;
+    background: transparent;
+    border: none;
+    padding: 0;
+    display: inline-block;
+    box-shadow: 0 0 60px rgba(0,0,0,0.9);
+    animation: popIn 0.5s ease;
+}
+
 .modal-content-image video {
     height: 100%;
     width: auto;
     display: block;
     border-radius: 15px;
-    margin: 0 auto;           /* Centrado */
-    object-fit: cover;        /* Asegura que rellene bien */
+    margin: 0 auto;
+    object-fit: contain; /* Mantiene la proporción sin recortar */
 }
 
-/* Bordes por defecto (aunque JS los cambia) */
-.modal-content-image img {
-    border: 4px solid #f1c40f; /* Dorado por defecto */
-}
-.modal-content-image video {
-    border: 4px solid #8B0000; /* Rojo por defecto */
-}
-
-/* LOS BOTONES (Flotando encima) */
 .buttons-overlay {
     position: absolute;
-    bottom: 15px;
+    bottom: 30px; /* Un poco más arriba para que se vean bien */
     left: 0;
     width: 100%;
-    padding: 0 20px;
+    padding: 0 40px;
     box-sizing: border-box;
     display: flex;
     justify-content: space-between;
     z-index: 1000;
 }
 
+/* Estilo de botones para que resalten sobre el vídeo */
 .buttons-overlay button {
-    padding: 12px 25px;
-    font-size: 1rem;
-    font-weight: bold;
-    box-shadow: 0 0 15px rgba(0,0,0,1);
-    border: 2px solid white;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #000;
+    border: 2px solid #000;
+    font-weight: 900;
     cursor: pointer;
-}
-
-.buttons-overlay button:hover {
-    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
 }
