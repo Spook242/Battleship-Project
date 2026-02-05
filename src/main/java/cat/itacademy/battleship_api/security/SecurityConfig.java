@@ -23,17 +23,19 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
-                        // 👇 1. PERMITIR ACCESO A LA PÁGINA WEB Y RECURSOS
+                        // 👇 1. PERMITIR ACCESO A LA PÁGINA WEB Y RECURSOS (Optimizado)
                         .requestMatchers(
-                                "/",                // La raíz (localhost:8080)
-                                "/index.html",      // El archivo HTML
-                                "/*.css",           // Todos los estilos
-                                "/*.js",            // Todos los scripts (game.js)
-                                "/*.png",           // Imágenes
-                                "/*.jpg",           // Imágenes
-                                "/*.mp3",           // Sonidos
-                                "/*.mp4",           // Video de fondo
-                                "/favicon.ico"      // Icono del navegador
+                                "/",
+                                "/index.html",
+                                "/favicon.ico",
+                                "/**/*.css",    // Captura subcarpetas
+                                "/**/*.js",     // Captura subcarpetas
+                                "/**/*.png",
+                                "/**/*.jpg",
+                                "/**/*.jpeg",
+                                "/**/*.mp3",
+                                "/**/*.mp4",
+                                "/**/*.gif"
                         ).permitAll()
 
                         // 👇 2. PERMITIR CREAR PARTIDA (API)

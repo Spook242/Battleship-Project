@@ -30,7 +30,10 @@ public class GameController {
         }
 
         Game game = gameService.createGame(username);
-        String token = jwtService.generateToken(username, game.getId());
+        String token = jwtService.generateToken(
+                Map.of("gameId", game.getId()),  // 1º Argumento: Los datos extra (Map)
+                username                         // 2º Argumento: El usuario (String)
+        );
 
         return ResponseEntity.ok(new GameStartResponse(game, token));
     }
