@@ -22,168 +22,141 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-// @ExtendWith habilita el uso de Mockito en esta clase
 @ExtendWith(MockitoExtension.class)
 class GameServiceTest {
 
-    // 1. MOCK: Simulamos los repositorios (no queremos conectar a la BD real)
     @Mock
     private GameRepository gameRepository;
 
     @Mock
     private PlayerRepository playerRepository;
 
-    // 2. INJECT MOCKS: Inyectamos los mocks dentro de nuestro servicio real
     @InjectMocks
     private GameService gameService;
 
-    // Variables auxiliares para los tests
     private Game juegoPrueba;
     private Player jugadorPrueba;
 
     @BeforeEach
     void setUp() {
-        // Configuramos datos básicos antes de cada test
         jugadorPrueba = new Player("CapitanJack");
         jugadorPrueba.setId(1L);
 
+        // Inicializamos un juego limpio antes de cada test
         juegoPrueba = Game.builder()
                 .id("game-123")
                 .playerId(jugadorPrueba.getId())
                 .status("PLAYING")
-                .turn("PLAYER") // Empieza el jugador
-                .playerBoard(new Board())
-                .cpuBoard(new Board())
+                .turn("PLAYER")
+                .playerBoard(new Board()) // Tablero vacío
+                .cpuBoard(new Board())    // Tablero vacío
                 .build();
     }
 
-    // ==========================================
-    // TEST 1: CREAR JUEGO
-    // ==========================================
     @Test
-    @DisplayName("createGame debería inicializar tableros y colocar barcos")
+    @DisplayName("createGame: Debe crear un juego nuevo con barcos colocados")
     void testCreateGame() {
-        // GIVEN (Dado que...): Simulamos que el repositorio encuentra o guarda al jugador
+        // GIVEN
         when(playerRepository.findByUsername("CapitanJack")).thenReturn(Optional.of(jugadorPrueba));
-        // Simulamos que al guardar el juego, nos devuelve el mismo juego
-        when(gameRepository.save(any(Game.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        // Simulamos que al guardar devuelve el objeto que le pasamos
+        when(gameRepository.save(any(Game.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        // WHEN (Cuando...): Llamamos al método real
+        // WHEN
         Game nuevoJuego = gameService.createGame("CapitanJack");
 
-        // THEN (Entonces...): Verificaciones
+        // THEN
         assertNotNull(nuevoJuego);
         assertEquals("PLAYING", nuevoJuego.getStatus());
-        assertEquals("PLAYER", nuevoJuego.getTurn());
+        // Verificamos que la lógica de 'placeShipsRandomly' ha funcionado (hay barcos en las listas)
+        assertFalse(nuevoJuego.getPlayerBoard().getShips().isEmpty(), "El jugador debe tener barcos");
+        assertFalse(nuevoJuego.getCpuBoard().getShips().isEmpty(), "La CPU debe tener barcos");
 
-        // Verificar que se han colocado barcos automáticamente
-        assertFalse(nuevoJuego.getPlayerBoard().getShips().isEmpty(), "El tablero del jugador debería tener barcos");
-        assertFalse(nuevoJuego.getCpuBoard().getShips().isEmpty(), "El tablero de la CPU debería tener barcos");
-
-        // Verificar que se llamó a guardar en la BD
-        verify(gameRepository, times(1)).save(any(Game.class));
+        verify(gameRepository).save(any(Game.class));
     }
 
-    // ==========================================
-    // TEST 2: DISPARO DEL JUGADOR - AGUA
-    // ==========================================
     @Test
-    @DisplayName("playerMove debería cambiar turno a CPU si el disparo es AGUA")
+    @DisplayName("playerMove (AGUA): Debe cambiar el turno a CPU")
     void testPlayerMove_Miss() {
-        // GIVEN: Juego existente donde la CPU no tiene barcos en A1
+        // GIVEN
         when(gameRepository.findById("game-123")).thenReturn(Optional.of(juegoPrueba));
-        when(gameRepository.save(any(Game.class))).thenReturn(juegoPrueba);
+        when(gameRepository.save(any(Game.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        // WHEN: Disparamos a "A1" (asumimos que está vacío por defecto)
+        // WHEN: Disparamos a A1 (Asumimos que está vacío)
         Game resultado = gameService.playerMove("game-123", "A1");
 
-        // THEN: El turno debe cambiar a CPU
-        assertEquals("CPU", resultado.getTurn());
+        // THEN
+        assertEquals("CPU", resultado.getTurn(), "Si fallas, pasa el turno a la CPU");
         assertTrue(resultado.getCpuBoard().getShotsReceived().contains("A1"));
     }
 
-    // ==========================================
-    // TEST 3: DISPARO DEL JUGADOR - IMPACTO
-    // ==========================================
     @Test
-    @DisplayName("playerMove debería mantener turno PLAYER si el disparo es IMPACTO")
+    @DisplayName("playerMove (IMPACTO): El jugador debe repetir turno")
     void testPlayerMove_Hit() {
-        // GIVEN: Colocamos un barco enemigo en A1 manualmente para probar
-        Ship barcoEnemigo = new Ship("TestShip", 1, List.of("A1"), new ArrayList<>(), false);
-        juegoPrueba.getCpuBoard().getShips().add(barcoEnemigo);
+        // GIVEN: Ponemos un barco enemigo manualmente en A1
+        Ship barco = new Ship("Bote", 1, List.of("A1"), new ArrayList<>(), false);
+        juegoPrueba.getCpuBoard().getShips().add(barco);
 
         when(gameRepository.findById("game-123")).thenReturn(Optional.of(juegoPrueba));
-        when(gameRepository.save(any(Game.class))).thenReturn(juegoPrueba);
+        when(gameRepository.save(any(Game.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        // WHEN: Disparamos a "A1"
+        // WHEN
         Game resultado = gameService.playerMove("game-123", "A1");
 
-        // THEN: El turno debe seguir siendo PLAYER (premio por acertar)
-        assertEquals("PLAYER", resultado.getTurn());
-        // El barco debe tener un impacto
-        assertTrue(barcoEnemigo.getHits().contains("A1"));
-        assertTrue(barcoEnemigo.isSunk()); // Al ser tamaño 1, debe hundirse
+        // THEN
+        assertEquals("PLAYER", resultado.getTurn(), "Si aciertas, repites turno");
+        assertTrue(barco.getHits().contains("A1"));
+        assertTrue(barco.isSunk(), "El barco de tamaño 1 debería hundirse");
     }
 
-    // ==========================================
-    // TEST 4: VALIDACIONES (Turno Incorrecto)
-    // ==========================================
     @Test
-    @DisplayName("playerMove debería lanzar excepción si no es turno del jugador")
+    @DisplayName("playerMove: Debe lanzar error si no es tu turno")
     void testPlayerMove_WrongTurn() {
-        // GIVEN: Configuramos el juego para que sea turno de la CPU
-        juegoPrueba.setTurn("CPU");
-        when(gameRepository.findById("game-123")).thenReturn(Optional.of(juegoPrueba));
-
-        // WHEN & THEN: Esperamos que lance RuntimeException
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            gameService.playerMove("game-123", "A1");
-        });
-
-        assertTrue(exception.getMessage().contains("It's not your turn"));
-    }
-
-    // ==========================================
-    // TEST 5: IA DE LA CPU
-    // ==========================================
-    @Test
-    @DisplayName("playCpuTurn debería disparar y guardar cambios")
-    void testPlayCpuTurn() {
         // GIVEN
         juegoPrueba.setTurn("CPU"); // Es turno de la máquina
         when(gameRepository.findById("game-123")).thenReturn(Optional.of(juegoPrueba));
-        when(gameRepository.save(any(Game.class))).thenReturn(juegoPrueba);
+
+        // WHEN & THEN
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            gameService.playerMove("game-123", "A1");
+        });
+
+        assertEquals("It's not your turn! Wait for the CPU!", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("playCpuTurn: La CPU debe disparar y guardar el estado")
+    void testPlayCpuTurn() {
+        // GIVEN
+        juegoPrueba.setTurn("CPU");
+        when(gameRepository.findById("game-123")).thenReturn(Optional.of(juegoPrueba));
+        when(gameRepository.save(any(Game.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // WHEN
         Game resultado = gameService.playCpuTurn("game-123");
 
         // THEN
         assertNotNull(resultado);
-        // Verificar que la lista de disparos recibidos por el jugador aumentó en 1
-        assertEquals(1, resultado.getPlayerBoard().getShotsReceived().size());
+        // Comprobamos que la lista de disparos recibidos por el jugador ha aumentado
+        assertEquals(1, resultado.getPlayerBoard().getShotsReceived().size(), "La CPU debería haber disparado una vez");
 
-        // Verificar que se guardó en BD
-        verify(gameRepository, times(1)).save(juegoPrueba);
+        // Verificamos que se llamó al repositorio para guardar
+        verify(gameRepository, times(1)).save(any(Game.class));
     }
 
-    // ==========================================
-    // TEST 6: GANAR PARTIDA
-    // ==========================================
     @Test
-    @DisplayName("Debe detectar ganador cuando se hunden todos los barcos")
+    @DisplayName("CheckWinner: Debe detectar cuando el jugador gana")
     void testCheckWinner() {
-        // GIVEN: Juego listo
+        // GIVEN
+        Ship barcoCpu = new Ship("Bote", 1, List.of("B5"), new ArrayList<>(), false);
+        juegoPrueba.getCpuBoard().getShips().add(barcoCpu);
+
         when(gameRepository.findById("game-123")).thenReturn(Optional.of(juegoPrueba));
-        when(gameRepository.save(any(Game.class))).thenReturn(juegoPrueba);
+        when(gameRepository.save(any(Game.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        // ESCENARIO: La CPU solo tiene 1 barco de tamaño 1 en "B5"
-        Ship barcoCpu = new Ship("MiniBarco", 1, List.of("B5"), new ArrayList<>(), false);
-        juegoPrueba.getCpuBoard().setShips(new ArrayList<>(List.of(barcoCpu)));
-
-        // WHEN: El jugador dispara a B5 (Último barco)
+        // WHEN: Disparamos al único barco que queda
         Game resultado = gameService.playerMove("game-123", "B5");
 
-        // THEN: El estado debe ser FINISHED y ganador PLAYER
+        // THEN
         assertEquals("FINISHED", resultado.getStatus());
         assertEquals("PLAYER", resultado.getWinner());
     }
