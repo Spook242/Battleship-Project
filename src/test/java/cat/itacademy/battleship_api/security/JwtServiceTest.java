@@ -3,6 +3,7 @@ package cat.itacademy.battleship_api.security;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +19,11 @@ class JwtServiceTest {
         // Al ser un servicio sin dependencias externas (no usa repositorios),
         // podemos instanciarlo con 'new' directamente.
         jwtService = new JwtService();
+
+        ReflectionTestUtils.setField(jwtService, "secretKey",
+                "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970");
     }
+
 
     @Test
     void generateToken_ShouldCreateValidToken_WithUsername() {
