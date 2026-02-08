@@ -1,4 +1,34 @@
 services:
+  # --- 1. TU API JAVA (Spring Boot) ---
+  battleship-api:
+    build: .                      # Busca el Dockerfile en la carpeta actual
+    container_name: battleship-api
+    ports:
+      - "8080:8080"               # Expone el puerto 8080
+    depends_on:                   # Espera a que las BDs arranquen
+      - battleship_mysql
+      - battleship_mongo
+    environment:
+      # CONFIGURACIÓN CLAVE: Sobrescribimos application.properties
+      # Fíjate que en lugar de 'localhost' ponemos el nombre del servicio de abajo
+
+      # Conexión a MySQL
+      SPRING_DATASOURCE_URL: jdbc:mysql://battleship_mysql:3306/battleship_db?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+      # Conexión a MongoDB
+      SPRING_DATA_MONGODB_HOST: battleship_mongo
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_DATABASE: battleship_game
+
+      # JWT (La misma clave que usas siempre)
+      SECURITY_JWT_SECRET_KEY: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+
+    networks:
+      - battleship-network
+
+  # --- 2. BASE DE DATOS MYSQL ---
   battleship_mysql:
     image: mysql:8.0
     container_name: battleship_mysql
@@ -9,7 +39,10 @@ services:
       MYSQL_DATABASE: battleship_db
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - battleship-network
 
+  # --- 3. BASE DE DATOS MONGODB ---
   battleship_mongo:
     image: mongo:latest
     container_name: battleship_mongo
@@ -17,7 +50,15 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    networks:
+      - battleship-network
 
+# Definimos una red para que se vean entre ellos
+networks:
+  battleship-network:
+    driver: bridge
+
+# Volúmenes para no perder datos al apagar
 volumes:
   mysql_data:
   mongo_data:
