@@ -35,7 +35,10 @@ public class SecurityConfig {
                                 "/**/*.jpeg",
                                 "/**/*.mp3",
                                 "/**/*.mp4",
-                                "/**/*.gif"
+                                "/**/*.gif",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
                         ).permitAll()
 
                         // 👇 2. PERMITIR CREAR PARTIDA (API)
