@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Probador STOMP Battleship</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        #messages { height: 200px; overflow-y: scroll; background: #f0f0f0; border: 1px solid #999; padding: 5px;}
+    </style>
+</head>
+<body>
+    <h1>🚢 Battleship WebSocket Test</h1>
+    
+    <div class="box">
+        <h3>1. Conexión</h3>
+        <button onclick="connect()">🔌 Conectar</button>
+        <span id="status" style="color:red">Desconectado</span>
+    </div>
+
+    <div class="box">
+        <h3>2. Enviar Jugada</h3>
+        <input type="text" id="player" placeholder="Nombre Jugador" value="CapitanTest">
+        <input type="text" id="coord" placeholder="Coordenada (ej: A1)" value="A1">
+        <button onclick="sendMove()">🚀 Disparar</button>
+    </div>
+
+    <div class="box">
+        <h3>3. Respuestas del Servidor</h3>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        var stompClient = null;
+
+        function connect() {
+            // Conectamos al endpoint que definiste en Java (/ws)
+            var socket = new SockJS('http://localhost:8080/ws');
+            stompClient = Stomp.over(socket);
+            
+            stompClient.connect({}, function (frame) {
+                document.getElementById("status").style.color = "green";
+                document.getElementById("status").innerText = "Conectado ✅";
+                console.log('Connected: ' + frame);
+                
+                // NOS SUSCRIBIMOS AUTOMÁTICAMENTE AL CANAL DE JUEGO
+                stompClient.subscribe('/topic/game-progress', function (message) {
+                    showMessage(JSON.parse(message.body));
+                });
+            });
+        }
+
+        function sendMove() {
+            var player = document.getElementById("player").value;
+            var coord = document.getElementById("coord").value;
+            
+            // ENVIAMOS EL MENSAJE AL SERVIDOR (/app/play)
+            stompClient.send("/app/play", {}, JSON.stringify({
+                'player': player,
+                'coordinate': coord,
+                'result': 'PENDING'
+            }));
+        }
+
+        function showMessage(msg) {
+            var messagesDiv = document.getElementById("messages");
+            var p = document.createElement('p');
+            p.style.wordWrap = 'break-word';
+            p.innerHTML = `<strong>${msg.player}</strong> disparó a <strong>${msg.coordinate}</strong>. Resultado: ${msg.result}`;
+            messagesDiv.appendChild(p);
+        }
+    </script>
+</body>
+</html>

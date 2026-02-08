@@ -39,10 +39,12 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
+
                         ).permitAll()
 
                         // 👇 2. PERMITIR CREAR PARTIDA (API)
                         .requestMatchers("/game/new").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
 
                         // 👇 3. CANDADO: Todo lo demás (disparar, turno CPU) requiere autenticación
                         .anyRequest().authenticated()
