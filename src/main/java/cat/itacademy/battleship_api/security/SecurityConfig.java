@@ -44,6 +44,7 @@ public class SecurityConfig {
                         // 👇 2. PERMITIR CREAR PARTIDA (API)
                         .requestMatchers("/game/new").permitAll()
                         .requestMatchers("/game/new", "/game/ranking", "/auth/**").permitAll()
+                        .requestMatchers("/game/**").permitAll()
 
                         // 👇 3. CANDADO: Todo lo demás (disparar, turno CPU) requiere autenticación
                         .anyRequest().authenticated()

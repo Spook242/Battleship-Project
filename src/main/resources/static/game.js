@@ -75,6 +75,8 @@ async function createGame() {
             // Actualizar tableros
             updateBoard("player-board", gameObj.playerBoard, false);
             updateBoard("cpu-board", gameObj.cpuBoard, true);
+            updateFleetStatusPanel("player-status-panel", gameObj.playerBoard.ships);
+            updateFleetStatusPanel("cpu-status-panel", gameObj.cpuBoard.ships);
             updateStatus(gameObj);
 
             // Sonido Start
@@ -115,6 +117,8 @@ async function fire(coordinate) {
 
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
+            updateFleetStatusPanel("player-status-panel", game.playerBoard.ships);
+            updateFleetStatusPanel("cpu-status-panel", game.cpuBoard.ships);
             updateStatus(game);
 
             // --- LÓGICA VISUAL JUGADOR ---
@@ -180,6 +184,8 @@ async function playCpuTurn() {
 
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
+            updateFleetStatusPanel("player-status-panel", game.playerBoard.ships);
+            updateFleetStatusPanel("cpu-status-panel", game.cpuBoard.ships);
             updateStatus(game);
 
             // --- LÓGICA VISUAL CPU ---
@@ -517,4 +523,35 @@ async function showRanking() {
 
 function closeRanking() {
     document.getElementById("ranking-modal").style.display = "none";
+}
+
+// ==========================================
+// 7. PINTAR ESTADO DE FLOTA (Barcos Vivos/Hundidos)
+// ==========================================
+function updateFleetStatusPanel(elementId, ships) {
+    const container = document.getElementById(elementId);
+    if (!container) return; // Protección
+
+    container.innerHTML = ""; // Limpiar panel
+
+    // Ordenar barcos por tamaño (Grande arriba -> Pequeño abajo)
+    const sortedShips = [...ships].sort((a, b) => b.size - a.size);
+
+    sortedShips.forEach(ship => {
+        const row = document.createElement("div");
+        row.className = "ship-status-row";
+
+        for (let i = 0; i < ship.size; i++) {
+            const sq = document.createElement("div");
+            sq.className = "status-sq";
+
+            if (ship.sunk) {
+                sq.classList.add("sunk"); // VERDE
+            } else {
+                sq.classList.add("alive"); // ROJO
+            }
+            row.appendChild(sq);
+        }
+        container.appendChild(row);
+    });
 }
