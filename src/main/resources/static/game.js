@@ -251,6 +251,7 @@ async function playCpuTurn() {
 }
 
 // 3. TURNO CPU (Envía Token)
+// 3. TURNO CPU (Envía Token)
 async function playCpuTurn() {
     if (gameFinished) return;
 
@@ -261,28 +262,31 @@ async function playCpuTurn() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + token // <--- ¡AQUÍ TAMBIÉN!
+                "Authorization": "Bearer " + token
             }
         });
 
         if (response.ok) {
             const game = await response.json();
 
+            // Actualizar tableros visuales
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
             updateFleetStatusPanel("player-status-panel", game.playerBoard.ships);
             updateFleetStatusPanel("cpu-status-panel", game.cpuBoard.ships);
             updateStatus(game);
 
-            // --- LÓGICA VISUAL CPU ---
+            // --- LÓGICA VISUAL CPU (Explosiones y Sonidos) ---
             const shots = game.playerBoard.shotsReceived;
             const cpuAlertPanel = document.getElementById("cpu-alert-panel");
 
+            // Si la CPU ha disparado...
             if (shots.length > 0) {
                 const lastShot = shots[shots.length - 1];
                 let hit = false;
                 let sunk = false;
 
+                // Comprobar si el último disparo dio en un barco tuyo
                 for (let ship of game.playerBoard.ships) {
                     if (ship.cells.includes(lastShot)) {
                         hit = true;
@@ -302,9 +306,15 @@ async function playCpuTurn() {
                         <img src="explosion.png" class="hit-icon" alt="BOOM">
                     `;
 
+                    // 👇👇👇 AQUÍ ESTÁ EL SONIDO MAYDAY PARA LA CPU 👇👇👇
                     if(sunk && game.status !== "FINISHED") {
+                        // 🔉 ⬅️ REPRODUCIR SONIDO
+                        soundMayday.currentTime = 0;
+                        soundMayday.play().catch(e => console.log("Error mayday:", e));
+
                         showShotMessage(`CPU: ${lastShot} HIT AND SUNK! ☠️`, "sunk");
                     }
+
                 } else {
                     // 💧 FALLO CPU
                     soundWater.currentTime = 0;
