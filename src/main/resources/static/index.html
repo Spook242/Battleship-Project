@@ -17,11 +17,25 @@
 
     <div id="login-panel">
         <h1>CAPTAIN'S LOG</h1>
-        <input type="text" id="username" placeholder="Enter your Nickname">
 
+        <input type="text" id="username" placeholder="Enter your Nickname">
         <div id="login-error" class="error-msg"></div>
 
         <button onclick="createGame()">¡START BATTLE!</button>
+
+        <button onclick="showRanking()" style="background-color: #f1c40f; color: #2c3e50; margin-top: 10px;">
+            🏆 HALL OF FAME
+        </button>
+    </div>
+
+    <div id="ranking-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content-ranking">
+            <h2>🏆 TOP CAPTAINS 🏆</h2>
+            <div id="ranking-list" class="ranking-list">
+                <p>Cargando datos...</p>
+            </div>
+            <button class="btn-exit" onclick="closeRanking()">CLOSE</button>
+        </div>
     </div>
 
     <div id="game-panel" style="display:none;">

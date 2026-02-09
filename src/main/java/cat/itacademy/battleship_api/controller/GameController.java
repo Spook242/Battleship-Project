@@ -2,6 +2,7 @@ package cat.itacademy.battleship_api.controller;
 
 import cat.itacademy.battleship_api.dto.FireRequest;
 import cat.itacademy.battleship_api.dto.GameStartResponse;
+import cat.itacademy.battleship_api.dto.PlayerScoreDTO;
 import cat.itacademy.battleship_api.dto.StartGameRequest;
 import cat.itacademy.battleship_api.model.Game;
 import cat.itacademy.battleship_api.security.JwtService;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -58,5 +60,10 @@ public class GameController {
         System.out.println("🤖 CPU: Received shooting order for game " + gameId);
         Game game = gameService.playCpuTurn(gameId);
         return ResponseEntity.ok(game);
+    }
+
+    @GetMapping("/ranking")
+    public ResponseEntity<List<PlayerScoreDTO>> getRanking() {
+        return ResponseEntity.ok(gameService.getRanking());
     }
 }

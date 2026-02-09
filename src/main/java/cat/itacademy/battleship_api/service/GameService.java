@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -92,6 +93,22 @@ public class GameService {
         checkWinner(game);
 
         return gameRepository.save(game);
+    }
+
+    // ... otros métodos ...
+
+    // ==========================================
+    // 8. RANKING
+    // ==========================================
+    public List<cat.itacademy.battleship_api.dto.PlayerScoreDTO> getRanking() {
+        return playerRepository.findAll().stream()
+                .map(player -> {
+                    long wins = gameRepository.countByPlayerIdAndWinner(player.getId(), "PLAYER");
+                    return new cat.itacademy.battleship_api.dto.PlayerScoreDTO(player.getUsername(), wins);
+                })
+                .filter(score -> score.getWins() > 0) // Opcional: Mostrar solo ganadores
+                .sorted((a, b) -> Long.compare(b.getWins(), a.getWins())) // Ordenar Mayor a Menor
+                .collect(Collectors.toList());
     }
 
     // ==========================================

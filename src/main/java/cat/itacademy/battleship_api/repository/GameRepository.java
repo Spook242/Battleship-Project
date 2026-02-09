@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface GameRepository extends MongoRepository<Game, String> {
+    long countByPlayerIdAndWinner(Long playerId, String winner);
     List<Game> findByPlayerIdAndStatus(Long playerId, String status);
 }

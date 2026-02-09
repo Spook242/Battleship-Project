@@ -417,3 +417,48 @@ h2 {
     cursor: pointer;
     box-shadow: 0 0 20px rgba(0,0,0,0.8);
 }
+
+/* MODAL RANKING */
+.modal-content-ranking {
+    background: rgba(0, 0, 0, 0.9);
+    border: 4px solid #f1c40f;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    width: 400px;
+    max-width: 90%;
+    color: white;
+    box-shadow: 0 0 50px rgba(241, 196, 15, 0.3);
+    animation: popIn 0.3s ease;
+}
+
+.modal-content-ranking h2 {
+    color: #f1c40f;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 0 #000;
+}
+
+.ranking-list {
+    margin-bottom: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.ranking-item {
+    background: rgba(255, 255, 255, 0.1);
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #555;
+}
+
+.ranking-item:nth-child(1) { color: #f1c40f; font-weight: bold; font-size: 1.4rem; border: 1px solid #f1c40f; } /* 1º Oro */
+.ranking-item:nth-child(2) { color: #bdc3c7; font-weight: bold; } /* 2º Plata */
+.ranking-item:nth-child(3) { color: #cd7f32; font-weight: bold; } /* 3º Bronce */
+
+.wins-count { font-weight: bold; }

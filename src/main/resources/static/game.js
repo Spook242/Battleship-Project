@@ -469,3 +469,52 @@ function showShotMessage(text, type) {
     msgDiv.style.display = "block";
     setTimeout(() => { msgDiv.style.display = "none"; }, 1500);
 }
+
+// ==========================================
+// 6. RANKING SYSTEM
+// ==========================================
+async function showRanking() {
+    const modal = document.getElementById("ranking-modal");
+    const list = document.getElementById("ranking-list");
+
+    modal.style.display = "flex";
+    list.innerHTML = "<p style='text-align:center'>📡 Intercepting communications...</p>";
+
+    try {
+        // Pedimos el ranking al Backend
+        const response = await fetch(`${API_URL}/ranking`);
+
+        if (!response.ok) throw new Error("Error fetching ranking");
+
+        const ranking = await response.json();
+
+        // Limpiamos la lista
+        list.innerHTML = "";
+
+        if (ranking.length === 0) {
+            list.innerHTML = "<p style='text-align:center'>No victories yet. Be the first! ⚓</p>";
+            return;
+        }
+
+        // Generamos la lista HTML
+        ranking.forEach((player, index) => {
+            const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `#${index + 1}`;
+
+            const item = document.createElement("div");
+            item.className = "ranking-item";
+            item.innerHTML = `
+                <span>${medal} ${player.username}</span>
+                <span class="wins-count">${player.wins} 🏆</span>
+            `;
+            list.appendChild(item);
+        });
+
+    } catch (error) {
+        console.error("Error:", error);
+        list.innerHTML = "<p style='text-align:center; color:red'>Error connecting to HQ ❌</p>";
+    }
+}
+
+function closeRanking() {
+    document.getElementById("ranking-modal").style.display = "none";
+}
