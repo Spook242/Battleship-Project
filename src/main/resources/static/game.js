@@ -9,7 +9,7 @@ const soundWater = new Audio('/water_drop.mp3');
 const soundBoom = new Audio('/explosion_2.mp3');
 soundBoom.volume = 0.25;
 const soundMayday = new Audio('/mayday.wav');
-soundMayday.volume = 0.5; // Ajusta el volumen si quieres
+soundMayday.volume = 0.7; // Ajusta el volumen si quieres
 
 // --- VARIABLES DE COLOCACIÓN ---
 let isSetupPhase = false;
@@ -438,7 +438,7 @@ function updateStatus(game) {
     } else {
         turnText.innerText = "CPU TURN... 🔴";
         statusText.innerText = "CALCULATING COORDINATES...";
-        setTimeout(() => { playCpuTurn(); }, 1250);
+        setTimeout(() => { playCpuTurn(); }, 1500);
     }
 }
 
@@ -569,7 +569,7 @@ function showShotMessage(text, type) {
     msgDiv.className = "shot-message";
     msgDiv.classList.add("msg-" + type);
     msgDiv.style.display = "block";
-    setTimeout(() => { msgDiv.style.display = "none"; }, 1500);
+    setTimeout(() => { msgDiv.style.display = "none"; }, 2500);
 }
 
 // ==========================================
