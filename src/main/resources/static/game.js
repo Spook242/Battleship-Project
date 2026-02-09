@@ -9,23 +9,28 @@ const soundWater = new Audio('/water_drop.mp3');
 const soundBoom = new Audio('/explosion_2.mp3');
 soundBoom.volume = 0.25;
 
+// --- VARIABLES DE COLOCACIÓN ---
+let isSetupPhase = false;
+let isHorizontal = true;
+let shipsToPlace = [5, 4, 3, 3, 2]; // Tamaños de los barcos
+let currentShipIndex = 0;
+let myPlacedShips = []; // Aquí guardaremos los barcos para enviarlos al backend
+
+// 1. CREAR PARTIDA (Recibe Token)
+// 1. CREAR PARTIDA (Recibe Token)
 // 1. CREAR PARTIDA (Recibe Token)
 async function createGame() {
     console.log("🟢 Botón Start Battle pulsado");
     stopConfetti();
 
-    // 1. Gestionar Audio Intro
+    // Gestionar Audio
     try {
         const audio = document.getElementById("introAudio");
-        if (audio) {
-            audio.volume = 0.3;
-        }
+        if (audio) { audio.volume = 0.3; }
         stopWinMusic();
-    } catch (e) {
-        console.log("Error audio:", e);
-    }
+    } catch (e) { console.log("Error audio:", e); }
 
-    // 2. Validar Usuario
+    // Validar Usuario
     const usernameInput = document.getElementById("username");
     const errorMsg = document.getElementById("login-error");
     const username = usernameInput.value || currentUsername;
@@ -34,16 +39,12 @@ async function createGame() {
         if(errorMsg) {
             errorMsg.innerText = "Please enter your captain's name ⚠️";
             errorMsg.style.display = "block";
-        } else {
-            alert("Please enter a nickname");
-        }
+        } else { alert("Please enter a nickname"); }
         return;
     }
-
     if(errorMsg) errorMsg.style.display = "none";
     currentUsername = username;
 
-    // 3. Petición al Servidor
     try {
         const response = await fetch(`${API_URL}/new`, {
             method: "POST",
@@ -53,35 +54,37 @@ async function createGame() {
 
         if (response.ok) {
             const data = await response.json();
-
-            // DESEMPAQUETAR (Juego + Token)
             const gameObj = data.game;
             const token = data.token;
 
-            // GUARDAR TOKEN
+            // Guardar Token y ID
             localStorage.setItem("jwt_token", token);
-
             currentGameId = gameObj.id;
             gameFinished = false;
 
-            // UI: Cambiar de pantalla
+            // 👇👇 ¡CORRECCIÓN AQUÍ! 👇👇
+            // Sacamos esto fuera del IF/ELSE para que se ejecute SIEMPRE
             document.getElementById("login-panel").style.display = "none";
             document.getElementById("full-screen-bg").style.display = "none";
             document.getElementById("game-title").style.display = "none";
-
             document.getElementById("game-panel").style.display = "block";
             document.getElementById("game-over-modal").style.display = "none";
-
-            // Actualizar tableros
-            updateBoard("player-board", gameObj.playerBoard, false);
-            updateBoard("cpu-board", gameObj.cpuBoard, true);
-            updateFleetStatusPanel("player-status-panel", gameObj.playerBoard.ships);
-            updateFleetStatusPanel("cpu-status-panel", gameObj.cpuBoard.ships);
-            updateStatus(gameObj);
 
             // Sonido Start
             const startAudio = document.getElementById("startAudio");
             if(startAudio) startAudio.play().catch(e => console.log(e));
+
+            // Lógica de Estado
+            if (data.game.status === "SETUP") {
+                startSetupPhase(); // <--- Empieza la colocación
+            } else {
+                // Si la partida ya estaba empezada (F5)
+                updateBoard("player-board", gameObj.playerBoard, false);
+                updateBoard("cpu-board", gameObj.cpuBoard, true);
+                updateFleetStatusPanel("player-status-panel", gameObj.playerBoard.ships);
+                updateFleetStatusPanel("cpu-status-panel", gameObj.cpuBoard.ships);
+                updateStatus(gameObj);
+            }
 
         } else {
             alert("Error al crear la partida");
@@ -554,4 +557,188 @@ function updateFleetStatusPanel(elementId, ships) {
         }
         container.appendChild(row);
     });
+}
+
+// ==========================================
+// 8. FASE DE COLOCACIÓN (SETUP)
+// ==========================================
+
+function startSetupPhase() {
+    isSetupPhase = true;
+    currentShipIndex = 0;
+    myPlacedShips = [];
+    shipsToPlace = [5, 4, 3, 3, 2];
+
+    // Mostrar tablero vacío del jugador
+    updateBoard("player-board", { ships: [], shotsReceived: [] }, false);
+
+    // Ocultar tablero CPU y mostrar instrucciones
+    document.getElementById("cpu-board").style.opacity = "0.3"; // Efecto desactivado
+    document.getElementById("game-status").innerText = "PLACE YOUR SHIPS! (Press 'R' to Rotate)";
+    document.getElementById("turn-indicator").innerText = "Current Ship Size: " + shipsToPlace[0];
+
+    // Activar controles de ratón en el tablero del JUGADOR
+    const cells = document.querySelectorAll("#player-board .cell");
+    cells.forEach(cell => {
+        cell.onmouseover = () => previewShip(cell, true);
+        cell.onmouseout  = () => previewShip(cell, false);
+        cell.onclick     = () => placeShip(cell);
+        // Evitar menú contextual al hacer click derecho (para rotar)
+        cell.oncontextmenu = (e) => { e.preventDefault(); rotateShip(); };
+    });
+
+    // Escuchar tecla 'R' para rotar
+    document.addEventListener('keydown', handleRotateKey);
+}
+
+function handleRotateKey(e) {
+    if (e.key === 'r' || e.key === 'R') rotateShip();
+}
+
+function rotateShip() {
+    isHorizontal = !isHorizontal;
+    // Feedback visual
+    const status = document.getElementById("turn-indicator");
+    status.innerText = `Size: ${shipsToPlace[currentShipIndex]} (${isHorizontal ? "Horizontal ➡" : "Vertical ⬇"})`;
+}
+
+// Previsualizar (Pintar de verde o rojo)
+function previewShip(cell, show) {
+    if (!isSetupPhase) return;
+
+    const coord = cell.dataset.coord;
+    const size = shipsToPlace[currentShipIndex];
+    const cellsToPaint = getShipCoordinates(coord, size, isHorizontal);
+
+    // Limpiar previas
+    document.querySelectorAll(".cell.preview-valid, .cell.preview-invalid").forEach(c => {
+        c.classList.remove("preview-valid", "preview-invalid");
+    });
+
+    if (show) {
+        const isValid = isValidPlacement(cellsToPaint);
+        cellsToPaint.forEach(cCoord => {
+            const cDiv = document.querySelector(`#player-board .cell[data-coord="${cCoord}"]`);
+            if (cDiv) {
+                cDiv.classList.add(isValid ? "preview-valid" : "preview-invalid");
+            }
+        });
+    }
+}
+
+// Colocar el barco
+function placeShip(cell) {
+    if (!isSetupPhase) return;
+
+    const coord = cell.dataset.coord;
+    const size = shipsToPlace[currentShipIndex];
+    const cellsToPaint = getShipCoordinates(coord, size, isHorizontal);
+
+    if (!isValidPlacement(cellsToPaint)) {
+        // Sonido de error?
+        return;
+    }
+
+    // 1. Guardar barco en memoria
+    const newShip = {
+        type: "Ship-" + size,
+        size: size,
+        cells: cellsToPaint,
+        hits: [],
+        sunk: false
+    };
+    myPlacedShips.push(newShip);
+
+    // 2. Pintarlo fijo en el tablero visual
+    cellsToPaint.forEach(cCoord => {
+        const cDiv = document.querySelector(`#player-board .cell[data-coord="${cCoord}"]`);
+        if (cDiv) {
+            cDiv.classList.add("ship");
+            cDiv.classList.add("placed"); // Clase para fijarlo
+        }
+    });
+
+    // 3. Pasar al siguiente barco
+    currentShipIndex++;
+
+    if (currentShipIndex >= shipsToPlace.length) {
+        finishSetup();
+    } else {
+        document.getElementById("turn-indicator").innerText = "Next Ship Size: " + shipsToPlace[currentShipIndex];
+    }
+}
+
+// Validar si cabe y no choca
+function isValidPlacement(coords) {
+    // 1. Verificar si se sale del tablero (si coords tiene menos elementos que el tamaño)
+    if (coords.length !== shipsToPlace[currentShipIndex]) return false;
+
+    // 2. Verificar choques con otros barcos ya colocados
+    for (let c of coords) {
+        // Buscar en todos los barcos ya puestos
+        for (let ship of myPlacedShips) {
+            if (ship.cells.includes(c)) return false;
+        }
+    }
+    return true;
+}
+
+// Calcular coordenadas
+function getShipCoordinates(startCoord, size, horizontal) {
+    const row = startCoord.charCodeAt(0); // 'A' es 65
+    const col = parseInt(startCoord.substring(1));
+    const coords = [];
+
+    for (let i = 0; i < size; i++) {
+        let r = horizontal ? row : row + i;
+        let c = horizontal ? col + i : col;
+
+        if (r > 74 || c > 10) break; // 74 es 'J'. Fuera de limites.
+
+        const newCoord = String.fromCharCode(r) + c;
+        coords.push(newCoord);
+    }
+    return coords;
+}
+
+// FINALIZAR: Enviar al Backend
+// FINALIZAR: Enviar al Backend
+// FINALIZAR: Enviar al Backend
+async function finishSetup() {
+    isSetupPhase = false;
+    document.removeEventListener('keydown', handleRotateKey);
+    document.getElementById("game-status").innerText = "DEPLOYING FLEET...";
+
+    // 👇 Recuperar token
+    const token = localStorage.getItem("jwt_token");
+
+    // Enviar myPlacedShips al servidor
+    try {
+        const response = await fetch(`${API_URL}/${currentGameId}/start-battle`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token // <--- ¡IMPORTANTE! Descomentado
+            },
+            body: JSON.stringify(myPlacedShips)
+        });
+
+        if (response.ok) {
+            const game = await response.json();
+
+            // Reactivar tablero CPU
+            document.getElementById("cpu-board").style.opacity = "1";
+
+            // Actualizar tableros y estado
+            updateBoard("player-board", game.playerBoard, false);
+            updateBoard("cpu-board", game.cpuBoard, true);
+
+            updateFleetStatusPanel("player-status-panel", game.playerBoard.ships);
+            updateFleetStatusPanel("cpu-status-panel", game.cpuBoard.ships);
+
+            updateStatus(game);
+        }
+    } catch (e) {
+        console.error("Error starting battle", e);
+    }
 }

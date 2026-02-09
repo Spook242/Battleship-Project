@@ -63,6 +63,23 @@ h2 {
     width: 100%;
 }
 
+
+/* PREVISUALIZACIÓN DE COLOCACIÓN */
+.cell.preview-valid {
+    background-color: rgba(46, 204, 113, 0.7) !important; /* Verde semitransparente */
+    cursor: pointer;
+}
+
+.cell.preview-invalid {
+    background-color: rgba(231, 76, 60, 0.7) !important; /* Rojo semitransparente */
+    cursor: not-allowed;
+}
+
+.cell.placed {
+    background-color: #2980b9; /* Color fijo al colocar */
+    border: 1px solid #fff;
+}
+
 .side-column {
     display: flex;
     flex-direction: column;

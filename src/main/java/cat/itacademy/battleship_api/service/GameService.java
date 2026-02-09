@@ -31,15 +31,33 @@ public class GameService {
 
         Game game = Game.builder()
                 .playerId(player.getId())
-                .status("PLAYING")
+                .status("SETUP")
                 .turn("PLAYER")
                 .playerBoard(new Board())
                 .cpuBoard(new Board())
                 // .cpuPendingTargets(...) <- YA NO HACE FALTA USAR ESTO, LA IA LO CALCULA AL VUELO
                 .build();
 
-        placeShipsRandomly(game.getPlayerBoard());
+        //placeShipsRandomly(game.getPlayerBoard());
         placeShipsRandomly(game.getCpuBoard());
+
+        return gameRepository.save(game);
+    }
+
+    public Game startBattle(String gameId, List<Ship> playerShips) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        // Validar que sean 5 barcos (opcional pero recomendado)
+        if (playerShips.size() != 5) {
+            throw new RuntimeException("You must place all 5 ships!");
+        }
+
+        // Guardamos los barcos en el tablero del jugador
+        game.getPlayerBoard().setShips(playerShips);
+
+        // Cambiamos el estado a JUGANDO
+        game.setStatus("PLAYING");
 
         return gameRepository.save(game);
     }

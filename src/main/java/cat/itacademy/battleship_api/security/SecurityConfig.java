@@ -45,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/game/new").permitAll()
                         .requestMatchers("/game/new", "/game/ranking", "/auth/**").permitAll()
                         .requestMatchers("/game/**").permitAll()
+                        .requestMatchers("/game/**", "/auth/**").permitAll()
 
                         // 👇 3. CANDADO: Todo lo demás (disparar, turno CPU) requiere autenticación
                         .anyRequest().authenticated()

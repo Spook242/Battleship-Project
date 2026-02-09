@@ -5,6 +5,7 @@ import cat.itacademy.battleship_api.dto.GameStartResponse;
 import cat.itacademy.battleship_api.dto.PlayerScoreDTO;
 import cat.itacademy.battleship_api.dto.StartGameRequest;
 import cat.itacademy.battleship_api.model.Game;
+import cat.itacademy.battleship_api.model.Ship;
 import cat.itacademy.battleship_api.security.JwtService;
 import cat.itacademy.battleship_api.service.GameService;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,13 @@ public class GameController {
         );
 
         return ResponseEntity.ok(new GameStartResponse(game, token));
+    }
+
+    // EN GameController.java
+
+    @PostMapping("/{gameId}/start-battle")
+    public ResponseEntity<Game> startBattle(@PathVariable String gameId, @RequestBody List<Ship> ships) {
+        return ResponseEntity.ok(gameService.startBattle(gameId, ships));
     }
 
     // ... el resto de métodos (fire, cpu-turn) siguen igual por ahora ...
