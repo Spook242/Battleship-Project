@@ -342,7 +342,7 @@ function updateStatus(game) {
     } else {
         turnText.innerText = "CPU TURN... 🔴";
         statusText.innerText = "CALCULATING COORDINATES...";
-        setTimeout(() => { playCpuTurn(); }, 1000);
+        setTimeout(() => { playCpuTurn(); }, 1250);
     }
 }
 
