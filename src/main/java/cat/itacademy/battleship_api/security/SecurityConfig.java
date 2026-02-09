@@ -23,31 +23,30 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
-                        // 👇 1. PERMITIR ACCESO A LA PÁGINA WEB Y RECURSOS (Optimizado)
+                        // 👇 1. RECURSOS ESTÁTICOS (Permitir TODO tipo de archivo estático)
                         .requestMatchers(
                                 "/",
                                 "/index.html",
                                 "/favicon.ico",
-                                "/**/*.css",    // Captura subcarpetas
-                                "/**/*.js",     // Captura subcarpetas
+                                "/**/*.css",    // <--- IMPORTANTE: Doble asterisco permite archivos en raíz y carpetas
+                                "/**/*.js",     // <--- IMPORTANTE: Igual para el JS
                                 "/**/*.png",
                                 "/**/*.jpg",
                                 "/**/*.jpeg",
-                                "/**/*.mp3",
-                                "/**/*.mp4",
                                 "/**/*.gif",
+                                "/**/*.svg",
+                                "/**/*.mp3",    // Audio MP3
+                                "/**/*.wav",    // Audio WAV (Mayday)
+                                "/**/*.mp4",    // Videos
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
 
-                        // 👇 2. PERMITIR CREAR PARTIDA (API)
-                        .requestMatchers("/game/new").permitAll()
-                        .requestMatchers("/game/new", "/game/ranking", "/auth/**").permitAll()
-                        .requestMatchers("/game/**").permitAll()
+                        // 👇 2. JUEGO Y LOGIN
                         .requestMatchers("/game/**", "/auth/**").permitAll()
 
-                        // 👇 3. CANDADO: Todo lo demás (disparar, turno CPU) requiere autenticación
+                        // 👇 3. RESTO BLOQUEADO
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))

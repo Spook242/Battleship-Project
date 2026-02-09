@@ -8,6 +8,8 @@ const soundShot = new Audio('sounds/shot.mp3');
 const soundWater = new Audio('/water_drop.mp3');
 const soundBoom = new Audio('/explosion_2.mp3');
 soundBoom.volume = 0.25;
+const soundMayday = new Audio('/mayday.wav');
+soundMayday.volume = 0.5; // Ajusta el volumen si quieres
 
 // --- VARIABLES DE COLOCACIÓN ---
 let isSetupPhase = false;
@@ -96,13 +98,14 @@ async function createGame() {
 }
 
 // 2. DISPARAR (Envía Token)
+// 2. DISPARAR (Envía Token)
+// 2. DISPARAR (Envía Token)
 async function fire(coordinate) {
     if (gameFinished) return;
 
     soundShot.currentTime = 0;
     soundShot.play().catch(e => console.log(e));
 
-    // RECUPERAR TOKEN
     const token = localStorage.getItem("jwt_token");
 
     try {
@@ -110,7 +113,7 @@ async function fire(coordinate) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + token // <--- ¡AQUÍ VA EL TOKEN!
+                "Authorization": "Bearer " + token
             },
             body: JSON.stringify({ coordinate: coordinate })
         });
@@ -148,7 +151,10 @@ async function fire(coordinate) {
                     <img src="explosion.png" class="hit-icon" alt="BOOM">
                 `;
 
+                // Sonido Mayday solo si se HUNDE
                 if (sunk && game.status !== "FINISHED") {
+                    soundMayday.currentTime = 0;
+                    soundMayday.play().catch(e => console.log(e));
                     showShotMessage(`${coordinate} HIT AND SUNK! ☠️`, "sunk");
                 }
             } else {
@@ -164,6 +170,83 @@ async function fire(coordinate) {
         }
     } catch (error) {
         console.error("Error disparando:", error);
+    }
+}
+
+// 3. TURNO CPU (Envía Token)
+// 3. TURNO CPU (Envía Token)
+async function playCpuTurn() {
+    if (gameFinished) return;
+
+    const token = localStorage.getItem("jwt_token");
+
+    try {
+        const response = await fetch(`${API_URL}/${currentGameId}/cpu-turn`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+
+        if (response.ok) {
+            const game = await response.json();
+
+            updateBoard("player-board", game.playerBoard, false);
+            updateBoard("cpu-board", game.cpuBoard, true);
+            updateFleetStatusPanel("player-status-panel", game.playerBoard.ships);
+            updateFleetStatusPanel("cpu-status-panel", game.cpuBoard.ships);
+            updateStatus(game);
+
+            // --- LÓGICA VISUAL CPU ---
+            const shots = game.playerBoard.shotsReceived;
+            const cpuAlertPanel = document.getElementById("cpu-alert-panel");
+
+            if (shots.length > 0) {
+                const lastShot = shots[shots.length - 1];
+                let hit = false;
+                let sunk = false;
+
+                for (let ship of game.playerBoard.ships) {
+                    if (ship.cells.includes(lastShot)) {
+                        hit = true;
+                        if(ship.sunk) sunk = true;
+                        break;
+                    }
+                }
+
+                if (hit) {
+                    // 🔥 ACIERTO CPU
+                    soundBoom.currentTime = 0;
+                    soundBoom.play().catch(e => console.error("Error audio boom:", e));
+                    showExplosion(lastShot, "player-board");
+
+                    cpuAlertPanel.innerHTML = `
+                        <div class="hit-text">${lastShot}</div>
+                        <img src="explosion.png" class="hit-icon" alt="BOOM">
+                    `;
+
+                    if(sunk && game.status !== "FINISHED") {
+                        // 👇 AÑADIDO: Sonido Mayday
+                        soundMayday.currentTime = 0;
+                        soundMayday.play().catch(e => console.log(e));
+
+                        showShotMessage(`CPU: ${lastShot} HIT AND SUNK! ☠️`, "sunk");
+                    }
+                } else {
+                    // 💧 FALLO CPU
+                    soundWater.currentTime = 0;
+                    soundWater.play().catch(e => console.error("Error audio water:", e));
+
+                    cpuAlertPanel.innerHTML = `
+                        <div class="cpu-miss-text">${lastShot}</div>
+                        <img src="agua_cartoon.png" class="cpu-miss-icon" alt="Water Drop">
+                    `;
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error CPU:", error);
     }
 }
 
