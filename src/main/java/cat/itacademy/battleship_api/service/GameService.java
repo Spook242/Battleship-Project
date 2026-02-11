@@ -1,18 +1,18 @@
 package cat.itacademy.battleship_api.service;
 
+import cat.itacademy.battleship_api.dto.GameStartResponse;
+import cat.itacademy.battleship_api.exception.InvalidGameActionException;
 import cat.itacademy.battleship_api.model.Board;
 import cat.itacademy.battleship_api.model.Game;
 import cat.itacademy.battleship_api.model.Player;
 import cat.itacademy.battleship_api.model.Ship;
 import cat.itacademy.battleship_api.repository.GameRepository;
 import cat.itacademy.battleship_api.repository.PlayerRepository;
+import cat.itacademy.battleship_api.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +21,7 @@ public class GameService {
 
     private final GameRepository gameRepository;
     private final PlayerRepository playerRepository;
+    private final JwtService jwtService;
 
     // ==========================================
     // 1. CREAR JUEGO
@@ -42,6 +43,28 @@ public class GameService {
         placeShipsRandomly(game.getCpuBoard());
 
         return gameRepository.save(game);
+    }
+
+    // Inyecta JwtService en el constructor de GameService
+
+
+    public GameStartResponse startNewGame(String username) {
+        // 1. Validar (Lanza excepción si falla, capturada por GlobalExceptionHandler)
+        if (username == null || username.isBlank()) {
+            throw new InvalidGameActionException("Username is required");
+        }
+
+        // 2. Crear Juego
+        Game game = createGame(username); // Tu método existente
+
+        // 3. Generar Token (Ahora es responsabilidad del servicio orquestar esto)
+        String token = jwtService.generateToken(
+                Map.of("gameId", game.getId()),
+                username
+        );
+
+        // 4. Devolver el paquete completo
+        return new GameStartResponse(game, token);
     }
 
     public Game startBattle(String gameId, List<Ship> playerShips) {
