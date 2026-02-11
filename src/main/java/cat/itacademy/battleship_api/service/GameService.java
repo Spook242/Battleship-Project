@@ -277,14 +277,60 @@ public class GameService {
         return neighbors;
     }
 
+    // ==========================================
+    // MÉTODO GENERAR ALEATORIO (MEJORADO)
+    // ==========================================
     private String generateRandomCoordinate(List<String> shots) {
         String coord;
+        int attempts = 0;
+
         do {
             char row = (char) ('A' + (int)(Math.random() * 10));
             int col = 1 + (int)(Math.random() * 10);
             coord = "" + row + col;
-        } while (shots.contains(coord));
+            attempts++;
+
+            // Si llevamos muchos intentos (ej. final de partida), relajamos la restricción
+            // para evitar bucles infinitos.
+            if (attempts > 200) {
+                if (!shots.contains(coord)) return coord;
+            }
+
+        } while (shots.contains(coord) || !canFitSmallestShip(coord, shots));
+
         return coord;
+    }
+
+    /**
+     * Comprueba si en la coordenada 'coord' cabe al menos un barco de tamaño 2.
+     * Revisa si tiene algún vecino (Arriba, Abajo, Izq, Der) LIBRE (no disparado).
+     * Si está rodeada de disparos o bordes, devuelve false.
+     */
+    private boolean canFitSmallestShip(String coord, List<String> shots) {
+        char row = coord.charAt(0);
+        int col = Integer.parseInt(coord.substring(1));
+
+        // 1. Mirar Horizonte (Izquierda o Derecha libres)
+        boolean leftFree  = isValidNeighbor(row, col - 1, shots);
+        boolean rightFree = isValidNeighbor(row, col + 1, shots);
+        boolean fitsHorizontally = leftFree || rightFree;
+
+        // 2. Mirar Vertical (Arriba o Abajo libres)
+        boolean upFree    = isValidNeighbor((char)(row - 1), col, shots);
+        boolean downFree  = isValidNeighbor((char)(row + 1), col, shots);
+        boolean fitsVertically = upFree || downFree;
+
+        // Si cabe en horizontal O en vertical, es un tiro válido.
+        return fitsHorizontally || fitsVertically;
+    }
+
+    // Helper para verificar si un vecino es válido (dentro del mapa y no disparado)
+    private boolean isValidNeighbor(char row, int col, List<String> shots) {
+        if (row < 'A' || row > 'J') return false; // Fuera del mapa
+        if (col < 1 || col > 10) return false;    // Fuera del mapa
+
+        String neighbor = "" + row + col;
+        return !shots.contains(neighbor); // Si ya se disparó ahí, cuenta como "muro"
     }
 
     // ==========================================
