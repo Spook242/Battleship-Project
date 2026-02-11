@@ -25,49 +25,34 @@ public class GameController {
 
     @PostMapping("/new")
     public ResponseEntity<GameStartResponse> startGame(@RequestBody StartGameRequest request) {
+        // Quitamos el if (username == null).
+        // El GameService lanzará una excepción si el nombre no es válido.
+        Game game = gameService.createGame(request.getUsername());
 
-        String username = request.getUsername();
-
-        if (username == null || username.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        Game game = gameService.createGame(username);
         String token = jwtService.generateToken(
-                Map.of("gameId", game.getId()),  // 1º Argumento: Los datos extra (Map)
-                username                         // 2º Argumento: El usuario (String)
+                Map.of("gameId", game.getId()),
+                request.getUsername()
         );
 
         return ResponseEntity.ok(new GameStartResponse(game, token));
     }
 
-    // EN GameController.java
-
     @PostMapping("/{gameId}/start-battle")
     public ResponseEntity<Game> startBattle(@PathVariable String gameId, @RequestBody List<Ship> ships) {
+        // Si el gameId no existe, el Service lanzará la excepción y aquí ni entra.
         return ResponseEntity.ok(gameService.startBattle(gameId, ships));
     }
 
-    // ... el resto de métodos (fire, cpu-turn) siguen igual por ahora ...
     @PostMapping("/{gameId}/fire")
-    // 👇 CAMBIO: Usamos FireRequest en lugar de Map
     public ResponseEntity<Game> fire(@PathVariable String gameId, @RequestBody FireRequest request) {
-
-        // 👇 CAMBIO: Obtenemos el dato con el getter
-        String coordinate = request.getCoordinate();
-
-        if (coordinate == null || coordinate.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        return ResponseEntity.ok(gameService.playerMove(gameId, coordinate));
+        // Quitamos el if (coordinate == null).
+        // El Service se encarga de validar la coordenada.
+        return ResponseEntity.ok(gameService.playerMove(gameId, request.getCoordinate()));
     }
 
     @PostMapping("/{gameId}/cpu-turn")
     public ResponseEntity<Game> cpuTurn(@PathVariable String gameId) {
-        System.out.println("🤖 CPU: Received shooting order for game " + gameId);
-        Game game = gameService.playCpuTurn(gameId);
-        return ResponseEntity.ok(game);
+        return ResponseEntity.ok(gameService.playCpuTurn(gameId));
     }
 
     @GetMapping("/ranking")
