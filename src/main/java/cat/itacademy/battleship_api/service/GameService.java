@@ -170,41 +170,44 @@ public class GameService {
     // ==========================================
 
     private String calculateCpuTarget(Board opponentBoard) {
-        // A. Buscar aciertos en barcos que NO se han hundido todavía ("Heridos")
-        List<String> openHits = new ArrayList<>();
+        List<String> shotsFired = opponentBoard.getShotsReceived();
 
+        // ... (Aquí va tu lógica A, B y C para barcos heridos que ya tenías) ...
+        // A. Buscar aciertos abiertos
+        List<String> openHits = new ArrayList<>();
         for (Ship ship : opponentBoard.getShips()) {
             if (!ship.isSunk()) {
                 for (String cell : ship.getCells()) {
-                    // Si la celda fue disparada, es un "Hit abierto"
-                    if (opponentBoard.getShotsReceived().contains(cell)) {
-                        openHits.add(cell);
-                    }
+                    if (shotsFired.contains(cell)) openHits.add(cell);
                 }
             }
         }
 
-        // B. ESTRATEGIA DE LÍNEA: Si hay 2 o más aciertos en el mismo barco vivo
-        if (openHits.size() >= 2) {
-            String lineTarget = getLineStrategyTarget(openHits, opponentBoard.getShotsReceived());
-            if (lineTarget != null) return lineTarget;
-        }
-
-        // C. ESTRATEGIA DE VECINOS: Si hay aciertos pero no formamos línea aún
+        // Si hay barcos heridos, usamos la lógica de caza (Línea o Vecinos)
         if (!openHits.isEmpty()) {
-            // Probamos vecinos de todos los aciertos encontrados
+            if (openHits.size() >= 2) {
+                String lineTarget = getLineStrategyTarget(openHits, shotsFired);
+                if (lineTarget != null) return lineTarget;
+            }
             for (String hit : openHits) {
                 List<String> neighbors = getNeighbors(hit);
                 for (String neighbor : neighbors) {
-                    if (!opponentBoard.getShotsReceived().contains(neighbor)) {
-                        return neighbor; // Disparar a un vecino válido
-                    }
+                    if (!shotsFired.contains(neighbor)) return neighbor;
                 }
             }
         }
 
-        // D. MODO CAZA: Aleatorio puro
-        return generateRandomCoordinate(opponentBoard.getShotsReceived());
+        // =======================================================
+        // D. AQUÍ LA NUEVA LÓGICA: Si no estamos cazando, BUSCAMOS HUECOS
+        // =======================================================
+        String gapTarget = getGapStrategyTarget(shotsFired);
+        if (gapTarget != null) {
+            System.out.println("🤖 CPU: Detectado hueco de 3. Disparando al centro: " + gapTarget);
+            return gapTarget;
+        }
+
+        // E. Si no hay huecos de 3, usamos el aleatorio inteligente (paridad) que hicimos antes
+        return generateRandomCoordinate(shotsFired);
     }
 
     // LÓGICA DE LÍNEA (Horizontal/Vertical)
@@ -376,5 +379,56 @@ public class GameService {
     private String toCoordinate(int row, int col) {
         char rowChar = (char) ('A' + row);
         return rowChar + String.valueOf(col + 1);
+    }
+
+    // ==========================================
+    // ESTRATEGIA: FRANCOTIRADOR DE HUECOS (GAP 3)
+    // ==========================================
+    // Busca secuencias de exactamente 3 casillas desconocidas y devuelve la del medio.
+    // Ejemplo: Si B7, C7, D7 están vacías (y rodeadas de disparos), devuelve C7.
+    private String getGapStrategyTarget(List<String> shots) {
+
+        // 1. ESCANEO HORIZONTAL (Barrido por filas A-J)
+        for (int r = 0; r < 10; r++) {
+            int emptyCount = 0;
+            for (int c = 0; c <= 10; c++) { // <= 10 para simular el borde derecho
+                // Si llegamos a c=10 (borde) o la casilla ya fue disparada, es un "muro"
+                boolean isVisited = (c == 10) || shots.contains(toCoordinate(r, c));
+
+                if (!isVisited) {
+                    emptyCount++;
+                } else {
+                    // Si encontramos un muro y veníamos de 3 vacíos exactos
+                    if (emptyCount == 3) {
+                        // El hueco está en los índices [c-3, c-2, c-1]
+                        // El medio es c-2
+                        return toCoordinate(r, c - 2);
+                    }
+                    emptyCount = 0; // Reiniciamos contador
+                }
+            }
+        }
+
+        // 2. ESCANEO VERTICAL (Barrido por columnas 1-10)
+        for (int c = 0; c < 10; c++) {
+            int emptyCount = 0;
+            for (int r = 0; r <= 10; r++) { // <= 10 para simular el borde inferior
+                // Si llegamos a r=10 (borde) o la casilla ya fue disparada
+                boolean isVisited = (r == 10) || shots.contains(toCoordinate(r, c));
+
+                if (!isVisited) {
+                    emptyCount++;
+                } else {
+                    if (emptyCount == 3) {
+                        // El hueco está en las filas [r-3, r-2, r-1]
+                        // El medio es r-2
+                        return toCoordinate(r - 2, c);
+                    }
+                    emptyCount = 0;
+                }
+            }
+        }
+
+        return null; // No se encontraron huecos perfectos de 3
     }
 }
