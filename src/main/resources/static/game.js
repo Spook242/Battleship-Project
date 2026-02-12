@@ -4,22 +4,21 @@ let gameFinished = false;
 let currentUsername = "";
 
 // --- SONIDOS Y EFECTOS ---
+// 🎧 Rutas actualizadas a la carpeta /sounds/
 const soundShot = new Audio('sounds/shot.mp3');
-const soundWater = new Audio('/water_drop.mp3');
-const soundBoom = new Audio('/explosion_2.mp3');
+const soundWater = new Audio('sounds/water_drop.mp3');
+const soundBoom = new Audio('sounds/explosion_2.mp3');
 soundBoom.volume = 0.25;
-const soundMayday = new Audio('/mayday.wav');
-soundMayday.volume = 0.7; // Ajusta el volumen si quieres
+const soundMayday = new Audio('sounds/mayday.wav');
+soundMayday.volume = 0.7;
 
 // --- VARIABLES DE COLOCACIÓN ---
 let isSetupPhase = false;
 let isHorizontal = true;
-let shipsToPlace = [5, 4, 3, 3, 2]; // Tamaños de los barcos
+let shipsToPlace = [5, 4, 3, 3, 2];
 let currentShipIndex = 0;
-let myPlacedShips = []; // Aquí guardaremos los barcos para enviarlos al backend
+let myPlacedShips = [];
 
-// 1. CREAR PARTIDA (Recibe Token)
-// 1. CREAR PARTIDA (Recibe Token)
 // 1. CREAR PARTIDA (Recibe Token)
 async function createGame() {
     console.log("🟢 Botón Start Battle pulsado");
@@ -64,8 +63,7 @@ async function createGame() {
             currentGameId = gameObj.id;
             gameFinished = false;
 
-            // 👇👇 ¡CORRECCIÓN AQUÍ! 👇👇
-            // Sacamos esto fuera del IF/ELSE para que se ejecute SIEMPRE
+            // Cambiar Pantallas
             document.getElementById("login-panel").style.display = "none";
             document.getElementById("full-screen-bg").style.display = "none";
             document.getElementById("game-title").style.display = "none";
@@ -78,9 +76,8 @@ async function createGame() {
 
             // Lógica de Estado
             if (data.game.status === "SETUP") {
-                startSetupPhase(); // <--- Empieza la colocación
+                startSetupPhase();
             } else {
-                // Si la partida ya estaba empezada (F5)
                 updateBoard("player-board", gameObj.playerBoard, false);
                 updateBoard("cpu-board", gameObj.cpuBoard, true);
                 updateFleetStatusPanel("player-status-panel", gameObj.playerBoard.ships);
@@ -97,9 +94,7 @@ async function createGame() {
     }
 }
 
-// 2. DISPARAR (Envía Token)
-// 2. DISPARAR (Envía Token)
-// 2. DISPARAR (Envía Token)
+// 2. DISPARAR
 async function fire(coordinate) {
     if (gameFinished) return;
 
@@ -146,12 +141,12 @@ async function fire(coordinate) {
                 soundBoom.play().catch(e => console.error("Error audio boom:", e));
                 showExplosion(coordinate, "cpu-board");
 
+                // 🖼️ Ruta actualizada a images/
                 playerAlertPanel.innerHTML = `
                     <div class="hit-text">${coordinate}</div>
-                    <img src="explosion.png" class="hit-icon" alt="BOOM">
+                    <img src="images/explosion.png" class="hit-icon" alt="BOOM">
                 `;
 
-                // Sonido Mayday solo si se HUNDE
                 if (sunk && game.status !== "FINISHED") {
                     soundMayday.currentTime = 0;
                     soundMayday.play().catch(e => console.log(e));
@@ -162,9 +157,10 @@ async function fire(coordinate) {
                 soundWater.currentTime = 0;
                 soundWater.play().catch(e => console.error("Error audio water:", e));
 
+                // 🖼️ Ruta actualizada a images/
                 playerAlertPanel.innerHTML = `
                     <div class="miss-text">${coordinate}</div>
-                    <img src="agua_cartoon.png" class="miss-icon" alt="Water Drop">
+                    <img src="images/agua_cartoon.png" class="miss-icon" alt="Water Drop">
                 `;
             }
         }
@@ -173,8 +169,7 @@ async function fire(coordinate) {
     }
 }
 
-// 3. TURNO CPU (Envía Token)
-// 3. TURNO CPU (Envía Token)
+// 3. TURNO CPU
 async function playCpuTurn() {
     if (gameFinished) return;
 
@@ -221,108 +216,26 @@ async function playCpuTurn() {
                     soundBoom.play().catch(e => console.error("Error audio boom:", e));
                     showExplosion(lastShot, "player-board");
 
+                    // 🖼️ Ruta actualizada a images/
                     cpuAlertPanel.innerHTML = `
                         <div class="hit-text">${lastShot}</div>
-                        <img src="explosion.png" class="hit-icon" alt="BOOM">
+                        <img src="images/explosion.png" class="hit-icon" alt="BOOM">
                     `;
 
                     if(sunk && game.status !== "FINISHED") {
-                        // 👇 AÑADIDO: Sonido Mayday
-                        soundMayday.currentTime = 0;
-                        soundMayday.play().catch(e => console.log(e));
-
-                        showShotMessage(`CPU: ${lastShot} HIT AND SUNK! ☠️`, "sunk");
-                    }
-                } else {
-                    // 💧 FALLO CPU
-                    soundWater.currentTime = 0;
-                    soundWater.play().catch(e => console.error("Error audio water:", e));
-
-                    cpuAlertPanel.innerHTML = `
-                        <div class="cpu-miss-text">${lastShot}</div>
-                        <img src="agua_cartoon.png" class="cpu-miss-icon" alt="Water Drop">
-                    `;
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Error CPU:", error);
-    }
-}
-
-// 3. TURNO CPU (Envía Token)
-// 3. TURNO CPU (Envía Token)
-async function playCpuTurn() {
-    if (gameFinished) return;
-
-    const token = localStorage.getItem("jwt_token");
-
-    try {
-        const response = await fetch(`${API_URL}/${currentGameId}/cpu-turn`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            }
-        });
-
-        if (response.ok) {
-            const game = await response.json();
-
-            // Actualizar tableros visuales
-            updateBoard("player-board", game.playerBoard, false);
-            updateBoard("cpu-board", game.cpuBoard, true);
-            updateFleetStatusPanel("player-status-panel", game.playerBoard.ships);
-            updateFleetStatusPanel("cpu-status-panel", game.cpuBoard.ships);
-            updateStatus(game);
-
-            // --- LÓGICA VISUAL CPU (Explosiones y Sonidos) ---
-            const shots = game.playerBoard.shotsReceived;
-            const cpuAlertPanel = document.getElementById("cpu-alert-panel");
-
-            // Si la CPU ha disparado...
-            if (shots.length > 0) {
-                const lastShot = shots[shots.length - 1];
-                let hit = false;
-                let sunk = false;
-
-                // Comprobar si el último disparo dio en un barco tuyo
-                for (let ship of game.playerBoard.ships) {
-                    if (ship.cells.includes(lastShot)) {
-                        hit = true;
-                        if(ship.sunk) sunk = true;
-                        break;
-                    }
-                }
-
-                if (hit) {
-                    // 🔥 ACIERTO CPU
-                    soundBoom.currentTime = 0;
-                    soundBoom.play().catch(e => console.error("Error audio boom:", e));
-                    showExplosion(lastShot, "player-board");
-
-                    cpuAlertPanel.innerHTML = `
-                        <div class="hit-text">${lastShot}</div>
-                        <img src="explosion.png" class="hit-icon" alt="BOOM">
-                    `;
-
-                    // 👇👇👇 AQUÍ ESTÁ EL SONIDO MAYDAY PARA LA CPU 👇👇👇
-                    if(sunk && game.status !== "FINISHED") {
-                        // 🔉 ⬅️ REPRODUCIR SONIDO
                         soundMayday.currentTime = 0;
                         soundMayday.play().catch(e => console.log("Error mayday:", e));
-
                         showShotMessage(`CPU: ${lastShot} HIT AND SUNK! ☠️`, "sunk");
                     }
-
                 } else {
                     // 💧 FALLO CPU
                     soundWater.currentTime = 0;
                     soundWater.play().catch(e => console.error("Error audio water:", e));
 
+                    // 🖼️ Ruta actualizada a images/
                     cpuAlertPanel.innerHTML = `
                         <div class="cpu-miss-text">${lastShot}</div>
-                        <img src="agua_cartoon.png" class="cpu-miss-icon" alt="Water Drop">
+                        <img src="images/agua_cartoon.png" class="cpu-miss-icon" alt="Water Drop">
                     `;
                 }
             }
@@ -337,7 +250,6 @@ function updateBoard(elementId, boardData, isEnemy) {
     const boardElement = document.getElementById(elementId);
     boardElement.innerHTML = "";
 
-    // Header números
     const corner = document.createElement("div");
     corner.className = "label-cell";
     boardElement.appendChild(corner);
@@ -349,7 +261,6 @@ function updateBoard(elementId, boardData, isEnemy) {
         boardElement.appendChild(label);
     }
 
-    // Filas
     for (let r = 0; r < 10; r++) {
         const rowChar = String.fromCharCode(65 + r);
         const label = document.createElement("div");
@@ -363,7 +274,6 @@ function updateBoard(elementId, boardData, isEnemy) {
             const coord = rowChar + (c + 1);
             cell.dataset.coord = coord;
 
-            // Pintar barcos
             if (!isEnemy) {
                 for (let ship of boardData.ships) {
                     if (ship.cells.includes(coord)) {
@@ -381,7 +291,6 @@ function updateBoard(elementId, boardData, isEnemy) {
                 }
             }
 
-            // Pintar disparos
             if (boardData.shotsReceived.includes(coord)) {
                 let hitShip = null;
                 for (let ship of boardData.ships) {
@@ -443,19 +352,18 @@ function updateStatus(game) {
 }
 
 // MODAL DE FIN DE PARTIDA
-// MODAL DE FIN DE PARTIDA
 function showGameOverModal(winner) {
     const modal = document.getElementById("game-over-modal");
     const resultVideo = document.getElementById("result-video");
 
     modal.style.display = "flex";
-    resultVideo.muted = true; // Aseguramos que el vídeo no tenga sonido
+    resultVideo.muted = true;
     resultVideo.currentTime = 0;
 
     if (winner === "PLAYER") {
-        // --- VICTORIA: VÍDEO POPEYE ---
-        resultVideo.src = "/you_win.mp4";
-        resultVideo.style.border = "4px solid #f1c40f"; // Borde Dorado
+        // 🎞️ Ruta actualizada a videos/
+        resultVideo.src = "videos/you_win.mp4";
+        resultVideo.style.border = "4px solid #f1c40f";
 
         launchConfetti();
 
@@ -466,9 +374,9 @@ function showGameOverModal(winner) {
         }
 
     } else {
-        // --- DERROTA: VÍDEO TUMBA ---
-        resultVideo.src = "/Video_You_Lose.mp4";
-        resultVideo.style.border = "4px solid #8B0000"; // Borde Rojo Sangre
+        // 🎞️ Ruta actualizada a videos/
+        resultVideo.src = "videos/Video_You_Lose.mp4";
+        resultVideo.style.border = "4px solid #8B0000";
 
         const loseAudio = document.getElementById("loseAudio");
         if (loseAudio) {
@@ -478,7 +386,6 @@ function showGameOverModal(winner) {
         }
     }
 
-    // Reproducir el vídeo seleccionado
     resultVideo.play().catch(e => console.log("Error al reproducir vídeo:", e));
 }
 
@@ -547,7 +454,8 @@ function showExplosion(coordinate, boardId) {
 
     if (cell) {
         const explosionImg = document.createElement("img");
-        explosionImg.src = "explosion.png";
+        // 🖼️ Ruta actualizada a images/
+        explosionImg.src = "images/explosion.png";
         explosionImg.style.position = "absolute";
         explosionImg.style.top = "0";
         explosionImg.style.left = "0";
@@ -583,14 +491,12 @@ async function showRanking() {
     list.innerHTML = "<p style='text-align:center'>📡 Intercepting communications...</p>";
 
     try {
-        // Pedimos el ranking al Backend
         const response = await fetch(`${API_URL}/ranking`);
 
         if (!response.ok) throw new Error("Error fetching ranking");
 
         const ranking = await response.json();
 
-        // Limpiamos la lista
         list.innerHTML = "";
 
         if (ranking.length === 0) {
@@ -598,7 +504,6 @@ async function showRanking() {
             return;
         }
 
-        // Generamos la lista HTML
         ranking.forEach((player, index) => {
             const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `#${index + 1}`;
 
@@ -622,15 +527,14 @@ function closeRanking() {
 }
 
 // ==========================================
-// 7. PINTAR ESTADO DE FLOTA (Barcos Vivos/Hundidos)
+// 7. PINTAR ESTADO DE FLOTA
 // ==========================================
 function updateFleetStatusPanel(elementId, ships) {
     const container = document.getElementById(elementId);
-    if (!container) return; // Protección
+    if (!container) return;
 
-    container.innerHTML = ""; // Limpiar panel
+    container.innerHTML = "";
 
-    // Ordenar barcos por tamaño (Grande arriba -> Pequeño abajo)
     const sortedShips = [...ships].sort((a, b) => b.size - a.size);
 
     sortedShips.forEach(ship => {
@@ -642,9 +546,9 @@ function updateFleetStatusPanel(elementId, ships) {
             sq.className = "status-sq";
 
             if (ship.sunk) {
-                sq.classList.add("sunk"); // VERDE
+                sq.classList.add("sunk");
             } else {
-                sq.classList.add("alive"); // ROJO
+                sq.classList.add("alive");
             }
             row.appendChild(sq);
         }
@@ -662,25 +566,20 @@ function startSetupPhase() {
     myPlacedShips = [];
     shipsToPlace = [5, 4, 3, 3, 2];
 
-    // Mostrar tablero vacío del jugador
     updateBoard("player-board", { ships: [], shotsReceived: [] }, false);
 
-    // Ocultar tablero CPU y mostrar instrucciones
-    document.getElementById("cpu-board").style.opacity = "0.3"; // Efecto desactivado
+    document.getElementById("cpu-board").style.opacity = "0.3";
     document.getElementById("game-status").innerText = "PLACE YOUR SHIPS! (Press 'R' to Rotate)";
     document.getElementById("turn-indicator").innerText = "Current Ship Size: " + shipsToPlace[0];
 
-    // Activar controles de ratón en el tablero del JUGADOR
     const cells = document.querySelectorAll("#player-board .cell");
     cells.forEach(cell => {
         cell.onmouseover = () => previewShip(cell, true);
         cell.onmouseout  = () => previewShip(cell, false);
         cell.onclick     = () => placeShip(cell);
-        // Evitar menú contextual al hacer click derecho (para rotar)
         cell.oncontextmenu = (e) => { e.preventDefault(); rotateShip(); };
     });
 
-    // Escuchar tecla 'R' para rotar
     document.addEventListener('keydown', handleRotateKey);
 }
 
@@ -690,12 +589,10 @@ function handleRotateKey(e) {
 
 function rotateShip() {
     isHorizontal = !isHorizontal;
-    // Feedback visual
     const status = document.getElementById("turn-indicator");
     status.innerText = `Size: ${shipsToPlace[currentShipIndex]} (${isHorizontal ? "Horizontal ➡" : "Vertical ⬇"})`;
 }
 
-// Previsualizar (Pintar de verde o rojo)
 function previewShip(cell, show) {
     if (!isSetupPhase) return;
 
@@ -703,7 +600,6 @@ function previewShip(cell, show) {
     const size = shipsToPlace[currentShipIndex];
     const cellsToPaint = getShipCoordinates(coord, size, isHorizontal);
 
-    // Limpiar previas
     document.querySelectorAll(".cell.preview-valid, .cell.preview-invalid").forEach(c => {
         c.classList.remove("preview-valid", "preview-invalid");
     });
@@ -719,7 +615,6 @@ function previewShip(cell, show) {
     }
 }
 
-// Colocar el barco
 function placeShip(cell) {
     if (!isSetupPhase) return;
 
@@ -728,11 +623,9 @@ function placeShip(cell) {
     const cellsToPaint = getShipCoordinates(coord, size, isHorizontal);
 
     if (!isValidPlacement(cellsToPaint)) {
-        // Sonido de error?
         return;
     }
 
-    // 1. Guardar barco en memoria
     const newShip = {
         type: "Ship-" + size,
         size: size,
@@ -742,16 +635,14 @@ function placeShip(cell) {
     };
     myPlacedShips.push(newShip);
 
-    // 2. Pintarlo fijo en el tablero visual
     cellsToPaint.forEach(cCoord => {
         const cDiv = document.querySelector(`#player-board .cell[data-coord="${cCoord}"]`);
         if (cDiv) {
             cDiv.classList.add("ship");
-            cDiv.classList.add("placed"); // Clase para fijarlo
+            cDiv.classList.add("placed");
         }
     });
 
-    // 3. Pasar al siguiente barco
     currentShipIndex++;
 
     if (currentShipIndex >= shipsToPlace.length) {
@@ -761,14 +652,10 @@ function placeShip(cell) {
     }
 }
 
-// Validar si cabe y no choca
 function isValidPlacement(coords) {
-    // 1. Verificar si se sale del tablero (si coords tiene menos elementos que el tamaño)
     if (coords.length !== shipsToPlace[currentShipIndex]) return false;
 
-    // 2. Verificar choques con otros barcos ya colocados
     for (let c of coords) {
-        // Buscar en todos los barcos ya puestos
         for (let ship of myPlacedShips) {
             if (ship.cells.includes(c)) return false;
         }
@@ -776,9 +663,8 @@ function isValidPlacement(coords) {
     return true;
 }
 
-// Calcular coordenadas
 function getShipCoordinates(startCoord, size, horizontal) {
-    const row = startCoord.charCodeAt(0); // 'A' es 65
+    const row = startCoord.charCodeAt(0);
     const col = parseInt(startCoord.substring(1));
     const coords = [];
 
@@ -786,7 +672,7 @@ function getShipCoordinates(startCoord, size, horizontal) {
         let r = horizontal ? row : row + i;
         let c = horizontal ? col + i : col;
 
-        if (r > 74 || c > 10) break; // 74 es 'J'. Fuera de limites.
+        if (r > 74 || c > 10) break;
 
         const newCoord = String.fromCharCode(r) + c;
         coords.push(newCoord);
@@ -794,24 +680,19 @@ function getShipCoordinates(startCoord, size, horizontal) {
     return coords;
 }
 
-// FINALIZAR: Enviar al Backend
-// FINALIZAR: Enviar al Backend
-// FINALIZAR: Enviar al Backend
 async function finishSetup() {
     isSetupPhase = false;
     document.removeEventListener('keydown', handleRotateKey);
     document.getElementById("game-status").innerText = "DEPLOYING FLEET...";
 
-    // 👇 Recuperar token
     const token = localStorage.getItem("jwt_token");
 
-    // Enviar myPlacedShips al servidor
     try {
         const response = await fetch(`${API_URL}/${currentGameId}/start-battle`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + token // <--- ¡IMPORTANTE! Descomentado
+                "Authorization": "Bearer " + token
             },
             body: JSON.stringify(myPlacedShips)
         });
@@ -819,10 +700,8 @@ async function finishSetup() {
         if (response.ok) {
             const game = await response.json();
 
-            // Reactivar tablero CPU
             document.getElementById("cpu-board").style.opacity = "1";
 
-            // Actualizar tableros y estado
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
 

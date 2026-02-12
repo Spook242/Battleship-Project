@@ -213,7 +213,7 @@ h2 {
 .cell {
     width: 37px;
     height: 37px;
-    background-image: url('agua_cartoon.png');
+    background-image: url('images/agua_cartoon.png');
     background-size: cover;
     background-repeat: no-repeat;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -239,7 +239,7 @@ h2 {
    5. ESTADOS (Barcos, Hits, Miss)
 ========================= */
 .ship {
-    background-image: url('Acorazado_2.png');
+    background-image: url('images/Acorazado_2.png');
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
@@ -255,7 +255,7 @@ h2 {
 }
 
 .skull-cell {
-    background-image: url('calavera.png') !important;
+    background-image: url('images/calavera.png') !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
     background-size: 80% !important;
@@ -266,7 +266,7 @@ h2 {
 
 /* AGUA CON GOTA (Disparo fallido en tablero) */
 .water-shot {
-    background-image: url('gota_azul.jpg');
+    background-image: url('images/gota_azul.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

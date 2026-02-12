@@ -8,7 +8,7 @@
 <body>
 
 <video id="full-screen-bg" autoplay muted loop>
-    <source src="portada_video.mp4" type="video/mp4">
+    <source src="videos/portada_video.mp4" type="video/mp4">
     Tu navegador no soporta el vídeo.
 </video>
 
@@ -48,7 +48,6 @@
 
             <div class="side-column left-column">
                 <div id="player-status-panel" class="status-panel"></div>
-
                 <div id="cpu-alert-panel" class="side-panel"></div>
             </div>
 
@@ -64,7 +63,6 @@
 
             <div class="side-column right-column">
                 <div id="cpu-status-panel" class="status-panel"></div>
-
                 <div id="player-alert-panel" class="side-panel"></div>
             </div>
 
@@ -80,8 +78,8 @@
         <div class="buttons-overlay">
             <button class="btn-new" onclick="stopWinMusic(); createGame()">NEW GAME</button>
 
-            <audio id="winAudio"><source src="/win.mp3" type="audio/mpeg"></audio>
-            <audio id="loseAudio" loop><source src="/lose.mp3" type="audio/mpeg"></audio>
+            <audio id="winAudio"><source src="sounds/win.mp3" type="audio/mpeg"></audio>
+            <audio id="loseAudio" loop><source src="sounds/lose.mp3" type="audio/mpeg"></audio>
 
             <button class="btn-exit" onclick="stopWinMusic(); location.reload()">EXIT</button>
         </div>
@@ -94,7 +92,7 @@
 <div id="shot-message" class="shot-message"></div>
 
 <audio id="introAudio" loop>
-    <source src="/Intro.mp3" type="audio/mpeg">
+    <source src="sounds/Intro.mp3" type="audio/mpeg">
     Tu navegador no soporta audio.
 </audio>
 
@@ -103,18 +101,19 @@
         var audio = document.getElementById("introAudio");
 
         // 🔉 INICIO: Volumen al 40% (0.4)
-        audio.volume = 0.4;
+        if(audio) {
+            audio.volume = 0.4;
+            // Intentar reproducir automáticamente
+            var playPromise = audio.play();
 
-        // Intentar reproducir automáticamente
-        var playPromise = audio.play();
-
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                console.log("Autoplay bloqueado. Esperando interacción...");
-                document.addEventListener('click', function() {
-                    audio.play();
-                }, { once: true });
-            });
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Autoplay bloqueado. Esperando interacción...");
+                    document.addEventListener('click', function() {
+                        audio.play();
+                    }, { once: true });
+                });
+            }
         }
     });
 </script>
