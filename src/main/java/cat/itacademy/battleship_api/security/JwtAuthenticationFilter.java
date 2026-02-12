@@ -5,9 +5,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j; // 1. Importante para logs
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails; // Opcional si usaras UserDetails real
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -17,9 +19,12 @@ import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j // 2. Habilita el logger 'log' automáticamente
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private static final String HEADER_AUTH = "Authorization";
+    private static final String TOKEN_PREFIX = "Bearer ";
 
     @Override
     protected void doFilterInternal(
@@ -28,47 +33,51 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
+        final String authHeader = request.getHeader(HEADER_AUTH);
         final String jwt;
         final String username;
 
-        // 1. Si no hay token o no empieza por "Bearer ", dejar pasar (Spring Security bloqueará después si es necesario)
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // 3. Lógica simplificada: Si NO hay token válido, pasamos al siguiente filtro y salimos.
+        if (authHeader == null || !authHeader.startsWith(TOKEN_PREFIX)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2. Extraer el token
-        jwt = authHeader.substring(7);
-
         try {
+            // 4. Extraer token
+            jwt = authHeader.substring(TOKEN_PREFIX.length());
             username = jwtService.extractUsername(jwt);
 
-            // 3. Si hay usuario y nadie está autenticado todavía en el contexto
+            // 5. Validar solo si hay usuario y no está autenticado ya
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                // Validamos el token (en este caso simple, solo comprobamos firma y expiración)
                 if (jwtService.isTokenValid(jwt, username)) {
-
-                    // 4. CREAMOS LA CREDENCIAL DE SEGURIDAD
-                    // (Como no tenemos base de datos de usuarios real, creamos una autenticación simple)
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            username,
-                            null,
-                            Collections.emptyList() // Sin roles por ahora
-                    );
-
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                    // 5. GUARDAMOS AL USUARIO EN EL CONTEXTO DE SEGURIDAD
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    setAuthenticationContext(request, username);
+                    log.debug("Usuario autenticado correctamente: {}", username);
                 }
             }
+
         } catch (Exception e) {
-            // Si el token está mal formado o expirado, no autenticamos
-            System.out.println("Error procesando JWT: " + e.getMessage());
+            // 6. Logueamos el error pero NO detenemos la petición.
+            // Si la ruta era pública, debe seguir funcionando. Si era privada, Spring Security devolverá 403.
+            log.error("No se pudo establecer la autenticación del usuario: {}", e.getMessage());
         }
 
+        // 7. Continuar con la cadena de filtros
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Método auxiliar para extraer la lógica de creación del token y limpiar el método principal.
+     */
+    private void setAuthenticationContext(HttpServletRequest request, String username) {
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                username,
+                null,
+                Collections.emptyList() // Aquí podrías cargar roles si los tuvieras
+        );
+
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
     }
 }

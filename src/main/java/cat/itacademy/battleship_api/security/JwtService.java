@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value; // 👈 IMPORTANTE
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -17,9 +17,16 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    // 👇 CAMBIO 1: Inyectamos el valor desde application.properties
     @Value("${security.jwt.secret-key}")
     private String secretKey;
+
+    // 1. MEJORA: Inyectamos el tiempo de expiración (con valor por defecto de 1 día si falla)
+    @Value("${security.jwt.expiration-time:86400000}")
+    private long jwtExpiration;
+
+    // ==========================================
+    // MÉTODOS PÚBLICOS (API del Servicio)
+    // ==========================================
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -35,18 +42,26 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, String username) {
-        return Jwts.builder()
-                .setClaims(extraClaims)
-                .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                .compact();
+        return buildToken(extraClaims, username, jwtExpiration);
     }
 
     public boolean isTokenValid(String token, String username) {
         final String usernameFromToken = extractUsername(token);
         return (usernameFromToken.equals(username)) && !isTokenExpired(token);
+    }
+
+    // ==========================================
+    // MÉTODOS PRIVADOS (Lógica interna)
+    // ==========================================
+
+    private String buildToken(Map<String, Object> extraClaims, String username, long expiration) {
+        return Jwts.builder()
+                .setClaims(extraClaims)
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration)) // Usamos la variable inyectada
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     private boolean isTokenExpired(String token) {
@@ -67,7 +82,6 @@ public class JwtService {
     }
 
     private Key getSignInKey() {
-        // 👇 CAMBIO 2: Usamos la variable 'secretKey' (la inyectada), no la constante estática
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
