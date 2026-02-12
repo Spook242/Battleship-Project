@@ -1,57 +1,46 @@
 package cat.itacademy.battleship_api.controller;
 
-import cat.itacademy.battleship_api.dto.FireRequest;
-import cat.itacademy.battleship_api.dto.GameStartResponse;
-import cat.itacademy.battleship_api.dto.PlayerScoreDTO;
-import cat.itacademy.battleship_api.dto.StartGameRequest;
+import cat.itacademy.battleship_api.dto.*;
 import cat.itacademy.battleship_api.model.Game;
-import cat.itacademy.battleship_api.model.Ship;
-import cat.itacademy.battleship_api.security.JwtService;
 import cat.itacademy.battleship_api.service.GameService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/game")
+@RequestMapping("/api/games") // 1. Convención: Plural y prefijo /api
 @RequiredArgsConstructor
 public class GameController {
 
     private final GameService gameService;
-    private final JwtService jwtService;
+    // Eliminamos JwtService de aquí: El controlador no debe saber de criptografía.
 
-    @PostMapping("/new")
-    public ResponseEntity<GameStartResponse> startGame(@RequestBody StartGameRequest request) {
-        // Quitamos el if (username == null).
-        // El GameService lanzará una excepción si el nombre no es válido.
-        Game game = gameService.createGame(request.getUsername());
-
-        String token = jwtService.generateToken(
-                Map.of("gameId", game.getId()),
-                request.getUsername()
-        );
-
-        return ResponseEntity.ok(new GameStartResponse(game, token));
+    // POST /api/games -> Crea un recurso nuevo (Partida)
+    @PostMapping
+    public ResponseEntity<GameStartResponse> createGame(@RequestBody StartGameRequest request) {
+        // Toda la lógica de creación + token se mueve al servicio
+        return new ResponseEntity<>(gameService.startNewGame(request.getUsername()), HttpStatus.CREATED);
     }
 
-    @PostMapping("/{gameId}/start-battle")
-    public ResponseEntity<Game> startBattle(@PathVariable String gameId, @RequestBody List<Ship> ships) {
-        // Si el gameId no existe, el Service lanzará la excepción y aquí ni entra.
-        return ResponseEntity.ok(gameService.startBattle(gameId, ships));
+    // PUT /api/games/{id}/ships -> Modifica el estado "barcos" del recurso
+    @PutMapping("/{gameId}/ships")
+    public ResponseEntity<Game> placeShips(@PathVariable String gameId, @RequestBody PlaceShipsRequest request) {
+        // 2. Usamos un DTO 'wrapper' en lugar de una lista cruda
+        return ResponseEntity.ok(gameService.startBattle(gameId, request.getShips()));
     }
 
-    @PostMapping("/{gameId}/fire")
-    public ResponseEntity<Game> fire(@PathVariable String gameId, @RequestBody FireRequest request) {
-        // Quitamos el if (coordinate == null).
-        // El Service se encarga de validar la coordenada.
+    // POST /api/games/{id}/shots -> Crea un recurso "disparo" (o acción de disparo)
+    @PostMapping("/{gameId}/shots")
+    public ResponseEntity<Game> fireShot(@PathVariable String gameId, @RequestBody FireRequest request) {
         return ResponseEntity.ok(gameService.playerMove(gameId, request.getCoordinate()));
     }
 
+    // POST /api/games/{id}/cpu-turn -> Fuerza el turno de la CPU
     @PostMapping("/{gameId}/cpu-turn")
-    public ResponseEntity<Game> cpuTurn(@PathVariable String gameId) {
+    public ResponseEntity<Game> playCpuTurn(@PathVariable String gameId) {
         return ResponseEntity.ok(gameService.playCpuTurn(gameId));
     }
 
