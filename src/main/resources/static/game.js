@@ -357,36 +357,68 @@ function showGameOverModal(winner) {
     const resultVideo = document.getElementById("result-video");
 
     modal.style.display = "flex";
+
+    // Configuración del vídeo
     resultVideo.muted = true;
     resultVideo.currentTime = 0;
+    resultVideo.loop = true; // 👈 FORZAMOS EL BUCLE AQUÍ TAMBIÉN
 
     if (winner === "PLAYER") {
-        // 🎞️ Ruta actualizada a videos/
-        resultVideo.src = "videos/you_win.mp4";
-        resultVideo.style.border = "4px solid #f1c40f";
+        // --- VICTORIA ---
+        resultVideo.src = "/videos/you_win.mp4";
+        resultVideo.style.border = "4px solid #f1c40f"; // Borde Dorado
 
         launchConfetti();
 
+        // Audio Victoria
         const winAudio = document.getElementById("winAudio");
-        if (winAudio) {
+        if(winAudio) {
             winAudio.volume = 0.4;
-            winAudio.play().catch(e => console.log("Error audio victoria:", e));
+            winAudio.currentTime = 0;
+            winAudio.play().catch(e => console.log(e));
         }
 
     } else {
-        // 🎞️ Ruta actualizada a videos/
-        resultVideo.src = "videos/Video_You_Lose.mp4";
-        resultVideo.style.border = "4px solid #8B0000";
+        // --- DERROTA ---
+        resultVideo.src = "/videos/Video_You_Lose.mp4";
+        resultVideo.style.border = "4px solid #8B0000"; // Borde Rojo
 
+        // Audio Derrota
         const loseAudio = document.getElementById("loseAudio");
-        if (loseAudio) {
+        if(loseAudio) {
             loseAudio.loop = true;
             loseAudio.volume = 0.7;
-            loseAudio.play().catch(e => console.log("Error audio derrota:", e));
+            loseAudio.currentTime = 0;
+            loseAudio.play().catch(e => console.log(e));
         }
     }
 
+    // Reproducir vídeo
     resultVideo.play().catch(e => console.log("Error al reproducir vídeo:", e));
+}
+
+function stopWinMusic() {
+    // 1. Parar Audio Victoria
+    const winAudio = document.getElementById("winAudio");
+    if (winAudio) {
+        winAudio.pause();
+        winAudio.currentTime = 0;
+    }
+
+    // 2. Parar Audio Derrota
+    const loseAudio = document.getElementById("loseAudio");
+    if (loseAudio) {
+        loseAudio.pause();
+        loseAudio.currentTime = 0;
+    }
+
+    // 3. 👇 NUEVO: PARAR EL VÍDEO DEL BUCLE
+    const resultVideo = document.getElementById("result-video");
+    if (resultVideo) {
+        resultVideo.pause();       // Pausa el vídeo
+        resultVideo.currentTime = 0; // Lo rebobina al principio
+        resultVideo.src = "";      // (Opcional) Vacía la fuente para ahorrar memoria
+    }
 }
 
 function restartGame() {
