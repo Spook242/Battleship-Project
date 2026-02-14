@@ -567,3 +567,29 @@ h2 {
 .btn-exit {
     background: linear-gradient(to bottom, #e74c3c, #c0392b); /* Rojo */
 }
+
+/* =========================================
+   ESTILO PARA LA IMAGEN-BOTÓN DE SALIDA
+========================================= */
+
+.img-btn-exit {
+    cursor: pointer;          /* Que salga la manita al pasar el ratón */
+    width: 180px;             /* Un tamaño equilibrado respecto al vídeo */
+    height: auto;             /* Mantiene la proporción original */
+    border-radius: 10px;      /* Redondea un poco las esquinas de la imagen */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5); /* Sombra para darle profundidad */
+    transition: transform 0.2s ease, filter 0.2s; /* Animación suave */
+    border: 2px solid #c0392b; /* Un borde rojo sutil que pega con el estilo */
+}
+
+/* Efecto Hover (Al pasar el ratón) */
+.img-btn-exit:hover {
+    transform: scale(1.1);    /* Crece un 10% */
+    filter: brightness(1.2);  /* Se ilumina un poco */
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.8); /* Resplandor rojo */
+}
+
+/* Efecto Click (Al pulsar) */
+.img-btn-exit:active {
+    transform: scale(0.95);   /* Se encoge ligeramente al hacer clic */
+}
