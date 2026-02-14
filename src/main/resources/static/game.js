@@ -603,18 +603,39 @@ function updateFleetStatusPanel(elementId, ships) {
 // 8. FASE DE COLOCACIÓN (SETUP)
 // ==========================================
 
+// ==========================================
+// 8. FASE DE COLOCACIÓN (SETUP)
+// ==========================================
 function startSetupPhase() {
     isSetupPhase = true;
     currentShipIndex = 0;
     myPlacedShips = [];
     shipsToPlace = [5, 4, 3, 3, 2];
 
+    // 1. LIMPIEZA VISUAL TOTAL (¡NUEVO!) 🧹
+    // Limpiamos el tablero del Jugador (Izquierda)
     updateBoard("player-board", { ships: [], shotsReceived: [] }, false);
 
-    document.getElementById("cpu-board").style.opacity = "0.3";
+    // Limpiamos el tablero de la CPU (Derecha) para que no se vean los disparos viejos
+    updateBoard("cpu-board", { ships: [], shotsReceived: [] }, true);
+
+    // Limpiamos los paneles de alertas laterales (Explosiones/Agua grandes)
+    document.getElementById("player-alert-panel").innerHTML = "";
+    document.getElementById("cpu-alert-panel").innerHTML = "";
+
+    // Limpiamos los paneles de estado de la flota (Cuadraditos rojos/verdes)
+    document.getElementById("player-status-panel").innerHTML = "";
+    document.getElementById("cpu-status-panel").innerHTML = "";
+
+    // 2. CONFIGURACIÓN VISUAL
+    // Ponemos el tablero CPU semitransparente para indicar que no está activo aún
+    document.getElementById("cpu-board").style.opacity = "0.5";
+
+    // Textos de instrucción
     document.getElementById("game-status").innerText = "PLACE YOUR SHIPS! (Press 'R' to Rotate)";
     document.getElementById("turn-indicator").innerText = "Current Ship Size: " + shipsToPlace[0];
 
+    // 3. ACTIVAR EVENTOS DE COLOCACIÓN
     const cells = document.querySelectorAll("#player-board .cell");
     cells.forEach(cell => {
         cell.onmouseover = () => previewShip(cell, true);
