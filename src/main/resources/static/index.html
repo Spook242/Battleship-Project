@@ -71,18 +71,20 @@
 </div>
 
 <div id="game-over-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-content-image">
+    <div class="modal-content-image game-over-layout">
 
-        <video id="result-video" muted loop playsinline></video>
+        <button class="btn-new side-button" onclick="restartGame()">NEW GAME</button>
 
-        <div class="buttons-overlay">
-            <button class="btn-new" onclick="stopWinMusic(); createGame()">NEW GAME</button>
+        <video id="result-video" muted playsinline></video>
 
-            <audio id="winAudio"><source src="sounds/win.mp3" type="audio/mpeg"></audio>
-            <audio id="loseAudio" loop><source src="sounds/lose.mp3" type="audio/mpeg"></audio>
+        <button class="btn-exit side-button" onclick="exitToMenu()">EXIT MENU</button>
 
-            <button class="btn-exit" onclick="stopWinMusic(); location.reload()">EXIT</button>
-        </div>
+        <audio id="winAudio">
+            <source src="/sounds/win.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="loseAudio" loop>
+            <source src="/sounds/lose.mp3" type="audio/mpeg">
+        </audio>
     </div>
 </div>
 

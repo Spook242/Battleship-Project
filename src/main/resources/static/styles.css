@@ -522,3 +522,48 @@ h2 {
 .ranking-item:nth-child(3) { color: #cd7f32; font-weight: bold; } /* 3º Bronce */
 
 .wins-count { font-weight: bold; }
+
+/* =========================================
+   NUEVO DISEÑO GAME OVER (Botones laterales)
+========================================= */
+
+/* Contenedor que alinea los elementos en fila */
+.game-over-layout {
+    display: flex;            /* Activa Flexbox */
+    flex-direction: row;      /* Los pone en fila horizontal */
+    align-items: center;      /* Los centra verticalmente */
+    justify-content: center;  /* Los centra horizontalmente en la pantalla */
+    gap: 30px;                /* Espacio entre botones y vídeo */
+
+    /* Aseguramos que no se salga de la pantalla en móviles */
+    max-width: 95vw;
+    margin: auto;
+}
+
+/* Estilo común para los nuevos botones laterales */
+.side-button {
+    padding: 15px 25px;       /* Tamaño cómodo */
+    font-size: 1.1rem;        /* Texto legible */
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s; /* Animación suave al pasar el ratón */
+    white-space: nowrap;      /* Evita que el texto se parta en dos líneas */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Sombra para dar profundidad */
+}
+
+/* Efecto al pasar el ratón */
+.side-button:hover {
+    transform: scale(1.05);   /* Crecen ligeramente */
+}
+
+/* Mantenemos los colores originales de tus botones */
+.btn-new {
+    background: linear-gradient(to bottom, #2ecc71, #27ae60); /* Verde */
+}
+
+.btn-exit {
+    background: linear-gradient(to bottom, #e74c3c, #c0392b); /* Rojo */
+}
