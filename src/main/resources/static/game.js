@@ -422,8 +422,19 @@ function stopWinMusic() {
 }
 
 function restartGame() {
+    // 1. Parar música de victoria/derrota y el vídeo
     stopWinMusic();
     stopConfetti();
+
+    // 2. ▶️ REPRODUCIR INTRO (El cambio que has pedido)
+    const introAudio = document.getElementById("introAudio");
+    if(introAudio) {
+        introAudio.currentTime = 0; // Rebobinar al principio
+        introAudio.volume = 0.4;    // Ajustar volumen
+        introAudio.play().catch(e => console.log("Error audio intro:", e));
+    }
+
+    // 3. Crear la nueva partida
     createGame();
 }
 
