@@ -593,3 +593,29 @@ h2 {
 .img-btn-exit:active {
     transform: scale(0.95);   /* Se encoge ligeramente al hacer clic */
 }
+
+/* =========================================
+   ESTILO PARA LA IMAGEN-BOTÓN "NEW GAME"
+========================================= */
+
+.img-btn-new {
+    cursor: pointer;
+    width: 180px;             /* Mismo tamaño que el botón de Exit para que quede simétrico */
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    transition: transform 0.2s ease, filter 0.2s;
+    border: 2px solid #2ecc71; /* Borde VERDE que pega con la imagen */
+}
+
+/* Efecto Hover (Al pasar el ratón) */
+.img-btn-new:hover {
+    transform: scale(1.1);    /* Crece un poco */
+    filter: brightness(1.2);  /* Se ilumina */
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.8); /* Resplandor verde */
+}
+
+/* Efecto Click */
+.img-btn-new:active {
+    transform: scale(0.95);
+}
