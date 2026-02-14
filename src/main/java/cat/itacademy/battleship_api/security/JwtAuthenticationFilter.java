@@ -6,12 +6,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders; // Importante para la constante
+import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils; // Utilidad de Spring muy útil
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -32,48 +33,55 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        // 1. Intentamos obtener el token limpio
+        String token = getTokenFromRequest(request);
 
-        // 1. Si no hay cabecera o no empieza por Bearer, dejamos pasar la petición (será anónima)
-        if (authHeader == null || !authHeader.startsWith(TOKEN_PREFIX)) {
+        // 2. Si no hay token, pasamos al siguiente filtro (usuario anónimo)
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // 3. Si hay token, intentamos autenticar
         try {
-            // 2. Extraer el token y el usuario
-            final String jwt = authHeader.substring(TOKEN_PREFIX.length());
-            final String username = jwtService.extractUsername(jwt);
+            String username = jwtService.extractUsername(token);
 
-            // 3. Validar: Que haya usuario y que no esté ya autenticado en el contexto actual
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-                if (jwtService.isTokenValid(jwt, username)) {
-                    // Autenticamos al usuario en el contexto de seguridad de Spring
+                if (jwtService.isTokenValid(token, username)) {
                     authenticateUser(request, username);
-                    log.debug("Token válido. Usuario autenticado: {}", username);
+                    log.debug("Usuario autenticado: {}", username);
                 }
             }
-
         } catch (Exception e) {
-            // Usamos WARN o DEBUG para no ensuciar los logs con errores si alguien manda un token basura
-            log.warn("Token inválido o expirado recibida en la petición: {}", e.getMessage());
+            // Si el token expiró o está mal formado, solo logueamos y seguimos (el usuario quedará como no autenticado)
+            log.warn("No se pudo autenticar el token: {}", e.getMessage());
         }
 
-        // 4. Continuar con la cadena de filtros
         filterChain.doFilter(request, response);
     }
 
     /**
-     * Crea y establece el token de autenticación en el contexto.
+     * Extrae el token JWT puro de la cabecera Authorization.
+     * Devuelve null si no existe o no tiene el formato correcto.
+     */
+    private String getTokenFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+        if (StringUtils.hasText(authHeader) && authHeader.startsWith(TOKEN_PREFIX)) {
+            return authHeader.substring(TOKEN_PREFIX.length());
+        }
+        return null;
+    }
+
+    /**
+     * Establece la autenticación en el contexto de Spring Security.
      */
     private void authenticateUser(HttpServletRequest request, String username) {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 username,
                 null,
-                Collections.emptyList() // Aquí irían los roles/autoridades si los tuvieras
+                Collections.emptyList()
         );
-
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
     }
