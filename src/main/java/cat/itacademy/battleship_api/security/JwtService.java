@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct; // 👈 NECESARIO
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +21,21 @@ public class JwtService {
     @Value("${security.jwt.secret-key}")
     private String secretKey;
 
-    // 1. MEJORA: Inyectamos el tiempo de expiración (con valor por defecto de 1 día si falla)
     @Value("${security.jwt.expiration-time:86400000}")
     private long jwtExpiration;
 
+    // 👇 Variable para guardar la clave ya procesada
+    private Key cachedSigningKey;
+
+    // 👇 ESTO ES NUEVO: Se ejecuta una sola vez al arrancar Spring
+    @PostConstruct
+    public void init() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        this.cachedSigningKey = Keys.hmacShaKeyFor(keyBytes);
+    }
+
     // ==========================================
-    // MÉTODOS PÚBLICOS (API del Servicio)
+    // MÉTODOS PÚBLICOS
     // ==========================================
 
     public String extractUsername(String token) {
@@ -51,7 +61,7 @@ public class JwtService {
     }
 
     // ==========================================
-    // MÉTODOS PRIVADOS (Lógica interna)
+    // MÉTODOS PRIVADOS
     // ==========================================
 
     private String buildToken(Map<String, Object> extraClaims, String username, long expiration) {
@@ -59,7 +69,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration)) // Usamos la variable inyectada
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -81,8 +91,8 @@ public class JwtService {
                 .getBody();
     }
 
+    // 👇 OPTIMIZADO: Ahora solo devuelve la variable ya calculada
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return this.cachedSigningKey;
     }
 }
