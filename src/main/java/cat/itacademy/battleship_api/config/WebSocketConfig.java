@@ -1,4 +1,4 @@
-package cat.itacademy.battleship_api.config.websocket;
+package cat.itacademy.battleship_api.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

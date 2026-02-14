@@ -1,4 +1,4 @@
-package cat.itacademy.battleship_api.security;
+package cat.itacademy.battleship_api.config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
