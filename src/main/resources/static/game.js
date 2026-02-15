@@ -14,6 +14,8 @@ const soundMayday = new Audio('sounds/mayday.wav');
 soundMayday.volume = 0.7;
 const soundHammer = new Audio('/sounds/hammer.mp3');
 soundHammer.volume = 0.6;
+const soundError = new Audio('/sounds/error.wav');
+soundError.volume = 0.8;
 
 // --- VARIABLES DE COLOCACIÓN ---
 let isSetupPhase = false;
@@ -705,12 +707,16 @@ function placeShip(cell) {
     const size = shipsToPlace[currentShipIndex];
     const cellsToPaint = getShipCoordinates(coord, size, isHorizontal);
 
-    // 1. SI ES INVÁLIDO: Nos salimos y NO hacemos ruido (o podrías poner un sonido de error)
+    // 1. SI ES INVÁLIDO (Error) ❌🔊
     if (!isValidPlacement(cellsToPaint)) {
+        soundError.currentTime = 0; // Reiniciar por si hace clics rápidos
+        soundError.play().catch(e => console.log(e));
+
+        // Opcional: Podrías añadir un efecto visual rojo aquí si quisieras
         return;
     }
 
-    // 2. SI ES VÁLIDO: ¡Aquí es donde construimos! 🔨🔊
+    // 2. SI ES VÁLIDO (Éxito) 🔨🔊
     soundHammer.currentTime = 0;
     soundHammer.play().catch(e => console.log(e));
 
