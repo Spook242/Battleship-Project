@@ -15,7 +15,7 @@ soundMayday.volume = 0.7;
 const soundHammer = new Audio('/sounds/hammer.mp3');
 soundHammer.volume = 0.6;
 const soundError = new Audio('/sounds/error.wav');
-soundError.volume = 0.8;
+soundError.volume = 0.85;
 
 // --- VARIABLES DE COLOCACIÓN ---
 let isSetupPhase = false;
