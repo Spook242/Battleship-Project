@@ -52,9 +52,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     log.debug("Usuario autenticado: {}", username);
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception exception) {
             // Si el token expiró o está mal formado, solo logueamos y seguimos (el usuario quedará como no autenticado)
-            log.warn("No se pudo autenticar el token: {}", e.getMessage());
+            log.warn("No se pudo autenticar el token: {}", exception.getMessage());
         }
 
         filterChain.doFilter(request, response);

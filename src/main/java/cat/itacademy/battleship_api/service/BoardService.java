@@ -63,25 +63,29 @@ public class BoardService {
     private boolean tryToPlaceShip(Board board, int size) {
         // Usamos la variable de clase 'random'
         boolean horizontal = random.nextBoolean();
-        int row = random.nextInt(10); // 0-9
-        int col = random.nextInt(10); // 0-9
+
+        // 👇 MEJORA: Aclaramos que este es el punto de INICIO
+        int startRow = random.nextInt(10); // 0-9
+        int startCol = random.nextInt(10); // 0-9
 
         List<String> shipCells = new ArrayList<>();
 
         for (int i = 0; i < size; i++) {
-            int r = horizontal ? row : row + i;
-            int c = horizontal ? col + i : col;
+            // 👇 MEJORA: 'currentRow' y 'currentCol' son mucho más legibles que 'r' y 'c'
+            int currentRow = horizontal ? startRow : startRow + i;
+            int currentCol = horizontal ? startCol + i : startCol;
 
             // 1. Validar límites del tablero (0-9)
-            if (r > 9 || c > 9) return false;
+            if (currentRow > 9 || currentCol > 9) return false;
 
-            String coordinate = toCoordinate(r, c);
+            String coordinate = toCoordinate(currentRow, currentCol);
 
             // 2. Validar colisión con otros barcos
             if (isOccupied(board, coordinate)) return false;
 
             shipCells.add(coordinate);
         }
+
 
         // Si llegamos aquí, es válido. Creamos y añadimos el barco.
         // Nota: Asegúrate de usar la lista mutable de Lombok
@@ -99,8 +103,8 @@ public class BoardService {
 
     // Método auxiliar para limpiar la lógica de colisión
     private boolean isOccupied(Board board, String coordinate) {
-        for (Ship s : board.getShips()) {
-            if (s.getCells().contains(coordinate)) return true;
+        for (Ship ship : board.getShips()) {
+            if (ship.getCells().contains(coordinate)) return true;
         }
         return false;
     }

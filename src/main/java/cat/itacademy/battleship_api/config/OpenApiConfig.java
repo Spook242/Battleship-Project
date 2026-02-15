@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
         info = @Info(
                 title = "Battleship API",
                 version = "1.0",
-                description = "Documentación de la API del juego Hundir la Flota"
+                description = "Documentación de la API del juego Battleship (Hundir la Flota)"
         ),
         // Esto aplica la seguridad por defecto a todos los endpoints
         security = @SecurityRequirement(name = "bearerAuth")

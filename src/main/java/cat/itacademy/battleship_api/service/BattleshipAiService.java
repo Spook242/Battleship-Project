@@ -150,29 +150,39 @@ public class BattleshipAiService {
         int col1 = Integer.parseInt(first.substring(1));
         int col2 = Integer.parseInt(second.substring(1));
 
-        if (row1 == row2) { // Horizontal
+        if (row1 == row2) { // Estrategia Horizontal
             int minCol = 11, maxCol = 0;
-            for(String h : hits) {
-                int c = Integer.parseInt(h.substring(1));
-                if(c < minCol) minCol = c;
-                if(c > maxCol) maxCol = c;
+
+            // 👇 CAMBIO: 'h' ahora es 'hitCoordinate' y 'c' es 'col'
+            for (String hitCoordinate : hits) {
+                int col = Integer.parseInt(hitCoordinate.substring(1));
+                if (col < minCol) minCol = col;
+                if (col > maxCol) maxCol = col;
             }
+
             String left = "" + row1 + (minCol - 1);
             if (isValidCoordinate(row1, minCol - 1) && !alreadyShot.contains(left)) return left;
+
             String right = "" + row1 + (maxCol + 1);
             if (isValidCoordinate(row1, maxCol + 1) && !alreadyShot.contains(right)) return right;
-        } else if (col1 == col2) { // Vertical
+
+        } else if (col1 == col2) { // Estrategia Vertical
             char minRow = 'Z', maxRow = 'A';
-            for(String h : hits) {
-                char r = h.charAt(0);
-                if(r < minRow) minRow = r;
-                if(r > maxRow) maxRow = r;
+
+            // 👇 CAMBIO: 'h' ahora es 'hitCoordinate' y 'r' es 'row'
+            for (String hitCoordinate : hits) {
+                char row = hitCoordinate.charAt(0);
+                if (row < minRow) minRow = row;
+                if (row > maxRow) maxRow = row;
             }
+
             String up = "" + (char)(minRow - 1) + col1;
             if (isValidCoordinate((char)(minRow - 1), col1) && !alreadyShot.contains(up)) return up;
+
             String down = "" + (char)(maxRow + 1) + col1;
             if (isValidCoordinate((char)(maxRow + 1), col1) && !alreadyShot.contains(down)) return down;
         }
+
         return null;
     }
 
@@ -217,9 +227,9 @@ public class BattleshipAiService {
     }
 
     private String findFirstFreeCell(List<String> shots) {
-        for (char r = 'A'; r <= 'J'; r++) {
-            for (int c = 1; c <= 10; c++) {
-                String coord = "" + r + c;
+        for (char row = 'A'; row <= 'J'; row++) {
+            for (int col = 1; col <= 10; col++) {
+                String coord = "" + row + col;
                 if (!shots.contains(coord)) return coord;
             }
         }
