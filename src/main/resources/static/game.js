@@ -2,6 +2,7 @@ const API_URL = "http://localhost:8080/game";
 let currentGameId = null;
 let gameFinished = false;
 let currentUsername = "";
+let cpuJustSunk = false;
 
 // --- SONIDOS Y EFECTOS ---
 // 🎧 Rutas actualizadas a la carpeta /sounds/
@@ -172,6 +173,7 @@ async function fire(coordinate) {
 }
 
 // 3. TURNO CPU
+// 3. TURNO CPU
 async function playCpuTurn() {
     if (gameFinished) return;
 
@@ -189,57 +191,66 @@ async function playCpuTurn() {
         if (response.ok) {
             const game = await response.json();
 
+            // 1. Actualizamos tableros visualmente
             updateBoard("player-board", game.playerBoard, false);
             updateBoard("cpu-board", game.cpuBoard, true);
             updateFleetStatusPanel("player-status-panel", game.playerBoard.ships);
             updateFleetStatusPanel("cpu-status-panel", game.cpuBoard.ships);
-            updateStatus(game);
 
-            // --- LÓGICA VISUAL CPU ---
+            // 2. Comprobamos qué ha pasado (Hit / Sunk)
             const shots = game.playerBoard.shotsReceived;
             const cpuAlertPanel = document.getElementById("cpu-alert-panel");
+            let sunkInThisTurn = false; // Variable local para controlar este turno
 
             if (shots.length > 0) {
                 const lastShot = shots[shots.length - 1];
                 let hit = false;
-                let sunk = false;
 
                 for (let ship of game.playerBoard.ships) {
                     if (ship.cells.includes(lastShot)) {
                         hit = true;
-                        if(ship.sunk) sunk = true;
+                        if(ship.sunk) sunkInThisTurn = true;
                         break;
                     }
                 }
 
                 if (hit) {
-                    // 🔥 ACIERTO CPU
+                    // 🔥 ACIERTO
                     soundBoom.currentTime = 0;
-                    soundBoom.play().catch(e => console.error("Error audio boom:", e));
+                    soundBoom.play().catch(e => console.error(e));
                     showExplosion(lastShot, "player-board");
 
-                    // 🖼️ Ruta actualizada a images/
                     cpuAlertPanel.innerHTML = `
                         <div class="hit-text">${lastShot}</div>
-                        <img src="images/explosion.png" class="hit-icon" alt="BOOM">
+                         <img src="/images/explosion.png" class="hit-icon" alt="BOOM">
                     `;
 
-                    if(sunk && game.status !== "FINISHED") {
+                    if(sunkInThisTurn && game.status !== "FINISHED") {
                         soundMayday.currentTime = 0;
-                        soundMayday.play().catch(e => console.log("Error mayday:", e));
+                        soundMayday.play().catch(e => console.log(e));
                         showShotMessage(`CPU: ${lastShot} HIT AND SUNK! ☠️`, "sunk");
                     }
                 } else {
-                    // 💧 FALLO CPU
+                    // 💧 FALLO
                     soundWater.currentTime = 0;
-                    soundWater.play().catch(e => console.error("Error audio water:", e));
+                    soundWater.play().catch(e => console.error(e));
 
-                    // 🖼️ Ruta actualizada a images/
                     cpuAlertPanel.innerHTML = `
                         <div class="cpu-miss-text">${lastShot}</div>
-                        <img src="images/agua_cartoon.png" class="cpu-miss-icon" alt="Water Drop">
+                        <img src="/images/agua_cartoon.png" class="cpu-miss-icon" alt="Water">
                     `;
                 }
+            }
+
+            // 3. LA CLAVE DEL TIEMPO ⏳
+            // Si ha hundido barco: Esperamos 3 segundos antes de llamar a updateStatus
+            if (sunkInThisTurn) {
+                setTimeout(() => {
+                    updateStatus(game);
+                }, 1750);
+            } else {
+                // Si no: Seguimos normal inmediatamente
+                updateStatus(game);
             }
         }
     } catch (error) {
@@ -324,6 +335,8 @@ function updateBoard(elementId, boardData, isEnemy) {
 }
 
 // 5. ESTADO DEL JUEGO
+// 5. ESTADO DEL JUEGO
+// 5. ESTADO DEL JUEGO
 function updateStatus(game) {
     const statusText = document.getElementById("game-status");
     const turnText = document.getElementById("turn-indicator");
@@ -336,7 +349,7 @@ function updateStatus(game) {
         }
 
         gameFinished = true;
-        statusText.innerText = "Partida finalizada";
+        statusText.innerText = "GAME OVER";
         turnText.innerText = "";
 
         showGameOverModal(game.winner);
@@ -347,9 +360,13 @@ function updateStatus(game) {
         turnText.innerText = "PLAYER TURN... 🟢";
         statusText.innerText = "WAITING FOR COORDINATES...";
     } else {
+        // ES TURNO DE LA CPU
         turnText.innerText = "CPU TURN... 🔴";
         statusText.innerText = "CALCULATING COORDINATES...";
-        setTimeout(() => { playCpuTurn(); }, 1500);
+
+        // Siempre usamos el tiempo estándar (1.5s) para "pensar".
+        // Si hubo hundimiento, el retraso de 3s YA OCURRIÓ antes de llegar aquí.
+        setTimeout(() => { playCpuTurn(); }, 1250);
     }
 }
 
