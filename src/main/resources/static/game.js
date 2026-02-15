@@ -244,21 +244,33 @@ async function playCpuTurn() {
                 }
             }
 
-            // 3. LA CLAVE DEL TIEMPO ⏳
-            // Si ha hundido barco: Esperamos 3 segundos antes de llamar a updateStatus
-            if (sunkInThisTurn) {
-                setTimeout(() => {
-                    updateStatus(game);
-                }, 1750);
-            } else {
-                // Si no: Seguimos normal inmediatamente
-                updateStatus(game);
-            }
-        }
-    } catch (error) {
-        console.error("Error CPU:", error);
-    }
-}
+           // 3. LA CLAVE DEL TIEMPO ⏳ (LÓGICA MEJORADA)
+
+                       // CASO A: FIN DEL JUEGO (Prioridad Máxima)
+                       if (game.status === "FINISHED") {
+                           // Si la partida ha terminado, no queremos esperar 3 segundos.
+                           // Damos solo 0.5 segundos para ver la última explosión y lanzamos el video.
+                           setTimeout(() => {
+                               updateStatus(game);
+                           }, 250);
+                       }
+                       // CASO B: HUNDIMIENTO NORMAL (Drama)
+                       else if (sunkInThisTurn) {
+                           // Si hunde un barco pero la partida sigue, esperamos 3 segundos.
+                           setTimeout(() => {
+                               updateStatus(game);
+                           }, 1750);
+                       }
+                       // CASO C: DISPARO NORMAL O FALLO
+                       else {
+                           // Seguimos normal inmediatamente
+                           updateStatus(game);
+                       }
+                   }
+               } catch (error) {
+                   console.error("Error CPU:", error);
+               }
+           }
 
 // 4. PINTAR TABLEROS
 function updateBoard(elementId, boardData, isEnemy) {
