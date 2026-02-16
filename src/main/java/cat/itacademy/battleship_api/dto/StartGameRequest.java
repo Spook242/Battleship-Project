@@ -9,4 +9,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class StartGameRequest {
     private String username;
+
+    public String getUsername() {
+        return username;
+    }
 }

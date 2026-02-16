@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean; // Nota: MockitoBean es para Spring Boot 3.4+. Si usas anterior, usa @MockBean
+import org.springframework.boot.test.mock.mockito.MockBean;// Nota: MockitoBean es para Spring Boot 3.4+. Si usas anterior, usa @MockBean
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,10 +28,10 @@ class GameControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @MockBean
     private GameService gameService;
 
-    @MockitoBean
+    @MockBean
     private JwtService jwtService;
 
     @Autowired
