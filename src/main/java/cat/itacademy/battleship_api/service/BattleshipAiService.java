@@ -17,7 +17,8 @@ public class BattleshipAiService {
     public String calculateCpuTarget(Board opponentBoard) {
         List<String> shotsFired = opponentBoard.getShotsReceived();
 
-        // 1. MODO "TARGET" (Prioridad Máxima: Hundir heridos)
+        // 1. MODO "TARGET" (Caza y Captura de barcos heridos)
+        // (Esta parte no cambia, es la prioridad máxima)
         List<String> openHits = new ArrayList<>();
         for (Ship ship : opponentBoard.getShips()) {
             if (!ship.isSunk()) {
@@ -30,12 +31,10 @@ public class BattleshipAiService {
         }
 
         if (!openHits.isEmpty()) {
-            // A. Estrategia de Línea (2+ impactos)
             if (openHits.size() >= 2) {
                 String lineTarget = getLineStrategyTarget(openHits, shotsFired);
                 if (lineTarget != null) return lineTarget;
             }
-            // B. Estrategia de Vecinos (1 impacto)
             for (String hit : openHits) {
                 List<String> neighbors = getNeighbors(hit);
                 for (String neighbor : neighbors) {
@@ -44,52 +43,48 @@ public class BattleshipAiService {
             }
         }
 
-        // 2. MODO "HUNT" INTELIGENTE (Búsqueda de Huecos)
-        // Detectamos si queda UN SOLO barco vivo y obtenemos su tamaño.
-        int lastShipSize = getLastAliveShipSize(opponentBoard);
+        // 2. MODO "HUNT" PRO (Búsqueda basada en el barco más pequeño vivo)
+        // 🔥 CAMBIO CLAVE: Ya no miramos si queda 1 solo barco.
+        // Miramos cuál es el tamaño MÍNIMO necesario para hacer daño.
+        int minShipSize = getSmallestAliveShipSize(opponentBoard);
 
-        // Si queda un solo barco (sea de 5, 4, 3 o incluso 2), aplicamos la lógica de huecos
-        if (lastShipSize > 0) {
-            return generateSmartGapCoordinate(shotsFired, lastShipSize);
-        }
-
-        // 3. MODO ALEATORIO ESTÁNDAR (Si quedan varios barcos vivos)
-        return generateRandomCoordinate(shotsFired);
+        return generateSmartGapCoordinate(shotsFired, minShipSize);
     }
 
     // ==========================================
-    // LÓGICA DE HUECOS DINÁMICA (Smart Gap)
+    // LÓGICA DE HUECOS (SMART GAP)
     // ==========================================
 
-    /**
-     * Devuelve el tamaño del barco si solo queda uno vivo.
-     * Devuelve -1 si hay más de un barco vivo o ninguno.
-     */
-    private int getLastAliveShipSize(Board board) {
-        List<Ship> aliveShips = new ArrayList<>();
+    private int getSmallestAliveShipSize(Board board) {
+        int minSize = 10; // Empezamos con un valor alto
+        boolean anyAlive = false;
+
         for (Ship ship : board.getShips()) {
             if (!ship.isSunk()) {
-                aliveShips.add(ship);
+                if (ship.getSize() < minSize) {
+                    minSize = ship.getSize();
+                }
+                anyAlive = true;
             }
         }
-        if (aliveShips.size() == 1) {
-            return aliveShips.get(0).getSize(); // Devuelve 5, 4, 3 o 2
-        }
-        return -1; // Hay varios barcos, usamos lógica estándar
+        // Si no quedan barcos (raro si llega aquí), devolvemos 2 por defecto
+        return anyAlive ? minSize : 2;
     }
 
     private String generateSmartGapCoordinate(List<String> shots, int targetSize) {
         String coord;
         int attempts = 0;
 
+        // Intentamos encontrar una coordenada válida donde quepa el barco más pequeño
         do {
             char row = (char) ('A' + random.nextInt(10));
             int col = 1 + random.nextInt(10);
             coord = "" + row + col;
             attempts++;
 
-            // Si el mapa está muy lleno y no encontramos hueco rápido, salimos para no bloquear
-            if (attempts > 3000) return findFirstFreeCell(shots);
+            // Si tras 5000 intentos no encuentra hueco (tablero muy lleno),
+            // usa el método de emergencia para no bloquear el juego.
+            if (attempts > 5000) return findFirstFreeCell(shots);
 
         } while (shots.contains(coord) || !fitsInGap(coord, shots, targetSize));
 
@@ -97,23 +92,20 @@ public class BattleshipAiService {
     }
 
     /**
-     * Verifica si en la coordenada 'coord' cabe un barco de tamaño 'targetSize'
-     * ya sea horizontal o verticalmente.
+     * Verifica si en 'coord' cabe un barco de tamaño 'targetSize' (H o V).
      */
     private boolean fitsInGap(String coord, List<String> shots, int targetSize) {
         char row = coord.charAt(0);
         int col = Integer.parseInt(coord.substring(1));
 
-        // 1. Mirar Horizontal
-        int freeLeft  = countFreeSpaces(row, col, 0, -1, shots);
+        // 1. Espacio Horizontal
+        int freeLeft = countFreeSpaces(row, col, 0, -1, shots);
         int freeRight = countFreeSpaces(row, col, 0, 1, shots);
-        // Espacio total = izquierda + actual(1) + derecha
         if ((freeLeft + 1 + freeRight) >= targetSize) return true;
 
-        // 2. Mirar Vertical
-        int freeUp   = countFreeSpaces(row, col, -1, 0, shots);
+        // 2. Espacio Vertical
+        int freeUp = countFreeSpaces(row, col, -1, 0, shots);
         int freeDown = countFreeSpaces(row, col, 1, 0, shots);
-        // Espacio total = arriba + actual(1) + abajo
         if ((freeUp + 1 + freeDown) >= targetSize) return true;
 
         return false;
@@ -127,7 +119,7 @@ public class BattleshipAiService {
         while (isValidCoordinate(currentRow, currentCol)) {
             String coord = "" + currentRow + currentCol;
             if (shots.contains(coord)) {
-                break; // Chocamos con un disparo o borde
+                break;
             }
             count++;
             currentRow = (char)(currentRow + dRow);
@@ -137,8 +129,9 @@ public class BattleshipAiService {
     }
 
     // ==========================================
-    // MÉTODOS ESTÁNDAR (TARGET & RANDOM)
+    // MÉTODOS AUXILIARES (Targeting)
     // ==========================================
+    // (Estos métodos se mantienen igual que antes)
 
     private String getLineStrategyTarget(List<String> hits, List<String> alreadyShot) {
         hits.sort(String::compareTo);
@@ -150,39 +143,29 @@ public class BattleshipAiService {
         int col1 = Integer.parseInt(first.substring(1));
         int col2 = Integer.parseInt(second.substring(1));
 
-        if (row1 == row2) { // Estrategia Horizontal
+        if (row1 == row2) {
             int minCol = 11, maxCol = 0;
-
-            // 👇 CAMBIO: 'h' ahora es 'hitCoordinate' y 'c' es 'col'
-            for (String hitCoordinate : hits) {
-                int col = Integer.parseInt(hitCoordinate.substring(1));
-                if (col < minCol) minCol = col;
-                if (col > maxCol) maxCol = col;
+            for(String h : hits) {
+                int c = Integer.parseInt(h.substring(1));
+                if(c < minCol) minCol = c;
+                if(c > maxCol) maxCol = c;
             }
-
             String left = "" + row1 + (minCol - 1);
             if (isValidCoordinate(row1, minCol - 1) && !alreadyShot.contains(left)) return left;
-
             String right = "" + row1 + (maxCol + 1);
             if (isValidCoordinate(row1, maxCol + 1) && !alreadyShot.contains(right)) return right;
-
-        } else if (col1 == col2) { // Estrategia Vertical
+        } else if (col1 == col2) {
             char minRow = 'Z', maxRow = 'A';
-
-            // 👇 CAMBIO: 'h' ahora es 'hitCoordinate' y 'r' es 'row'
-            for (String hitCoordinate : hits) {
-                char row = hitCoordinate.charAt(0);
-                if (row < minRow) minRow = row;
-                if (row > maxRow) maxRow = row;
+            for(String h : hits) {
+                char r = h.charAt(0);
+                if(r < minRow) minRow = r;
+                if(r > maxRow) maxRow = r;
             }
-
             String up = "" + (char)(minRow - 1) + col1;
             if (isValidCoordinate((char)(minRow - 1), col1) && !alreadyShot.contains(up)) return up;
-
             String down = "" + (char)(maxRow + 1) + col1;
             if (isValidCoordinate((char)(maxRow + 1), col1) && !alreadyShot.contains(down)) return down;
         }
-
         return null;
     }
 
@@ -199,40 +182,17 @@ public class BattleshipAiService {
         return neighbors;
     }
 
-    private String generateRandomCoordinate(List<String> shots) {
-        String coord;
-        int attempts = 0;
-        do {
-            char row = (char) ('A' + random.nextInt(10));
-            int col = 1 + random.nextInt(10);
-            coord = "" + row + col;
-            attempts++;
-            if (attempts > 500) return findFirstFreeCell(shots);
-        } while (shots.contains(coord) || !isSmartRandomMove(coord, shots));
-        return coord;
-    }
-
-    private boolean isSmartRandomMove(String coord, List<String> shots) {
-        // Verifica si tiene al menos un vecino libre (no dispara a celdas 1x1 aisladas)
-        char row = coord.charAt(0);
-        int col = Integer.parseInt(coord.substring(1));
-        return (isValidCoordinate(row, col-1) && !shots.contains("" + row + (col-1))) ||
-                (isValidCoordinate(row, col+1) && !shots.contains("" + row + (col+1))) ||
-                (isValidCoordinate((char)(row-1), col) && !shots.contains("" + (char)(row-1) + col)) ||
-                (isValidCoordinate((char)(row+1), col) && !shots.contains("" + (char)(row+1) + col));
-    }
-
     private boolean isValidCoordinate(char row, int col) {
         return row >= 'A' && row <= 'J' && col >= 1 && col <= 10;
     }
 
     private String findFirstFreeCell(List<String> shots) {
-        for (char row = 'A'; row <= 'J'; row++) {
-            for (int col = 1; col <= 10; col++) {
-                String coord = "" + row + col;
+        for (char r = 'A'; r <= 'J'; r++) {
+            for (int c = 1; c <= 10; c++) {
+                String coord = "" + r + c;
                 if (!shots.contains(coord)) return coord;
             }
         }
-        return null;
+        return null; // Tablero lleno
     }
 }
