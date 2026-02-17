@@ -1,4 +1,4 @@
-const API_URL = "http://game";
+const API_URL = "";
 let currentGameId = null;
 let gameFinished = false;
 let currentUsername = "";
@@ -492,18 +492,6 @@ function exitToMenu() {
     }
 }
 
-function stopWinMusic() {
-    const winAudio = document.getElementById("winAudio");
-    if (winAudio) {
-        winAudio.pause();
-        winAudio.currentTime = 0;
-    }
-    const loseAudio = document.getElementById("loseAudio");
-    if (loseAudio) {
-        loseAudio.pause();
-        loseAudio.currentTime = 0;
-    }
-}
 
 // CONFETI
 let confettiActive = false;
