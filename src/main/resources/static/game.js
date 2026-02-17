@@ -1,4 +1,4 @@
-const API_URL = "";
+const API_URL = "/game";
 let currentGameId = null;
 let gameFinished = false;
 let currentUsername = "";
