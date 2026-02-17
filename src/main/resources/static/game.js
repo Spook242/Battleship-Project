@@ -6,7 +6,7 @@ let cpuJustSunk = false;
 
 // --- SONIDOS Y EFECTOS ---
 // 🎧 Rutas actualizadas a la carpeta /sounds/
-const soundShot = new Audio('sounds/shot.mp3');
+//const soundShot = new Audio('sounds/shot.mp3');
 const soundWater = new Audio('sounds/water_drop.mp3');
 const soundBoom = new Audio('sounds/explosion_2.mp3');
 soundBoom.volume = 0.25;
