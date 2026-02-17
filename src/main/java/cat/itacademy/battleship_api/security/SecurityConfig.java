@@ -27,19 +27,13 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/index.html",
-                                "/styles.css",  // Tu CSS
-                                "/game.js",     // Tu JS principal
+                                "/styles.css",
+                                "/game.js",
                                 "/favicon.ico",
 
-                                // ✅ AQUI ESTÁ EL CAMBIO IMPORTANTE:
-                                "/images/**",   // Permite todo lo de dentro de images/
-                                "/sounds/**",   // Permite todo lo de dentro de sounds/
-                                "/videos/**",   // Permite todo lo de dentro de videos/
-
-                                // Extensiones sueltas por si acaso se te escapa alguno fuera
-                                "/**/*.css", "/**/*.js",
-                                "/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.svg",
-                                "/**/*.mp3", "/**/*.wav", "/**/*.mp4",
+                                "/images/**",
+                                "/sounds/**",
+                                "/videos/**",
 
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
