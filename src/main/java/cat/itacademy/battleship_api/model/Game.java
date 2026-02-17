@@ -32,6 +32,7 @@ public class Game {
 
     private Board cpuBoard;
 
+    @Builder.Default
     private List<String> cpuPendingTargets = new ArrayList<>();
 
 }
