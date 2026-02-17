@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080/game";
+const API_URL = "http://game";
 let currentGameId = null;
 let gameFinished = false;
 let currentUsername = "";
