@@ -1,5 +1,7 @@
 package cat.itacademy.battleship_api.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,5 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FireRequest {
+
+    // Regla: Una letra mayúscula (A-J) seguida de un número (1-9 o 10)
+    @NotBlank(message = "Coordinate is required")
+    @Pattern(regexp = "^[A-J](10|[1-9])$", message = "Invalid coordinate format. Use A1, B5, J10...")
     private String coordinate;
 }
