@@ -6,7 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
+@Repository // Opcional, pero muy buena práctica visual
 public interface PlayerRepository extends JpaRepository<Player, Long> {
+
+    // Al usar Optional, nos protegemos de los temidos NullPointerException
+    // si el usuario (username) no existe en la base de datos PostgreSQL.
     Optional<Player> findByUsername(String username);
 }

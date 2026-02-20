@@ -1,5 +1,6 @@
 package cat.itacademy.battleship_api.service;
 
+import cat.itacademy.battleship_api.exception.InvalidMoveException; // Asegúrate de importar tu excepción
 import cat.itacademy.battleship_api.model.Board;
 import cat.itacademy.battleship_api.model.Ship;
 import org.springframework.stereotype.Service;
@@ -11,37 +12,37 @@ import java.util.Random;
 @Service
 public class BoardService {
 
-    // 1. OPTIMIZACIÓN: Una sola instancia de Random para toda la clase
     private final Random random = new Random();
 
+    // ==========================================
+    // 💥 PROCESAR DISPARO
+    // ==========================================
     public boolean processShot(Board board, String coordinate) {
-        // 2. SEGURIDAD: Evitar procesar el mismo disparo dos veces
+
+        // 1. SEGURIDAD: Evitar perder el turno por disparar al mismo sitio
         if (board.getShotsReceived().contains(coordinate)) {
-            // Opcional: Lanzar excepción o simplemente devolver false/true según convenga.
-            // Aquí asumimos que si ya estaba disparado, no cambia el estado del juego.
-            return false;
+            // Lanzamos error en vez de devolver 'false', así el Front avisa al jugador
+            // y el GameService NO cambia el turno a la CPU.
+            throw new InvalidMoveException("Ya has disparado a la coordenada " + coordinate);
         }
 
-        // Registramos el disparo
-        board.getShotsReceived().add(coordinate);
+        // 2. Usamos la "inteligencia" del tablero
+        board.receiveShot(coordinate);
 
-        // Comprobamos si impacta en algún barco
+        // 3. Usamos la "inteligencia" del barco (¡Mira qué limpio queda esto!)
         for (Ship ship : board.getShips()) {
-            if (ship.getCells().contains(coordinate)) {
-                ship.getHits().add(coordinate);
-
-                // Verificar hundimiento
-                if (ship.getHits().size() == ship.getSize()) {
-                    ship.setSunk(true);
-                }
-                return true; // IMPACTO 💥
+            if (ship.receiveHit(coordinate)) {
+                return true; // 💥 IMPACTO (El barco ya calcula solo si se ha hundido)
             }
         }
-        return false; // AGUA 💧
+
+        return false; // 💧 AGUA
     }
 
+    // ==========================================
+    // 🚢 COLOCAR BARCOS
+    // ==========================================
     public void placeShipsRandomly(Board board) {
-        // Limpiamos el tablero por si acaso venía sucio (reinicio de partida)
         board.getShips().clear();
         board.getShotsReceived().clear();
 
@@ -49,7 +50,6 @@ public class BoardService {
 
         for (int size : shipSizes) {
             boolean placed = false;
-            // Bucle de intentos: Sigue intentando hasta que el barco quepa sin chocar
             while (!placed) {
                 placed = tryToPlaceShip(board, size);
             }
@@ -57,56 +57,44 @@ public class BoardService {
     }
 
     // ==========================================
-    // MÉTODOS PRIVADOS
+    // 🛠️ MÉTODOS PRIVADOS
     // ==========================================
-
     private boolean tryToPlaceShip(Board board, int size) {
-        // Usamos la variable de clase 'random'
         boolean horizontal = random.nextBoolean();
-
-        // 👇 MEJORA: Aclaramos que este es el punto de INICIO
-        int startRow = random.nextInt(10); // 0-9
-        int startCol = random.nextInt(10); // 0-9
+        int startRow = random.nextInt(10);
+        int startCol = random.nextInt(10);
 
         List<String> shipCells = new ArrayList<>();
 
         for (int i = 0; i < size; i++) {
-            // 👇 MEJORA: 'currentRow' y 'currentCol' son mucho más legibles que 'r' y 'c'
             int currentRow = horizontal ? startRow : startRow + i;
             int currentCol = horizontal ? startCol + i : startCol;
 
-            // 1. Validar límites del tablero (0-9)
             if (currentRow > 9 || currentCol > 9) return false;
 
             String coordinate = toCoordinate(currentRow, currentCol);
 
-            // 2. Validar colisión con otros barcos
             if (isOccupied(board, coordinate)) return false;
 
             shipCells.add(coordinate);
         }
 
-
-        // Si llegamos aquí, es válido. Creamos y añadimos el barco.
-        // Nota: Asegúrate de usar la lista mutable de Lombok
+        // 4. MEJORA: Builder más limpio.
+        // Como 'hits' y 'sunk' tienen @Builder.Default en el modelo, no hace falta ponerlos aquí.
         Ship newShip = Ship.builder()
                 .type("Ship-" + size)
                 .size(size)
                 .cells(shipCells)
-                .hits(new ArrayList<>())
-                .sunk(false)
                 .build();
 
-        board.getShips().add(newShip);
+        board.addShip(newShip); // Usamos el método limpio que creamos en Board
         return true;
     }
 
-    // Método auxiliar para limpiar la lógica de colisión
     private boolean isOccupied(Board board, String coordinate) {
-        for (Ship ship : board.getShips()) {
-            if (ship.getCells().contains(coordinate)) return true;
-        }
-        return false;
+        // 5. MEJORA PRO: Usamos Streams para que sea más directo
+        return board.getShips().stream()
+                .anyMatch(ship -> ship.getCells().contains(coordinate));
     }
 
     private String toCoordinate(int row, int col) {
