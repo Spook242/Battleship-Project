@@ -9,6 +9,8 @@ import cat.itacademy.battleship_api.model.Board;
 import cat.itacademy.battleship_api.model.Game;
 import cat.itacademy.battleship_api.model.Player;
 import cat.itacademy.battleship_api.model.Ship;
+import cat.itacademy.battleship_api.model.enums.GameStatus;
+import cat.itacademy.battleship_api.model.enums.PlayerTurn;
 import cat.itacademy.battleship_api.repository.GameRepository;
 import cat.itacademy.battleship_api.repository.PlayerRepository;
 import cat.itacademy.battleship_api.security.JwtService;
@@ -30,41 +32,33 @@ public class GameService {
     private final BattleshipAiService aiService;
     private final BoardService boardService;
 
-    // ==========================================
-    // 1. CREAR JUEGO
-    // ==========================================
     public GameStartResponse startNewGame(String username) {
         if (username == null || username.isBlank()) {
             throw new InvalidGameActionException("Username is required");
         }
 
         Player player = playerRepository.findByUsername(username)
-                .orElseGet(() -> playerRepository.save(new Player(username)));
+                .orElseGet(() -> playerRepository.save(Player.builder().username(username).build()));
 
         Game game = Game.builder()
                 .playerId(player.getId())
-                .status("SETUP")
-                .turn("PLAYER")
+                .status(GameStatus.SETUP) // <-- CORREGIDO PARA EL FRONTEND
+                .turn(PlayerTurn.PLAYER)
                 .playerBoard(new Board())
                 .cpuBoard(new Board())
                 .build();
 
         boardService.placeShipsRandomly(game.getCpuBoard());
-
-        gameRepository.save(game); // Mongo genera el ID String aquí
-
+        gameRepository.save(game);
         String token = jwtService.generateToken(Map.of("gameId", game.getId()), username);
 
-        return new GameStartResponse(game, token);
+        return GameStartResponse.builder().game(game).token(token).build();
     }
 
-    // ==========================================
-    // 2. INICIAR BATALLA
-    // ==========================================
     public Game startBattle(String gameId, List<Ship> playerShips) {
-        Game game = findGameOrThrow(gameId); // Pasamos String directo
+        Game game = findGameOrThrow(gameId);
 
-        if (!"SETUP".equals(game.getStatus())) {
+        if (game.getStatus() != GameStatus.SETUP) { // <-- CORREGIDO
             throw new InvalidGameActionException("Game is not in SETUP mode");
         }
 
@@ -73,19 +67,14 @@ public class GameService {
         }
 
         game.getPlayerBoard().setShips(playerShips);
-        game.setStatus("PLAYING");
+        game.setStatus(GameStatus.PLAYING); // <-- CORREGIDO PARA EL FRONTEND
 
         return gameRepository.save(game);
     }
 
-    // ==========================================
-    // 3. TURNO DEL JUGADOR
-    // ==========================================
     public Game playerMove(String gameId, String coordinate) {
-        Game game = findGameOrThrow(gameId); // Pasamos String directo
-
-        validateTurn(game, "PLAYER");
-
+        Game game = findGameOrThrow(gameId);
+        validateTurn(game, PlayerTurn.PLAYER);
         boolean hit = boardService.processShot(game.getCpuBoard(), coordinate);
 
         if (checkWinner(game)) {
@@ -93,19 +82,15 @@ public class GameService {
         }
 
         if (!hit) {
-            game.setTurn("CPU");
+            game.setTurn(PlayerTurn.CPU);
         }
 
         return gameRepository.save(game);
     }
 
-    // ==========================================
-    // 4. TURNO DE LA CPU
-    // ==========================================
     public Game playCpuTurn(String gameId) {
-        // 🟢 CORRECCIÓN: Usamos el String directamente. Nada de Long.parse...
         return gameRepository.findById(gameId)
-                .filter(g -> "PLAYING".equals(g.getStatus()) && "CPU".equals(g.getTurn()))
+                .filter(g -> g.getStatus() == GameStatus.PLAYING && g.getTurn() == PlayerTurn.CPU) // <-- CORREGIDO
                 .map(game -> {
                     String target = aiService.calculateCpuTarget(game.getPlayerBoard());
                     boolean hit = boardService.processShot(game.getPlayerBoard(), target);
@@ -115,69 +100,51 @@ public class GameService {
                     }
 
                     if (!hit) {
-                        game.setTurn("PLAYER");
+                        game.setTurn(PlayerTurn.PLAYER);
                     }
                     return gameRepository.save(game);
                 })
-                .orElseThrow(() -> new InvalidGameActionException("Cannot play CPU turn: Game not found or not CPU turn"));
+                .orElseThrow(() -> new InvalidGameActionException("Cannot play CPU turn"));
     }
 
-    // ==========================================
-    // LÓGICA DE VICTORIA
-    // ==========================================
     private boolean checkWinner(Game game) {
-        boolean cpuDefeated = game.getCpuBoard().getShips().stream()
-                .allMatch(Ship::isSunk);
-
+        boolean cpuDefeated = game.getCpuBoard().getShips().stream().allMatch(Ship::isSunk);
         if (cpuDefeated) {
             game.setWinner("PLAYER");
-            game.setStatus("FINISHED");
+            game.setStatus(GameStatus.FINISHED);
             return true;
         }
 
-        boolean playerDefeated = game.getPlayerBoard().getShips().stream()
-                .allMatch(Ship::isSunk);
-
+        boolean playerDefeated = game.getPlayerBoard().getShips().stream().allMatch(Ship::isSunk);
         if (playerDefeated) {
             game.setWinner("CPU");
-            game.setStatus("FINISHED");
+            game.setStatus(GameStatus.FINISHED);
             return true;
         }
-
         return false;
     }
 
-    // ==========================================
-    // RANKING
-    // ==========================================
     public List<PlayerScoreDTO> getRanking() {
         return playerRepository.findAll().stream()
                 .map(player -> {
-                    // Aquí asumimos que PlayerId sigue siendo Long (según tu modelo Player).
-                    // Si Player también es String, asegúrate de que el repositorio lo soporte.
                     long wins = gameRepository.countByPlayerIdAndWinner(player.getId(), "PLAYER");
-                    return new PlayerScoreDTO(player.getUsername(), wins);
+                    return PlayerScoreDTO.builder().username(player.getUsername()).wins(wins).build();
                 })
                 .filter(dto -> dto.getWins() > 0)
                 .sorted(Comparator.comparingLong(PlayerScoreDTO::getWins).reversed())
                 .collect(Collectors.toList());
     }
 
-    // ==========================================
-    // MÉTODOS AUXILIARES
-    // ==========================================
-
-    // 🟢 CORRECCIÓN: Eliminada conversión a Long. Se usa String directo.
     private Game findGameOrThrow(String gameId) {
         return gameRepository.findById(gameId)
                 .orElseThrow(() -> new GameNotFoundException("Game not found with ID: " + gameId));
     }
 
-    private void validateTurn(Game game, String expectedTurn) {
-        if (!"PLAYING".equals(game.getStatus())) {
+    private void validateTurn(Game game, PlayerTurn expectedTurn) {
+        if (game.getStatus() != GameStatus.PLAYING) { // <-- CORREGIDO
             throw new InvalidGameActionException("Game is finished or not started.");
         }
-        if (!expectedTurn.equals(game.getTurn())) {
+        if (game.getTurn() != expectedTurn) {
             throw new InvalidMoveException("It is not " + expectedTurn + "'s turn.");
         }
     }

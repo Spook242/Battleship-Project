@@ -1,12 +1,11 @@
 package cat.itacademy.battleship_api.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+// 1. MEJORA CRÍTICA: Cambiamos @Data por @Getter y @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -21,12 +20,19 @@ public class Player {
     @Column(unique = true, nullable = false)
     private String username;
 
-    private int gamesPlayed;
-    private int gamesWon;
+    // 2. MEJORA: Valores por defecto directos en la declaración y en el Builder
+    @Builder.Default
+    @Column(nullable = false)
+    private int gamesPlayed = 0;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private int gamesWon = 0;
 
     public Player(String username) {
-        this.username = username;
-        this.gamesPlayed = 0;
-        this.gamesWon = 0;
     }
+
+    // ❌ HEMOS BORRADO EL CONSTRUCTOR MANUAL
+    // Al poner " = 0" arriba y usar @Builder.Default, ya no necesitas escribir
+    // un constructor a mano. El código es más limpio.
 }
