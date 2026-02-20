@@ -1,0 +1,56 @@
+:root {
+    --bg-main: #2c3e50;
+    --text-light: #ffffff;
+    --color-accent: #f1c40f;
+    --color-success: #2ecc71;
+    --color-success-dark: #27ae60;
+    --color-danger: #e74c3c;
+    --color-danger-dark: #c0392b;
+    --color-water: #00BFFF;
+    --color-hit-text: #FF4500;
+    --color-hit-glow: #FF0000;
+    --board-bg: rgba(0, 0, 0, 0.3);
+    --board-border: #34495e;
+    --cell-ship: rgba(41, 128, 185, 0.6);
+    --cell-ship-border: #1a5276;
+    --cell-hover: rgba(255, 235, 59, 0.6);
+    --cell-hover-border: #FFEB3B;
+    --cell-preview-valid: rgba(46, 204, 113, 0.7);
+    --cell-preview-invalid: rgba(231, 76, 60, 0.7);
+    --font-main: 'Segoe UI', sans-serif;
+    --font-epic: 'Arial Black', 'Impact', sans-serif;
+}
+
+body {
+    font-family: var(--font-main);
+    color: var(--text-light);
+    text-align: center;
+    overflow-x: hidden;
+    margin: 0;
+    background-color: var(--bg-main);
+}
+
+.main-title {
+    font-size: 5rem;
+    margin-top: 5vh;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: 5px;
+    text-shadow: 3px 3px 0px #b8860b, 0 0 20px #ffd700, 0 0 40px rgba(255, 215, 0, 0.6);
+    background: -webkit-linear-gradient(#ffffff, #f0e68c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: block;
+}
+
+h2 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    margin-top: 5px;
+    text-transform: uppercase;
+    font-family: var(--font-epic);
+    letter-spacing: 2px;
+    color: var(--color-accent);
+    text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}

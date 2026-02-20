@@ -36,6 +36,7 @@ public class SecurityConfig {
                                 "/videos/**",
 
                                 "/js/**", // <--- 🚨 ¡LA LÍNEA MÁGICA QUE FALTABA! 🚨
+                                "/css/**",
 
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
