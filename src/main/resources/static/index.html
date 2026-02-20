@@ -45,7 +45,6 @@
         </div>
 
         <div class="boards-container">
-
             <div class="side-column left-column">
                 <div id="player-status-panel" class="status-panel"></div>
                 <div id="cpu-alert-panel" class="side-panel"></div>
@@ -65,14 +64,12 @@
                 <div id="cpu-status-panel" class="status-panel"></div>
                 <div id="player-alert-panel" class="side-panel"></div>
             </div>
-
         </div>
     </div>
 </div>
 
 <div id="game-over-modal" class="modal-overlay" style="display: none;">
     <div class="modal-content-image game-over-layout">
-
         <img src="/images/new_game_button.jpg"
              class="img-btn-new"
              onclick="restartGame()"
@@ -90,9 +87,6 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script src="game.js"></script>
-
 <div id="shot-message" class="shot-message"></div>
 
 <audio id="introAudio" loop>
@@ -100,27 +94,9 @@
     Tu navegador no soporta audio.
 </audio>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var audio = document.getElementById("introAudio");
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-        // 🔉 INICIO: Volumen al 40% (0.4)
-        if(audio) {
-            audio.volume = 0.4;
-            // Intentar reproducir automáticamente
-            var playPromise = audio.play();
-
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.log("Autoplay bloqueado. Esperando interacción...");
-                    document.addEventListener('click', function() {
-                        audio.play();
-                    }, { once: true });
-                });
-            }
-        }
-    });
-</script>
+<script type="module" src="/js/main.js"></script>
 
 </body>
 </html>

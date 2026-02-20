@@ -23,17 +23,19 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
-                        // 👇 1. RECURSOS ESTÁTICOS (Actualizado para tus nuevas carpetas)
+                        // 👇 1. RECURSOS ESTÁTICOS
                         .requestMatchers(
                                 "/",
                                 "/index.html",
                                 "/styles.css",
-                                "/game.js",
+                                "/game_old.js",
                                 "/favicon.ico",
 
                                 "/images/**",
                                 "/sounds/**",
                                 "/videos/**",
+
+                                "/js/**", // <--- 🚨 ¡LA LÍNEA MÁGICA QUE FALTABA! 🚨
 
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
