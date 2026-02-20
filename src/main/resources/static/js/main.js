@@ -208,10 +208,24 @@ async function showRanking() {
 }
 
 function restartGame() {
-    // 1. Borramos la memoria (gracias al cambio que acabamos de hacer en state.js)
+    // 1. Reseteo Suave (Tu nombre sigue guardado en la memoria)
     gameState.reset();
 
-    // 2. Paramos toda la fiesta de fin de partida
+    // 2. Paramos el vídeo y la música de victoria/derrota
+    audioManager.stopAllMusic();
+    uiManager.stopConfetti();
+    uiManager.stopVideo();
+
+    // 3. ¡Magia! Llamamos directamente a crear partida.
+    // Como el nombre sigue en memoria, se saltará el menú y te llevará a colocar barcos.
+    createGame();
+}
+
+function exitToMenu() {
+    // 1. Reseteo Total (Destruye tu nombre de la memoria)
+    gameState.fullReset();
+
+    // 2. Apagamos todo
     audioManager.stopAllMusic();
     uiManager.stopConfetti();
     uiManager.stopVideo();
@@ -219,16 +233,7 @@ function restartGame() {
     // 3. Volvemos al menú principal visualmente
     uiManager.returnToMenu();
 
-    // 4. Ponemos la música épica de fondo
-    audioManager.playIntro();
-}
-
-function exitToMenu() {
-    gameState.reset();
-    audioManager.stopAllMusic();
-    uiManager.stopConfetti();
-    uiManager.stopVideo();
-    uiManager.returnToMenu();
+    // 4. Encendemos la música de la pantalla de inicio
     audioManager.playIntro();
 }
 

@@ -26,21 +26,26 @@ export const gameState = {
 
     // 2. Método para resetear todo (útil cuando el jugador le da a "Volver a jugar")
    // 2. Método para resetear todo
-       reset() {
-           this.gameId = null;
-           this.isFinished = false;
+      // 2. Método para resetear la partida (Reseteo Suave - Mantiene el nombre)
+          reset() {
+              this.gameId = null;
+              this.isFinished = false;
+              this.token = null;
+              // ⚠️ Fíjate que ya NO borramos this.username aquí
 
-           // 👇 ESTAS DOS LÍNEAS SON LA CLAVE
-           this.username = "";
-           this.token = null;
+              // Reseteamos también el setup
+              this.setup.isActive = false;
+              this.setup.isHorizontal = true;
+              this.setup.currentIndex = 0;
+              this.setup.myPlacedShips = [];
+              this.setup.shipsToPlace = [5, 4, 3, 3, 2];
+          },
 
-           // Reseteamos también el setup
-           this.setup.isActive = false;
-           this.setup.isHorizontal = true;
-           this.setup.currentIndex = 0;
-           this.setup.myPlacedShips = [];
-           this.setup.shipsToPlace = [5, 4, 3, 3, 2];
-       },
+          // 2.5. Método para salir al menú (Reseteo Total - Borra el nombre)
+          fullReset() {
+              this.reset();
+              this.username = ""; // Ahora SÍ borramos al capitán
+          },
 
     // 3. Métodos de ayuda para la fase de Setup
     getCurrentShipSize() {
