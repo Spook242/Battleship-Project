@@ -11,10 +11,10 @@ const effects = {
 };
 
 // 2. Ajustamos los volúmenes iniciales
-effects.boom.volume = 0.35;
+effects.boom.volume = 0.3;
 effects.mayday.volume = 0.7;
 effects.hammer.volume = 0.6;
-effects.error.volume = 0.85;
+effects.error.volume = 0.9;
 effects.water.volume = 1;
 
 // 3. Exportamos el "Manager" que usará tu juego
