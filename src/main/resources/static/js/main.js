@@ -17,7 +17,7 @@ async function loginUser() {
     const passwordInput = document.getElementById("password").value.trim();
 
     if (!usernameInput || !passwordInput) {
-        uiManager.showLoginError("Please enter your nickname and password ⚠️");
+        uiManager.showLoginError("Please enter your nickname and password");
         return;
     }
 
@@ -41,7 +41,7 @@ async function registerUser() {
     const passwordInput = document.getElementById("password").value.trim();
 
     if (!usernameInput || !passwordInput) {
-        uiManager.showLoginError("Please enter your nickname and password ⚠️");
+        uiManager.showLoginError("Please enter your nickname and password");
         return;
     }
 
@@ -51,7 +51,7 @@ async function registerUser() {
         const authResponse = await api.register(usernameInput, passwordInput);
 
         localStorage.setItem('jwt_token', authResponse.token);
-        alert("¡Capitán registrado con éxito! Entrando al centro de mando...");
+       uiManager.showRadarAlert("NEW CAPTAIN REGISTERED", "Welcome aboard! Entering command center...", 5000);
 
         createGame(usernameInput);
     } catch (error) {

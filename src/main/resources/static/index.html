@@ -90,8 +90,16 @@
         <audio id="winAudio"><source src="/sounds/win.mp3" type="audio/mpeg"></audio>
         <audio id="loseAudio" loop><source src="/sounds/lose.mp3" type="audio/mpeg"></audio>
     </div>
+</div> <div id="radar-alert-modal" class="radar-modal-overlay">
+    <div class="radar-alert-content">
+        <div class="radar-scan-container">
+            <img src="/images/radar.png" alt="Radar Scan" class="radar-img">
+            <div class="radar-scanner-line"></div>
+        </div>
+        <h2 id="radar-alert-title">INCOMING TRANSMISSION</h2>
+        <p id="radar-alert-text">Mensaje del sistema...</p>
+    </div>
 </div>
-
 <div id="shot-message" class="shot-message"></div>
 
 <audio id="introAudio" loop>

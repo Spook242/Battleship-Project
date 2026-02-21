@@ -86,3 +86,100 @@
 .img-btn-new { cursor: pointer; width: 180px; height: auto; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: transform 0.2s ease, filter 0.2s; border: 2px solid var(--color-success); }
 .img-btn-new:hover { transform: scale(1.1); filter: brightness(1.2); box-shadow: 0 0 20px rgba(46, 204, 113, 0.8); }
 .img-btn-new:active { transform: scale(0.95); }
+
+/* =========================================
+   NUEVO: ESTILOS DEL RADAR DE ALERTA
+   ========================================= */
+
+/* El fondo oscuro que cubre la pantalla */
+.radar-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 20, 30, 0.85); /* Azul marino oscuro semi-transparente */
+    display: none; /* Oculto por defecto */
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* Muy por encima de todo */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Cuando se activa, se vuelve visible */
+.radar-modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+/* La caja del mensaje */
+.radar-alert-content {
+    background: linear-gradient(135deg, rgba(0, 40, 60, 0.9), rgba(0, 10, 20, 1));
+    border: 3px solid #00ffcc; /* Borde verde neón */
+    box-shadow: 0 0 20px #00ffcc, inset 0 0 10px #00ffcc; /* Brillo exterior e interior */
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    color: #00ffcc;
+    font-family: 'Courier New', monospace; /* Fuente tipo terminal */
+    text-transform: uppercase;
+    max-width: 80%;
+    transform: scale(0.8);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efecto rebote al aparecer */
+}
+
+/* Animación de entrada de la caja */
+.radar-modal-overlay.active .radar-alert-content {
+    transform: scale(1);
+}
+
+/* Título del mensaje */
+#radar-alert-title {
+    margin: 0;
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+    text-shadow: 0 0 5px #00ffcc;
+    border-bottom: 2px solid rgba(0, 255, 204, 0.3);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Texto del cuerpo */
+#radar-alert-text {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-shadow: 0 0 3px #00ffcc;
+}
+
+/* --- ANIMACIÓN DEL RADAR --- */
+.radar-scan-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 20px auto; /* Centrado y margen inferior */
+    border-radius: 50%;
+    border: 2px solid #00ffcc;
+    box-shadow: 0 0 15px #00ffcc;
+    overflow: hidden;
+}
+
+.radar-img {
+    width: 100%;
+    height: 100%;
+    opacity: 0.7;
+}
+
+/* La línea que gira como un escáner */
+.radar-scanner-line {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50%;
+    height: 2px;
+    background: linear-gradient(to right, rgba(0,255,204,0), #00ffcc);
+    transform-origin: 0% 0%;
+    animation: radar-spin 2s linear infinite;
+}
+
+@keyframes radar-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}

@@ -2,6 +2,41 @@
 
 export const uiManager = {
 
+// ... dentro de tu uiManager ...
+
+    // NUEVO: Función para mostrar la alerta de radar
+    showRadarAlert(title, message, duration = 4000) {
+        const modal = document.getElementById('radar-alert-modal');
+        const titleEl = document.getElementById('radar-alert-title');
+        const textEl = document.getElementById('radar-alert-text');
+
+        if (!modal || !titleEl || !textEl) {
+            console.error("Elementos del radar no encontrados en el HTML");
+            // Fallback por si acaso
+            alert(`${title}\n\n${message}`);
+            return;
+        }
+
+        // 1. Ponemos el texto
+        titleEl.innerText = title;
+        textEl.innerText = message;
+
+        // 2. Mostramos el modal con la clase 'active' para la animación
+        modal.classList.add('active');
+
+        // Opcional: Reproducir un sonido de sonar si tienes uno
+        // audioManager.playSonarPing();
+
+        // 3. Programamos que se oculte automáticamente después de 'duration' ms
+        if (this.radarTimeout) clearTimeout(this.radarTimeout); // Limpiar timer anterior si existe
+
+        this.radarTimeout = setTimeout(() => {
+            modal.classList.remove('active');
+        }, duration);
+    },
+
+    // ... el resto de tus métodos ...
+
 // ==========================================
     // 0. ERRORES DE LOGIN
     // ==========================================
