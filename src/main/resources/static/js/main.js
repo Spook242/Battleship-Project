@@ -9,39 +9,90 @@ import { setupManager } from './setup.js';
 // 1. INICIAR PARTIDA
 // ==========================================
 // ==========================================
-// 1. INICIAR PARTIDA
 // ==========================================
-async function createGame() {
+// 0. AUTENTICACIÓN (LOGIN Y REGISTRO)
+// ==========================================
+async function loginUser() {
+    const usernameInput = document.getElementById("username").value.trim();
+    const passwordInput = document.getElementById("password").value.trim();
+
+    if (!usernameInput || !passwordInput) {
+        uiManager.showLoginError("Please enter your nickname and password ⚠️");
+        return;
+    }
+
+    uiManager.hideLoginError();
+
+    try {
+        const authResponse = await api.login(usernameInput, passwordInput);
+
+        // ¡Magia! Guardamos la llave de acceso (token) en el navegador
+        localStorage.setItem('jwt_token', authResponse.token);
+
+        // Si todo va bien, iniciamos la partida pasándole el nombre
+        createGame(usernameInput);
+    } catch (error) {
+        uiManager.showLoginError(error.message + " ⚠️");
+    }
+}
+
+async function registerUser() {
+    const usernameInput = document.getElementById("username").value.trim();
+    const passwordInput = document.getElementById("password").value.trim();
+
+    if (!usernameInput || !passwordInput) {
+        uiManager.showLoginError("Please enter your nickname and password ⚠️");
+        return;
+    }
+
+    uiManager.hideLoginError();
+
+    try {
+        const authResponse = await api.register(usernameInput, passwordInput);
+
+        localStorage.setItem('jwt_token', authResponse.token);
+        alert("¡Capitán registrado con éxito! Entrando al centro de mando...");
+
+        createGame(usernameInput);
+    } catch (error) {
+        uiManager.showLoginError(error.message + " ⚠️");
+    }
+}
+
+// ==========================================
+// 1. INICIAR PARTIDA (Actualizado)
+// ==========================================
+async function createGame(authenticatedUsername) {
     console.log("🟢 Iniciando partida...");
     uiManager.stopConfetti();
     audioManager.stopAllMusic();
     audioManager.playIntro();
 
-    // El .trim() quita los espacios en blanco por si el usuario solo pone espacios
-    const usernameInput = document.getElementById("username").value.trim() || gameState.username;
-
-    // 1. Si no hay nombre, mostramos TU error rojo y cortamos la función
-    if (!usernameInput) {
-        uiManager.showLoginError("Please enter your captain's name ⚠️");
-        return;
-    }
-
-    // 2. Si hay nombre, ocultamos el error (por si estaba visible de antes)
-    uiManager.hideLoginError();
+    // Usamos el nombre que viene del login, o el que ya esté en memoria si es un "Restart"
+    const usernameToUse = authenticatedUsername || gameState.username;
 
     try {
-        const data = await api.createGame(usernameInput);
+        // Creamos la partida en el servidor
+        const data = await api.createGame(usernameToUse);
 
-        // Guardar sesión
-        gameState.saveSession(data.token, data.game.id, usernameInput);
+        // Recuperamos el token que guardamos previamente en loginUser/registerUser
+        const token = localStorage.getItem('jwt_token');
+
+        // OJO: Asumimos que data.game.id o data.id es lo que devuelve tu backend.
+        const gameId = data.game ? data.game.id : data.id;
+
+        // Guardamos la sesión en tu manager de estado
+        gameState.saveSession(token, gameId, usernameToUse);
 
         // Cambiar pantalla
         uiManager.showGamePanel();
 
-        if (data.game.status === "SETUP") {
+        // Comprobación de estado para saber si toca colocar barcos o jugar
+        const status = data.game ? data.game.status : data.status;
+        if (status === "SETUP") {
             setupManager.start(handleSetupComplete);
         } else {
-            refreshGameScreen(data.game);
+            refreshGameScreen(data.game || data);
         }
     } catch (error) {
         console.error(error);
@@ -247,6 +298,8 @@ window.restartGame = restartGame;
 window.exitToMenu = exitToMenu;
 window.showRanking = showRanking;
 window.closeRanking = () => uiManager.closeRanking();
+window.loginUser = loginUser;
+window.registerUser = registerUser;
 // ==========================================
 // INICIALIZACIÓN AL CARGAR LA PÁGINA
 // ==========================================

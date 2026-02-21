@@ -1,8 +1,38 @@
 // api.js
 
 const API_URL = "http://localhost:8080/game";
+const AUTH_URL = "http://localhost:8080/api/auth";
 
 export const api = {
+
+async register(username, password) {
+        const response = await fetch(`${AUTH_URL}/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (!response.ok) {
+            // Extraemos el mensaje de error que envía Java
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Register error.");
+        }
+        return await response.json(); // Devuelve { token: "...", message: "..." }
+    },
+
+    // 2. NUEVO: Iniciar sesión
+    async login(username, password) {
+        const response = await fetch(`${AUTH_URL}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (!response.ok) {
+            throw new Error("Incorrect credentials.");
+        }
+        return await response.json(); // Devuelve { token: "...", message: "..." }
+    },
 
     // 1. Crear una nueva partida
     async createGame(username) {
@@ -12,7 +42,7 @@ export const api = {
             body: JSON.stringify({ username })
         });
 
-        if (!response.ok) throw new Error("Error al crear la partida en el servidor.");
+        if (!response.ok) throw new Error("Error creating game.");
         return await response.json();
     },
 
@@ -27,7 +57,7 @@ export const api = {
             body: JSON.stringify(ships)
         });
 
-        if (!response.ok) throw new Error("Error al iniciar la batalla.");
+        if (!response.ok) throw new Error("Error starting battle.");
         return await response.json();
     },
 
@@ -42,7 +72,7 @@ export const api = {
             body: JSON.stringify({ coordinate })
         });
 
-        if (!response.ok) throw new Error("Error al registrar el disparo.");
+        if (!response.ok) throw new Error("Error registering the shot.");
         return await response.json();
     },
 
@@ -56,7 +86,7 @@ export const api = {
             }
         });
 
-        if (!response.ok) throw new Error("Error al ejecutar el turno de la CPU.");
+        if (!response.ok) throw new Error("Error executing CPU turn.");
         return await response.json();
     },
 
@@ -64,7 +94,7 @@ export const api = {
     async getRanking() {
         const response = await fetch(`${API_URL}/ranking`);
 
-        if (!response.ok) throw new Error("Error al obtener el ranking.");
+        if (!response.ok) throw new Error("Error obtaining ranking.");
         return await response.json();
     }
 };

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Battleship - Battleship</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="game_old.css">
 </head>
 <body>
 
@@ -19,11 +19,16 @@
         <h1>CAPTAIN'S LOG</h1>
 
         <input type="text" id="username" placeholder="Enter your Nickname">
+        <input type="password" id="password" placeholder="Enter your Password" style="margin-top: 10px; width: 80%; padding: 10px; font-size: 1rem; border-radius: 5px; border: none;">
+
         <div id="login-error" class="error-msg"></div>
 
-        <button onclick="createGame()">¡START BATTLE!</button>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+            <button onclick="loginUser()" style="background-color: #e67e22; color: white; flex: 1;">LOGIN</button>
+            <button onclick="registerUser()" style="background-color: #2ecc71; color: white; flex: 1;">REGISTER</button>
+        </div>
 
-        <button onclick="showRanking()" style="background-color: #3498db; color: white; margin-top: 10px;">
+        <button onclick="showRanking()" style="background-color: #3498db; color: white; margin-top: 10px; width: 100%;">
             🏆 HALL OF FAME
         </button>
     </div>

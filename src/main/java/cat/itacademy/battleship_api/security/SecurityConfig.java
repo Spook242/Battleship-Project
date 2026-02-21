@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -27,24 +29,22 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/index.html",
-                                "/styles.css",
+                                "/game_old.css",
                                 "/game_old.js",
                                 "/favicon.ico",
-
                                 "/images/**",
                                 "/sounds/**",
                                 "/videos/**",
-
-                                "/js/**", // <--- 🚨 ¡LA LÍNEA MÁGICA QUE FALTABA! 🚨
+                                "/js/**",
                                 "/css/**",
-
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
 
-                        // 2. RUTAS PÚBLICAS (Login y Crear Partida)
-                        .requestMatchers("/game/new", "/game/ranking", "/auth/**").permitAll()
+                        // 2. RUTAS PÚBLICAS (Login, Registro y Crear Partida)
+                        // 🚨 CAMBIO 1: Actualizado a "/api/auth/**" para coincidir con tu AuthController
+                        .requestMatchers("/game/new", "/game/ranking", "/api/auth/**").permitAll()
 
                         // 3. RUTAS PROTEGIDAS (Jugar)
                         .requestMatchers("/game/**").authenticated() // El resto de /game/ requiere token
@@ -55,5 +55,11 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    // 🚨 CAMBIO 2: Le decimos a Spring cómo vamos a encriptar y validar las contraseñas
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

@@ -29,10 +29,12 @@ public class Player {
     @Column(nullable = false)
     private int gamesWon = 0;
 
+    @Column(nullable = false)
+    private String password;
+
     public Player(String username) {
+
     }
 
-    // ❌ HEMOS BORRADO EL CONSTRUCTOR MANUAL
-    // Al poner " = 0" arriba y usar @Builder.Default, ya no necesitas escribir
-    // un constructor a mano. El código es más limpio.
+
 }
