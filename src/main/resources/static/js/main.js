@@ -17,7 +17,7 @@ async function loginUser() {
     const passwordInput = document.getElementById("password").value.trim();
 
     if (!usernameInput || !passwordInput) {
-        uiManager.showLoginError("Please enter your nickname and password");
+        uiManager.showLoginError("Please enter your nickname and password ⚠️");
         return;
     }
 
@@ -26,10 +26,13 @@ async function loginUser() {
     try {
         const authResponse = await api.login(usernameInput, passwordInput);
 
-        // ¡Magia! Guardamos la llave de acceso (token) en el navegador
+        // Guardamos la llave de acceso (token)
         localStorage.setItem('jwt_token', authResponse.token);
 
-        // Si todo va bien, iniciamos la partida pasándole el nombre
+        // 👇 AÑADIMOS EL MENSAJE DE RADAR AQUÍ 👇
+        uiManager.showRadarAlert("LOGIN SUCCESSFUL", "Welcome back, Captain! Accessing command center...", 2500);
+
+        // Iniciamos la partida
         createGame(usernameInput);
     } catch (error) {
         uiManager.showLoginError(error.message + " ⚠️");
