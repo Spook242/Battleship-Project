@@ -30,3 +30,34 @@
 
 .right-column, .right-column .status-panel { align-items: flex-start; }
 .right-column .ship-status-row { justify-content: flex-start; }
+
+/* =========================================
+   ESTILOS PARA LOS RADARES LATERALES
+   ========================================= */
+
+.mini-radar-container {
+    /* 🚨 CAMBIO CLAVE: 'auto' empuja el elemento al final del contenedor flex */
+    margin-top: auto;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 10px; /* Un pequeño margen inferior opcional para que no pegue con el borde */
+}
+
+/* ... el resto de tus estilos para .radar-scan-container.mini-radar se quedan igual ... */
+
+/* Modificamos el tamaño y color para que encaje con tu tablero azul */
+.radar-scan-container.mini-radar {
+    width: 80px;  /* Más pequeño que el del pop-up */
+    height: 80px;
+    border: 2px solid #00BFFF; /* Borde azul claro */
+    box-shadow: 0 0 15px #00BFFF, inset 0 0 10px #00BFFF; /* Brillo azul */
+    margin: 0; /* Quitamos el margen del contenedor padre */
+}
+
+/* Cambiamos el color de la línea del escáner a azul */
+.radar-scan-container.mini-radar .radar-scanner-line {
+    background: linear-gradient(to right, rgba(0, 191, 255, 0), #00BFFF);
+}
