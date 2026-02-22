@@ -17,7 +17,7 @@ async function loginUser() {
     const passwordInput = document.getElementById("password").value.trim();
 
     if (!usernameInput || !passwordInput) {
-        uiManager.showLoginError("Please enter your nickname and password ⚠️");
+        uiManager.showLoginError("⚠️ Please enter your nickname and password ⚠️");
         return;
     }
 
@@ -44,7 +44,7 @@ async function registerUser() {
     const passwordInput = document.getElementById("password").value.trim();
 
     if (!usernameInput || !passwordInput) {
-        uiManager.showLoginError("Please enter your nickname and password");
+        uiManager.showLoginError("⚠️ Please enter your nickname and password ⚠️");
         return;
     }
 
@@ -99,7 +99,7 @@ async function createGame(authenticatedUsername) {
         }
     } catch (error) {
         console.error(error);
-        uiManager.showLoginError("Error de conexión con el Cuartel General 📡");
+        uiManager.showLoginError("Connection error with Headquarters 📡");
     }
 }
 
