@@ -5,10 +5,7 @@ import { gameState } from './state.js';
 import { uiManager } from './ui.js';
 import { setupManager } from './setup.js';
 
-// ==========================================
-// 1. INICIAR PARTIDA
-// ==========================================
-// ==========================================
+
 // ==========================================
 // 0. AUTENTICACIÓN (LOGIN Y REGISTRO)
 // ==========================================
@@ -38,7 +35,7 @@ async function loginUser() {
         // Iniciamos la partida
         createGame(usernameInput);
     } catch (error) {
-        uiManager.showLoginError(error.message + " ⚠️");
+        uiManager.showLoginError("⚠️ "+ error.message + " ⚠️");
     }
 }
 
@@ -64,7 +61,7 @@ async function registerUser() {
 
         createGame(usernameInput);
     } catch (error) {
-        uiManager.showLoginError(error.message + " ⚠️");
+        uiManager.showLoginError("⚠️ " + error.message + " ⚠️");
     }
 }
 
