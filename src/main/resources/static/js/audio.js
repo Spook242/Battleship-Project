@@ -24,6 +24,15 @@ export const audioManager = {
     playShot() {
         effects.shot.currentTime = 0;
         effects.shot.play().catch(e => console.error("Error audio shot:", e));
+
+    },
+    playSonar() {
+        const sonar = document.getElementById("sonarAudio");
+        if (sonar) {
+            sonar.volume = 1.0;
+            sonar.currentTime = 0; // Lo reinicia por si ya estaba sonando
+            sonar.play().catch(e => console.error("Error reproduciendo sonar:", e));
+        }
     },
     playWater() {
         effects.water.currentTime = 0;
@@ -44,13 +53,14 @@ export const audioManager = {
     playError() {
         effects.error.currentTime = 0;
         effects.error.play().catch(e => console.error("Error audio error:", e));
+
     },
 
     // --- MÚSICA DE FONDO (Desde el HTML) ---
     playIntro() {
         const audio = document.getElementById("introAudio");
         if (audio) {
-            audio.volume = 0.30;
+            audio.volume = 0.2;
             // Solo le damos al play si estaba pausada. Si ya está sonando, la deja en paz.
             if (audio.paused) {
                 audio.play().catch(e => console.error("Error intro:", e));
@@ -79,7 +89,7 @@ export const audioManager = {
         const audio = document.getElementById("loseAudio");
         if (audio) {
             audio.loop = true;
-            audio.volume = 0.7;
+            audio.volume = 0.6;
             audio.currentTime = 0;
             audio.play().catch(e => console.error(e));
         }

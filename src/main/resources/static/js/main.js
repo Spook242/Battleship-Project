@@ -30,7 +30,10 @@ async function loginUser() {
         localStorage.setItem('jwt_token', authResponse.token);
 
         // 👇 AÑADIMOS EL MENSAJE DE RADAR AQUÍ 👇
-        uiManager.showRadarAlert("LOGIN SUCCESSFUL", "Welcome back, Captain! Accessing command center...", 2500);
+        uiManager.showRadarAlert("LOGIN SUCCESSFUL", "Welcome back, Captain! Accessing command center...", 5000);
+        setTimeout(() => {
+            audioManager.playSonar();
+               }, 0);
 
         // Iniciamos la partida
         createGame(usernameInput);
@@ -55,6 +58,9 @@ async function registerUser() {
 
         localStorage.setItem('jwt_token', authResponse.token);
        uiManager.showRadarAlert("NEW CAPTAIN REGISTERED", "Welcome aboard! Entering command center...", 5000);
+       setTimeout(() => {
+                   audioManager.playSonar();
+               }, 0);
 
         createGame(usernameInput);
     } catch (error) {
