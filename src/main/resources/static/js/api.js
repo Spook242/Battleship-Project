@@ -1,5 +1,3 @@
-// api.js
-
 const API_URL = "http://localhost:8080/game";
 const AUTH_URL = "http://localhost:8080/api/auth";
 
@@ -46,7 +44,6 @@ async register(username, password) {
         return await response.json();
     },
 
-    // 2. Enviar los barcos colocados para empezar la batalla
     async startBattle(gameId, ships, token) {
         const response = await fetch(`${API_URL}/${gameId}/start-battle`, {
             method: "POST",
@@ -61,7 +58,6 @@ async register(username, password) {
         return await response.json();
     },
 
-    // 3. Realizar un disparo (Jugador)
     async fire(gameId, coordinate, token) {
         const response = await fetch(`${API_URL}/${gameId}/fire`, {
             method: "POST",

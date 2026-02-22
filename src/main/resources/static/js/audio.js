@@ -60,7 +60,7 @@ export const audioManager = {
     playIntro() {
         const audio = document.getElementById("introAudio");
         if (audio) {
-            audio.volume = 0.2;
+            audio.volume = 0.3;
             // Solo le damos al play si estaba pausada. Si ya está sonando, la deja en paz.
             if (audio.paused) {
                 audio.play().catch(e => console.error("Error intro:", e));
