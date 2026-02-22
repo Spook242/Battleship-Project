@@ -29,7 +29,7 @@ async register(username, password) {
         });
 
         if (!response.ok) {
-            throw new Error("⚠️ Incorrect credentials ⚠️");
+            throw new Error("Incorrect credentials");
         }
         return await response.json(); // Devuelve { token: "...", message: "..." }
     },
