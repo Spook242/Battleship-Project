@@ -1,6 +1,6 @@
 package cat.itacademy.battleship_api.service;
 
-import cat.itacademy.battleship_api.exception.InvalidMoveException; // Asegúrate de importar tu excepción
+import cat.itacademy.battleship_api.exception.InvalidMoveException;
 import cat.itacademy.battleship_api.model.Board;
 import cat.itacademy.battleship_api.model.Ship;
 import org.springframework.stereotype.Service;
@@ -14,34 +14,30 @@ public class BoardService {
 
     private final Random random = new Random();
 
-    // ==========================================
-    // 💥 PROCESAR DISPARO
-    // ==========================================
+
     public boolean processShot(Board board, String coordinate) {
 
-        // 1. SEGURIDAD: Evitar perder el turno por disparar al mismo sitio
+
         if (board.getShotsReceived().contains(coordinate)) {
-            // Lanzamos error en vez de devolver 'false', así el Front avisa al jugador
-            // y el GameService NO cambia el turno a la CPU.
+
+
             throw new InvalidMoveException("Ya has disparado a la coordenada " + coordinate);
         }
 
-        // 2. Usamos la "inteligencia" del tablero
+
         board.receiveShot(coordinate);
 
-        // 3. Usamos la "inteligencia" del barco (¡Mira qué limpio queda esto!)
+
         for (Ship ship : board.getShips()) {
             if (ship.receiveHit(coordinate)) {
-                return true; // 💥 IMPACTO (El barco ya calcula solo si se ha hundido)
+                return true;
             }
         }
 
-        return false; // 💧 AGUA
+        return false;
     }
 
-    // ==========================================
-    // 🚢 COLOCAR BARCOS
-    // ==========================================
+
     public void placeShipsRandomly(Board board) {
         board.getShips().clear();
         board.getShotsReceived().clear();
@@ -56,9 +52,7 @@ public class BoardService {
         }
     }
 
-    // ==========================================
-    // 🛠️ MÉTODOS PRIVADOS
-    // ==========================================
+
     private boolean tryToPlaceShip(Board board, int size) {
         boolean horizontal = random.nextBoolean();
         int startRow = random.nextInt(10);
@@ -79,22 +73,16 @@ public class BoardService {
             shipCells.add(coordinate);
         }
 
-        // 4. MEJORA: Builder más limpio.
-        // Como 'hits' y 'sunk' tienen @Builder.Default en el modelo, no hace falta ponerlos aquí.
-        Ship newShip = Ship.builder()
-                .type("Ship-" + size)
-                .size(size)
-                .cells(shipCells)
-                .build();
 
-        board.addShip(newShip); // Usamos el método limpio que creamos en Board
+        Ship newShip = Ship.builder().type("Ship-" + size).size(size).cells(shipCells).build();
+
+        board.addShip(newShip);
         return true;
     }
 
     private boolean isOccupied(Board board, String coordinate) {
-        // 5. MEJORA PRO: Usamos Streams para que sea más directo
-        return board.getShips().stream()
-                .anyMatch(ship -> ship.getCells().contains(coordinate));
+
+        return board.getShips().stream().anyMatch(ship -> ship.getCells().contains(coordinate));
     }
 
     private String toCoordinate(int row, int col) {

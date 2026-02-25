@@ -18,7 +18,7 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Inyectamos tu servicio de JWT
+
     @Autowired
     private JwtService jwtService;
 
@@ -27,28 +27,24 @@ public class AuthService {
             throw new RuntimeException("The username is already in use");
         }
 
-        Player newPlayer = Player.builder()
-                .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .build();
+        Player newPlayer = Player.builder().username(request.getUsername()).password(passwordEncoder.encode(request.getPassword())).build();
 
         playerRepository.save(newPlayer);
 
-        // Generamos el token usando el nombre de usuario
+
         String jwtToken = jwtService.generateToken(newPlayer.getUsername());
 
         return new AuthResponse(jwtToken, "User successfully registered");
     }
 
     public AuthResponse login(AuthRequest request) {
-        // Buscamos al jugador. Si no existe, lanzamos excepción.
-        Player player = playerRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Comparamos la contraseña enviada con la encriptada en la base de datos
+        Player player = playerRepository.findByUsername(request.getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
+
+
         if (passwordEncoder.matches(request.getPassword(), player.getPassword())) {
 
-            // Si coincide, generamos el token
+
             String jwtToken = jwtService.generateToken(player.getUsername());
             return new AuthResponse(jwtToken, "Successful login");
 

@@ -37,16 +37,9 @@ public class GameService {
             throw new InvalidGameActionException("Username is required");
         }
 
-        Player player = playerRepository.findByUsername(username)
-                .orElseGet(() -> playerRepository.save(Player.builder().username(username).build()));
+        Player player = playerRepository.findByUsername(username).orElseGet(() -> playerRepository.save(Player.builder().username(username).build()));
 
-        Game game = Game.builder()
-                .playerId(player.getId())
-                .status(GameStatus.SETUP) // <-- CORREGIDO PARA EL FRONTEND
-                .turn(PlayerTurn.PLAYER)
-                .playerBoard(new Board())
-                .cpuBoard(new Board())
-                .build();
+        Game game = Game.builder().playerId(player.getId()).status(GameStatus.SETUP).turn(PlayerTurn.PLAYER).playerBoard(new Board()).cpuBoard(new Board()).build();
 
         boardService.placeShipsRandomly(game.getCpuBoard());
         gameRepository.save(game);
@@ -58,7 +51,7 @@ public class GameService {
     public Game startBattle(String gameId, List<Ship> playerShips) {
         Game game = findGameOrThrow(gameId);
 
-        if (game.getStatus() != GameStatus.SETUP) { // <-- CORREGIDO
+        if (game.getStatus() != GameStatus.SETUP) {
             throw new InvalidGameActionException("Game is not in SETUP mode");
         }
 
@@ -67,7 +60,7 @@ public class GameService {
         }
 
         game.getPlayerBoard().setShips(playerShips);
-        game.setStatus(GameStatus.PLAYING); // <-- CORREGIDO PARA EL FRONTEND
+        game.setStatus(GameStatus.PLAYING);
 
         return gameRepository.save(game);
     }
@@ -89,22 +82,19 @@ public class GameService {
     }
 
     public Game playCpuTurn(String gameId) {
-        return gameRepository.findById(gameId)
-                .filter(g -> g.getStatus() == GameStatus.PLAYING && g.getTurn() == PlayerTurn.CPU) // <-- CORREGIDO
-                .map(game -> {
-                    String target = aiService.calculateCpuTarget(game.getPlayerBoard());
-                    boolean hit = boardService.processShot(game.getPlayerBoard(), target);
+        return gameRepository.findById(gameId).filter(g -> g.getStatus() == GameStatus.PLAYING && g.getTurn() == PlayerTurn.CPU).map(game -> {
+            String target = aiService.calculateCpuTarget(game.getPlayerBoard());
+            boolean hit = boardService.processShot(game.getPlayerBoard(), target);
 
-                    if (checkWinner(game)) {
-                        return gameRepository.save(game);
-                    }
+            if (checkWinner(game)) {
+                return gameRepository.save(game);
+            }
 
-                    if (!hit) {
-                        game.setTurn(PlayerTurn.PLAYER);
-                    }
-                    return gameRepository.save(game);
-                })
-                .orElseThrow(() -> new InvalidGameActionException("Cannot play CPU turn"));
+            if (!hit) {
+                game.setTurn(PlayerTurn.PLAYER);
+            }
+            return gameRepository.save(game);
+        }).orElseThrow(() -> new InvalidGameActionException("Cannot play CPU turn"));
     }
 
     private boolean checkWinner(Game game) {
@@ -125,23 +115,18 @@ public class GameService {
     }
 
     public List<PlayerScoreDTO> getRanking() {
-        return playerRepository.findAll().stream()
-                .map(player -> {
-                    long wins = gameRepository.countByPlayerIdAndWinner(player.getId(), "PLAYER");
-                    return PlayerScoreDTO.builder().username(player.getUsername()).wins(wins).build();
-                })
-                .filter(dto -> dto.getWins() > 0)
-                .sorted(Comparator.comparingLong(PlayerScoreDTO::getWins).reversed())
-                .collect(Collectors.toList());
+        return playerRepository.findAll().stream().map(player -> {
+            long wins = gameRepository.countByPlayerIdAndWinner(player.getId(), "PLAYER");
+            return PlayerScoreDTO.builder().username(player.getUsername()).wins(wins).build();
+        }).filter(dto -> dto.getWins() > 0).sorted(Comparator.comparingLong(PlayerScoreDTO::getWins).reversed()).collect(Collectors.toList());
     }
 
     private Game findGameOrThrow(String gameId) {
-        return gameRepository.findById(gameId)
-                .orElseThrow(() -> new GameNotFoundException("Game not found with ID: " + gameId));
+        return gameRepository.findById(gameId).orElseThrow(() -> new GameNotFoundException("Game not found with ID: " + gameId));
     }
 
     private void validateTurn(Game game, PlayerTurn expectedTurn) {
-        if (game.getStatus() != GameStatus.PLAYING) { // <-- CORREGIDO
+        if (game.getStatus() != GameStatus.PLAYING) {
             throw new InvalidGameActionException("Game is finished or not started.");
         }
         if (game.getTurn() != expectedTurn) {

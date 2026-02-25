@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct; // 👈 NECESARIO
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -24,19 +24,16 @@ public class JwtService {
     @Value("${security.jwt.expiration-time:86400000}")
     private long jwtExpiration;
 
-    // 👇 Variable para guardar la clave ya procesada
+
     private Key cachedSigningKey;
 
-    // 👇 ESTO ES NUEVO: Se ejecuta una sola vez al arrancar Spring
+
     @PostConstruct
     public void init() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.cachedSigningKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // ==========================================
-    // MÉTODOS PÚBLICOS
-    // ==========================================
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -60,18 +57,9 @@ public class JwtService {
         return (usernameFromToken.equals(username)) && !isTokenExpired(token);
     }
 
-    // ==========================================
-    // MÉTODOS PRIVADOS
-    // ==========================================
 
     private String buildToken(Map<String, Object> extraClaims, String username, long expiration) {
-        return Jwts.builder()
-                .setClaims(extraClaims)
-                .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                .compact();
+        return Jwts.builder().setClaims(extraClaims).setSubject(username).setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis() + expiration)).signWith(getSignInKey(), SignatureAlgorithm.HS256).compact();
     }
 
     private boolean isTokenExpired(String token) {
@@ -83,15 +71,10 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts
-                .parserBuilder()
-                .setSigningKey(getSignInKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        return Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token).getBody();
     }
 
-    // 👇 OPTIMIZADO: Ahora solo devuelve la variable ya calculada
+
     private Key getSignInKey() {
         return this.cachedSigningKey;
     }

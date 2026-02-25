@@ -10,13 +10,13 @@ import java.util.stream.Collectors;
 @Service
 public class BattleshipAiService {
 
+    private static final int MAX_HUNT_ATTEMPTS = 5000;
     private final Random random = new Random();
-    private static final int MAX_HUNT_ATTEMPTS = 5000; // Constante para evitar "Magic Numbers"
 
     public String calculateCpuTarget(Board opponentBoard) {
         List<String> shotsFired = opponentBoard.getShotsReceived();
 
-        // 1. MODO "TARGET" (Prioridad Máxima: Rematar barcos heridos)
+
         List<String> openHits = getOpenHits(opponentBoard);
 
         if (!openHits.isEmpty()) {
@@ -24,7 +24,7 @@ public class BattleshipAiService {
                 String lineTarget = getLineStrategyTarget(openHits, shotsFired);
                 if (lineTarget != null) return lineTarget;
             }
-            // Si no hay línea clara, disparamos a un vecino aleatorio del impacto
+
             for (String hit : openHits) {
                 for (String neighbor : getNeighbors(hit)) {
                     if (!shotsFired.contains(neighbor)) return neighbor;
@@ -32,35 +32,19 @@ public class BattleshipAiService {
             }
         }
 
-        // 2. MODO "HUNT" (Buscar inteligentemente)
+
         int minShipSize = getSmallestAliveShipSize(opponentBoard);
         return generateSmartGapCoordinate(shotsFired, minShipSize);
     }
 
-    // ==========================================
-    // 🧠 LÓGICA DE DETECCIÓN (Modo Target)
-    // ==========================================
 
-    /**
-     * Extrae todos los impactos que pertenecen a barcos que AÚN NO están hundidos.
-     */
     private List<String> getOpenHits(Board opponentBoard) {
-        return opponentBoard.getShips().stream()
-                .filter(ship -> !ship.isSunk()) // Solo barcos vivos
-                .flatMap(ship -> ship.getHits().stream()) // 🟢 MEJORA: Usamos la lista 'hits' que añadimos al modelo Ship
-                .collect(Collectors.toList());
+        return opponentBoard.getShips().stream().filter(ship -> !ship.isSunk()).flatMap(ship -> ship.getHits().stream()).collect(Collectors.toList());
     }
 
-    // ==========================================
-    // 🎯 LÓGICA DE HUECOS (Modo Hunt)
-    // ==========================================
 
     private int getSmallestAliveShipSize(Board board) {
-        return board.getShips().stream()
-                .filter(ship -> !ship.isSunk())
-                .mapToInt(Ship::getSize)
-                .min()
-                .orElse(2); // Valor por defecto si no encuentra barcos
+        return board.getShips().stream().filter(ship -> !ship.isSunk()).mapToInt(Ship::getSize).min().orElse(2);
     }
 
     private String generateSmartGapCoordinate(List<String> shots, int targetSize) {
@@ -77,7 +61,7 @@ public class BattleshipAiService {
             }
         }
 
-        // Plan de emergencia si el tablero está muy lleno
+
         return findFirstFreeCell(shots);
     }
 
@@ -85,12 +69,12 @@ public class BattleshipAiService {
         char row = coord.charAt(0);
         int col = Integer.parseInt(coord.substring(1));
 
-        // Espacio Horizontal (Izquierda + Centro + Derecha)
+
         int freeLeft = countFreeSpaces(row, col, 0, -1, shots);
         int freeRight = countFreeSpaces(row, col, 0, 1, shots);
         if ((freeLeft + 1 + freeRight) >= targetSize) return true;
 
-        // Espacio Vertical (Arriba + Centro + Abajo)
+
         int freeUp = countFreeSpaces(row, col, -1, 0, shots);
         int freeDown = countFreeSpaces(row, col, 1, 0, shots);
         return (freeUp + 1 + freeDown) >= targetSize;
@@ -111,9 +95,6 @@ public class BattleshipAiService {
         return count;
     }
 
-    // ==========================================
-    // 📏 MÉTODOS AUXILIARES (Líneas y Vecinos)
-    // ==========================================
 
     private String getLineStrategyTarget(List<String> hits, List<String> alreadyShot) {
         Collections.sort(hits);
@@ -125,7 +106,7 @@ public class BattleshipAiService {
         int col1 = Integer.parseInt(first.substring(1));
         int col2 = Integer.parseInt(second.substring(1));
 
-        if (row1 == row2) { // Línea Horizontal
+        if (row1 == row2) {
             int minCol = hits.stream().mapToInt(h -> Integer.parseInt(h.substring(1))).min().orElse(11);
             int maxCol = hits.stream().mapToInt(h -> Integer.parseInt(h.substring(1))).max().orElse(0);
 
@@ -135,7 +116,7 @@ public class BattleshipAiService {
             String right = "" + row1 + (maxCol + 1);
             if (isValidCoordinate(row1, maxCol + 1) && !alreadyShot.contains(right)) return right;
 
-        } else if (col1 == col2) { // Línea Vertical
+        } else if (col1 == col2) {
             char minRow = (char) hits.stream().mapToInt(h -> h.charAt(0)).min().orElse('Z');
             char maxRow = (char) hits.stream().mapToInt(h -> h.charAt(0)).max().orElse('A');
 
@@ -153,10 +134,10 @@ public class BattleshipAiService {
         char row = coord.charAt(0);
         int col = Integer.parseInt(coord.substring(1));
 
-        if (row > 'A') neighbors.add("" + (char) (row - 1) + col); // Arriba
-        if (row < 'J') neighbors.add("" + (char) (row + 1) + col); // Abajo
-        if (col > 1) neighbors.add("" + row + (col - 1));         // Izquierda
-        if (col < 10) neighbors.add("" + row + (col + 1));        // Derecha
+        if (row > 'A') neighbors.add("" + (char) (row - 1) + col);
+        if (row < 'J') neighbors.add("" + (char) (row + 1) + col);
+        if (col > 1) neighbors.add("" + row + (col - 1));
+        if (col < 10) neighbors.add("" + row + (col + 1));
 
         Collections.shuffle(neighbors);
         return neighbors;

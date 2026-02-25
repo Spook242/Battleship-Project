@@ -12,7 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils; // Utilidad de Spring muy útil
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -23,26 +23,22 @@ import java.util.Collections;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
     private static final String TOKEN_PREFIX = "Bearer ";
+    private final JwtService jwtService;
 
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        // 1. Intentamos obtener el token limpio
+
         String token = getTokenFromRequest(request);
 
-        // 2. Si no hay token, pasamos al siguiente filtro (usuario anónimo)
+
         if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 3. Si hay token, intentamos autenticar
+
         try {
             String username = jwtService.extractUsername(token);
 
@@ -53,17 +49,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception exception) {
-            // Si el token expiró o está mal formado, solo logueamos y seguimos (el usuario quedará como no autenticado)
+
             log.warn("No se pudo autenticar el token: {}", exception.getMessage());
         }
 
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * Extrae el token JWT puro de la cabecera Authorization.
-     * Devuelve null si no existe o no tiene el formato correcto.
-     */
+
     private String getTokenFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
@@ -73,15 +66,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    /**
-     * Establece la autenticación en el contexto de Spring Security.
-     */
+
     private void authenticateUser(HttpServletRequest request, String username) {
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                username,
-                null,
-                Collections.emptyList()
-        );
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
     }
