@@ -13,15 +13,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleAllExceptions(Exception exception) {
-        // 1. Preparamos la respuesta (un Mapa)
+        
         Map<String, String> response = new HashMap<>();
         response.put("error", "Internal Server Error");
         response.put("message", exception.getMessage() != null ? exception.getMessage() : "Unknown error");
 
-        // 2. Devolvemos la respuesta FORZANDO que sea JSON
+        
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .header("Content-Type", "application/json") // <--- ESTA LÍNEA ES LA CLAVE
+                .header("Content-Type", "application/json") 
                 .body(response);
     }
 }
