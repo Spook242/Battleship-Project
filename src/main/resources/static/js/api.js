@@ -11,14 +11,12 @@ async register(username, password) {
         });
 
         if (!response.ok) {
-            // Extraemos el mensaje de error que envía Java
             const errorData = await response.json();
             throw new Error(errorData.message || "Register error.");
         }
-        return await response.json(); // Devuelve { token: "...", message: "..." }
+        return await response.json();
     },
 
-    // 2. NUEVO: Iniciar sesión
     async login(username, password) {
         const response = await fetch(`${AUTH_URL}/login`, {
             method: "POST",
@@ -29,10 +27,9 @@ async register(username, password) {
         if (!response.ok) {
             throw new Error("Incorrect credentials");
         }
-        return await response.json(); // Devuelve { token: "...", message: "..." }
+        return await response.json();
     },
 
-    // 1. Crear una nueva partida
     async createGame(username) {
         const response = await fetch(`${API_URL}/new`, {
             method: "POST",
@@ -72,7 +69,6 @@ async register(username, password) {
         return await response.json();
     },
 
-    // 4. Solicitar el turno de la CPU
     async playCpuTurn(gameId, token) {
         const response = await fetch(`${API_URL}/${gameId}/cpu-turn`, {
             method: "POST",
@@ -86,7 +82,6 @@ async register(username, password) {
         return await response.json();
     },
 
-    // 5. Obtener el Ranking (No requiere token)
     async getRanking() {
         const response = await fetch(`${API_URL}/ranking`);
 
