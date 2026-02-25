@@ -1,4 +1,3 @@
-// main.js
 import { api } from './api.js';
 import { audioManager } from './audio.js';
 import { gameState } from './state.js';
@@ -6,9 +5,6 @@ import { uiManager } from './ui.js';
 import { setupManager } from './setup.js';
 
 
-// ==========================================
-// 0. AUTENTICACIÓN (LOGIN Y REGISTRO)
-// ==========================================
 async function loginUser() {
     const usernameInput = document.getElementById("username").value.trim();
     const passwordInput = document.getElementById("password").value.trim();
@@ -23,16 +19,13 @@ async function loginUser() {
     try {
         const authResponse = await api.login(usernameInput, passwordInput);
 
-        // Guardamos la llave de acceso (token)
         localStorage.setItem('jwt_token', authResponse.token);
 
-        // 👇 AÑADIMOS EL MENSAJE DE RADAR AQUÍ 👇
         uiManager.showRadarAlert("LOGIN SUCCESSFUL", "Welcome back, Captain! Accessing command center...", 5000);
         setTimeout(() => {
             audioManager.playSonar();
                }, 0);
 
-        // Iniciamos la partida
         createGame(usernameInput);
     } catch (error) {
         uiManager.showLoginError("⚠️ "+ error.message + " ⚠️");
@@ -65,35 +58,27 @@ async function registerUser() {
     }
 }
 
-// ==========================================
-// 1. INICIAR PARTIDA (Actualizado)
-// ==========================================
 async function createGame(authenticatedUsername) {
     console.log("🟢 Iniciando partida...");
     uiManager.stopConfetti();
     audioManager.stopAllMusic();
     audioManager.playIntro();
 
-    // Usamos el nombre que viene del login, o el que ya esté en memoria si es un "Restart"
+    
     const usernameToUse = authenticatedUsername || gameState.username;
 
     try {
-        // Creamos la partida en el servidor
+        
         const data = await api.createGame(usernameToUse);
 
-        // Recuperamos el token que guardamos previamente en loginUser/registerUser
         const token = localStorage.getItem('jwt_token');
 
-        // OJO: Asumimos que data.game.id o data.id es lo que devuelve tu backend.
         const gameId = data.game ? data.game.id : data.id;
 
-        // Guardamos la sesión en tu manager de estado
         gameState.saveSession(token, gameId, usernameToUse);
 
-        // Cambiar pantalla
         uiManager.showGamePanel();
 
-        // Comprobación de estado para saber si toca colocar barcos o jugar
         const status = data.game ? data.game.status : data.status;
         if (status === "SETUP") {
             setupManager.start(handleSetupComplete);
@@ -106,9 +91,6 @@ async function createGame(authenticatedUsername) {
     }
 }
 
-// ==========================================
-// 2. CONECTAR SETUP CON BATALLA
-// ==========================================
 async function handleSetupComplete(placedShips) {
     try {
         const data = await api.startBattle(gameState.gameId, placedShips, gameState.token);
@@ -120,9 +102,6 @@ async function handleSetupComplete(placedShips) {
     }
 }
 
-// ==========================================
-// 3. TURNO DEL JUGADOR (Disparar)
-// ==========================================
 async function fire(coordinate) {
     if (gameState.isFinished) return;
 
@@ -132,7 +111,6 @@ async function fire(coordinate) {
         const game = await api.fire(gameState.gameId, coordinate, gameState.token);
         refreshGameScreen(game);
 
-        // --- Lógica Visual de Impacto ---
         let isHit = false;
         let isSunk = false;
 
@@ -165,9 +143,6 @@ async function fire(coordinate) {
     }
 }
 
-// ==========================================
-// 4. TURNO DE LA CPU
-// ==========================================
 async function playCpuTurn() {
     if (gameState.isFinished) return;
 
@@ -175,7 +150,6 @@ async function playCpuTurn() {
         const game = await api.playCpuTurn(gameState.gameId, gameState.token);
         refreshGameScreen(game);
 
-        // --- Lógica Visual de Impacto CPU ---
         const shots = game.playerBoard.shotsReceived;
         let sunkInThisTurn = false;
 
@@ -206,7 +180,6 @@ async function playCpuTurn() {
             }
         }
 
-        // Tiempos de espera para que se vea la jugada
         if (game.status === "FINISHED") {
             setTimeout(() => checkGameStatus(game), 250);
         } else if (sunkInThisTurn) {
@@ -220,11 +193,7 @@ async function playCpuTurn() {
     }
 }
 
-// ==========================================
-// 5. CONTROLADORES GLOBALES
-// ==========================================
 function refreshGameScreen(game) {
-    // FÍJATE AQUÍ: Le pasamos 'fire' al tablero enemigo para que sepa qué hacer al hacer clic
     uiManager.updateBoard("player-board", game.playerBoard, false);
     uiManager.updateBoard("cpu-board", game.cpuBoard, true, fire);
 
@@ -253,7 +222,6 @@ function checkGameStatus(game) {
     }
 }
 
-// Botones del menú
 async function showRanking() {
     uiManager.showRankingLoading();
     try {
@@ -265,40 +233,27 @@ async function showRanking() {
 }
 
 function restartGame() {
-    // 1. Reseteo Suave (Tu nombre sigue guardado en la memoria)
     gameState.reset();
 
-    // 2. Paramos el vídeo y la música de victoria/derrota
     audioManager.stopAllMusic();
     uiManager.stopConfetti();
     uiManager.stopVideo();
 
-    // 3. ¡Magia! Llamamos directamente a crear partida.
-    // Como el nombre sigue en memoria, se saltará el menú y te llevará a colocar barcos.
     createGame();
 }
 
 function exitToMenu() {
-    // 1. Reseteo Total (Destruye tu nombre de la memoria)
     gameState.fullReset();
 
-    // 2. Apagamos todo
     audioManager.stopAllMusic();
     uiManager.stopConfetti();
     uiManager.stopVideo();
 
-    // 3. Volvemos al menú principal visualmente
     uiManager.returnToMenu();
 
-    // 4. Encendemos la música de la pantalla de inicio
     audioManager.playIntro();
 }
 
-// ==========================================
-// EXPORTAR FUNCIONES AL HTML
-// ==========================================
-// Como usamos módulos, el HTML no ve estas funciones automáticamente.
-// Tenemos que engancharlas al objeto global 'window'.
 window.createGame = createGame;
 window.restartGame = restartGame;
 window.exitToMenu = exitToMenu;
@@ -306,14 +261,9 @@ window.showRanking = showRanking;
 window.closeRanking = () => uiManager.closeRanking();
 window.loginUser = loginUser;
 window.registerUser = registerUser;
-// ==========================================
-// INICIALIZACIÓN AL CARGAR LA PÁGINA
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Intentamos reproducir la música de intro al cargar
     audioManager.playIntro();
 
-    // Si el navegador la bloquea (política de Autoplay), la disparamos con el primer clic
     document.addEventListener('click', () => {
         const audio = document.getElementById("introAudio");
         if (audio && audio.paused) {

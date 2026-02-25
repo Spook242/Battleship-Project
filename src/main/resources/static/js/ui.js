@@ -1,10 +1,5 @@
-// ui.js (COMPLETO)
-
 export const uiManager = {
 
-// ... dentro de tu uiManager ...
-
-    // NUEVO: Función para mostrar la alerta de radar
     showRadarAlert(title, message, duration = 4000) {
         const modal = document.getElementById('radar-alert-modal');
         const titleEl = document.getElementById('radar-alert-title');
@@ -12,34 +7,23 @@ export const uiManager = {
 
         if (!modal || !titleEl || !textEl) {
             console.error("Elementos del radar no encontrados en el HTML");
-            // Fallback por si acaso
             alert(`${title}\n\n${message}`);
             return;
         }
 
-        // 1. Ponemos el texto
         titleEl.innerText = title;
         textEl.innerText = message;
 
-        // 2. Mostramos el modal con la clase 'active' para la animación
+        
         modal.classList.add('active');
 
-        // Opcional: Reproducir un sonido de sonar si tienes uno
-        // audioManager.playSonarPing();
-
-        // 3. Programamos que se oculte automáticamente después de 'duration' ms
-        if (this.radarTimeout) clearTimeout(this.radarTimeout); // Limpiar timer anterior si existe
+        if (this.radarTimeout) clearTimeout(this.radarTimeout); 
 
         this.radarTimeout = setTimeout(() => {
             modal.classList.remove('active');
         }, duration);
     },
 
-    // ... el resto de tus métodos ...
-
-// ==========================================
-    // 0. ERRORES DE LOGIN
-    // ==========================================
     showLoginError(message) {
         const errorMsg = document.getElementById("login-error");
         if (errorMsg) {
@@ -53,9 +37,6 @@ export const uiManager = {
         if (errorMsg) errorMsg.style.display = "none";
     },
 
-    // ==========================================
-    // 1. CAMBIOS DE PANTALLA
-    // ==========================================
     showGamePanel() {
         document.getElementById("login-panel").style.display = "none";
         document.getElementById("full-screen-bg").style.display = "none";
@@ -75,17 +56,11 @@ export const uiManager = {
         document.getElementById("username").value = "";
     },
 
-    // ==========================================
-    // 2. TEXTOS DE ESTADO (Turnos)
-    // ==========================================
     updateStatusText(statusMessage, turnMessage) {
         document.getElementById("game-status").innerText = statusMessage;
         document.getElementById("turn-indicator").innerText = turnMessage;
     },
 
-    // ==========================================
-    // 3. PINTAR EL TABLERO (10x10)
-    // ==========================================
     updateBoard(elementId, boardData, isEnemy, onCellClick = null) {
         const boardElement = document.getElementById(elementId);
         boardElement.innerHTML = "";
@@ -151,9 +126,6 @@ export const uiManager = {
         }
     },
 
-    // ==========================================
-    // 4. PINTAR EL ESTADO DE LA FLOTA
-    // ==========================================
     updateFleetStatusPanel(elementId, ships) {
         const container = document.getElementById(elementId);
         if (!container) return;
@@ -176,9 +148,6 @@ export const uiManager = {
         });
     },
 
-    // ==========================================
-    // 5. EFECTOS VISUALES (Explosiones y Alertas)
-    // ==========================================
     showExplosion(coordinate, boardId) {
         const board = document.getElementById(boardId);
         if (!board) return;
@@ -238,9 +207,6 @@ export const uiManager = {
         document.getElementById("cpu-alert-panel").innerHTML = "";
     },
 
-    // ==========================================
-    // 6. MODAL DE FIN DE PARTIDA
-    // ==========================================
     showGameOverModal(winner) {
         const modal = document.getElementById("game-over-modal");
         const resultVideo = document.getElementById("result-video");
@@ -271,9 +237,6 @@ export const uiManager = {
         }
     },
 
-    // ==========================================
-    // 7. SISTEMA DE RANKING
-    // ==========================================
     showRankingLoading() {
         const modal = document.getElementById("ranking-modal");
         const list = document.getElementById("ranking-list");
@@ -311,9 +274,6 @@ export const uiManager = {
         document.getElementById("ranking-modal").style.display = "none";
     },
 
-    // ==========================================
-    // 8. CONFETI
-    // ==========================================
     launchConfetti() {
         window.confettiActive = true;
         (function frame() {
@@ -328,4 +288,4 @@ export const uiManager = {
         window.confettiActive = false;
         if(typeof confetti !== 'undefined') confetti.reset();
     }
-}; // <-- ¡Esta llave era la que faltaba seguramente!
+}; 

@@ -1,6 +1,3 @@
-// audio.js
-
-// 1. Cargamos todos los efectos de sonido
 const effects = {
     shot: new Audio('sounds/shot.mp3'),
     water: new Audio('sounds/water_drop.mp3'),
@@ -10,17 +7,15 @@ const effects = {
     error: new Audio('sounds/error.wav')
 };
 
-// 2. Ajustamos los volúmenes iniciales
 effects.boom.volume = 0.3;
 effects.mayday.volume = 0.7;
 effects.hammer.volume = 0.6;
 effects.error.volume = 0.9;
 effects.water.volume = 1;
 
-// 3. Exportamos el "Manager" que usará tu juego
+
 export const audioManager = {
 
-    // --- EFECTOS CORTOS ---
     playShot() {
         effects.shot.currentTime = 0;
         effects.shot.play().catch(e => console.error("Error audio shot:", e));
@@ -30,7 +25,7 @@ export const audioManager = {
         const sonar = document.getElementById("sonarAudio");
         if (sonar) {
             sonar.volume = 1.0;
-            sonar.currentTime = 0; // Lo reinicia por si ya estaba sonando
+            sonar.currentTime = 0; 
             sonar.play().catch(e => console.error("Error reproduciendo sonar:", e));
         }
     },
@@ -56,12 +51,12 @@ export const audioManager = {
 
     },
 
-    // --- MÚSICA DE FONDO (Desde el HTML) ---
+    
     playIntro() {
         const audio = document.getElementById("introAudio");
         if (audio) {
             audio.volume = 0.3;
-            // Solo le damos al play si estaba pausada. Si ya está sonando, la deja en paz.
+            
             if (audio.paused) {
                 audio.play().catch(e => console.error("Error intro:", e));
             }
@@ -96,11 +91,11 @@ export const audioManager = {
     },
 
     stopAllMusic() {
-        // Al quitar 'this.stopIntro()' de aquí, la música principal no se cortará al darle a Start Battle
+        
         const winAudio = document.getElementById("winAudio");
         if (winAudio) { winAudio.pause(); winAudio.currentTime = 0; }
 
         const loseAudio = document.getElementById("loseAudio");
         if (loseAudio) { loseAudio.pause(); loseAudio.currentTime = 0; }
     }
-}; // <--- ¡ESTA ERA LA LLAVE QUE SE HABÍA PERDIDO!
+}; 
