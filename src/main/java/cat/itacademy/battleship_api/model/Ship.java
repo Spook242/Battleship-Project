@@ -14,12 +14,12 @@ import java.util.List;
 @Builder
 public class Ship {
 
-    // PRO-TIP: En el futuro, 'type' podría ser un Enum (ej: Carrier, Submarine)
+
     private String type;
 
     private int size;
 
-    // 1. SEGURIDAD: Prevenimos NullPointerExceptions al crear barcos
+
     @Builder.Default
     private List<String> cells = new ArrayList<>();
 
@@ -28,27 +28,19 @@ public class Ship {
 
     private boolean sunk;
 
-    // --- 2. LÓGICA DE DOMINIO (Inteligencia del Barco) ---
-
-    /**
-     * Comprueba si el disparo ha dado en este barco.
-     * Si es así, registra el impacto y comprueba si se ha hundido.
-     */
     public boolean receiveHit(String coordinate) {
-        // Si la coordenada pertenece al barco y no le habíamos dado ya ahí...
+
         if (this.cells.contains(coordinate) && !this.hits.contains(coordinate)) {
             this.hits.add(coordinate);
-            this.updateSunkStatus(); // Comprobamos si se ha hundido
-            return true; // ¡Tocado!
+            this.updateSunkStatus();
+            return true;
         }
-        return false; // Agua (o ya le habíamos dado)
+        return false;
     }
 
-    /**
-     * Método privado que actualiza el estado 'sunk' automáticamente.
-     */
+
     private void updateSunkStatus() {
-        // El barco se hunde si la cantidad de impactos es igual a su tamaño
+
         if (this.hits.size() == this.size) {
             this.sunk = true;
         }

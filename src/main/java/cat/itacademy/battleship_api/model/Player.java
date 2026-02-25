@@ -3,7 +3,7 @@ package cat.itacademy.battleship_api.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-// 1. MEJORA CRÍTICA: Cambiamos @Data por @Getter y @Setter
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,7 +20,7 @@ public class Player {
     @Column(unique = true, nullable = false)
     private String username;
 
-    // 2. MEJORA: Valores por defecto directos en la declaración y en el Builder
+
     @Builder.Default
     @Column(nullable = false)
     private int gamesPlayed = 0;
