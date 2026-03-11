@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GameMoveMessage {
 
-
     private PlayerTurn player;
 
     private String coordinate;

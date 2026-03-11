@@ -17,8 +17,6 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest request) {
         try {
-            // Ahora register también devolverá un token para que el usuario
-            // no tenga que hacer login justo después de registrarse.
             AuthResponse response = authService.register(request);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {

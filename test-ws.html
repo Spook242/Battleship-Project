@@ -23,7 +23,7 @@
         <h3>2. Enviar Jugada</h3>
         <input type="text" id="player" placeholder="Nombre Jugador" value="CapitanTest">
         <input type="text" id="coord" placeholder="Coordenada (ej: A1)" value="A1">
-        <button onclick="sendMove()">🚀 Disparar</button>
+        <button onclick="sendMove()"> Disparar</button>
     </div>
 
     <div class="box">
@@ -35,16 +35,13 @@
         var stompClient = null;
 
         function connect() {
-            // Conectamos al endpoint que definiste en Java (/ws)
             var socket = new SockJS('http://localhost:8080/ws');
             stompClient = Stomp.over(socket);
             
             stompClient.connect({}, function (frame) {
                 document.getElementById("status").style.color = "green";
-                document.getElementById("status").innerText = "Conectado ✅";
+                document.getElementById("status").innerText = "Conectado";
                 console.log('Connected: ' + frame);
-                
-                // NOS SUSCRIBIMOS AUTOMÁTICAMENTE AL CANAL DE JUEGO
                 stompClient.subscribe('/topic/game-progress', function (message) {
                     showMessage(JSON.parse(message.body));
                 });
@@ -54,8 +51,6 @@
         function sendMove() {
             var player = document.getElementById("player").value;
             var coord = document.getElementById("coord").value;
-            
-            // ENVIAMOS EL MENSAJE AL SERVIDOR (/app/play)
             stompClient.send("/app/play", {}, JSON.stringify({
                 'player': player,
                 'coordinate': coord,

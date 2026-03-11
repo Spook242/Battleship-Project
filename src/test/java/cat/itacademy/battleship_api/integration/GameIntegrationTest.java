@@ -25,11 +25,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-// 👇 CAMBIO CLAVE: Usamos tu Docker (27017) pero en una DB separada
 @TestPropertySource(properties = {
         "spring.data.mongodb.host=localhost",
-        "spring.data.mongodb.port=27017",         // Puerto REAL de tu Docker
-        "spring.data.mongodb.database=battleship_test_db", // Base de datos SOLO para tests
+        "spring.data.mongodb.port=27017",
+        "spring.data.mongodb.database=battleship_test_db",
         "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL",
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
@@ -49,8 +48,6 @@ class GameIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Esto borrará la base de datos "battleship_test_db" antes de cada test.
-        // Tus datos reales en "battleship_game" están a salvo.
         gameRepository.deleteAll();
         playerRepository.deleteAll();
     }
@@ -59,7 +56,6 @@ class GameIntegrationTest {
     @DisplayName("Integración: Crear Partida -> Obtener Token -> Disparar y Guardar en Mongo")
     void fullGameFlow() throws Exception {
 
-        // --- PASO 1: LOGIN / START ---
         StartGameRequest startRequest = new StartGameRequest();
         startRequest.setUsername("TestUserIntegration");
 
@@ -75,7 +71,6 @@ class GameIntegrationTest {
         String token = jsonNode.get("token").asText();
         String gameId = jsonNode.get("game").get("id").asText();
 
-        // --- PASO 2: DISPARAR (FIRE) ---
         FireRequest fireRequest = new FireRequest();
         fireRequest.setCoordinate("A1");
 
@@ -85,7 +80,6 @@ class GameIntegrationTest {
                         .content(objectMapper.writeValueAsString(fireRequest)))
                 .andExpect(status().isOk());
 
-        // --- PASO 3: VERIFICAR ---
         Game gameSaved = gameRepository.findById(gameId).orElseThrow();
         assertTrue(gameSaved.getCpuBoard().getShotsReceived().contains("A1"));
     }

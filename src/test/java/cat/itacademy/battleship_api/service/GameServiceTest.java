@@ -27,43 +27,36 @@ class GameServiceTest {
     @Mock
     private PlayerRepository playerRepository;
     @Mock
-    private BoardService boardService; // Necesario porque startNewGame lo usa
+    private BoardService boardService;
     @Mock
-    private JwtService jwtService;     // Necesario para el token
+    private JwtService jwtService;
 
     @InjectMocks
     private GameService gameService;
 
     @Test
-    void testStartNewGame() { // Renombrado de testCreateGame
-        // GIVEN
+    void testStartNewGame() {
         String username = "CapitanJack";
         Player jugadorPrueba = new Player(username);
         jugadorPrueba.setId(1L);
 
         when(playerRepository.findByUsername(username)).thenReturn(Optional.of(jugadorPrueba));
 
-        // Simulamos que al guardar, devuelve el juego con un ID de Mongo falso
         when(gameRepository.save(any(Game.class))).thenAnswer(i -> {
             Game g = i.getArgument(0);
-            g.setId("mongo-id-123"); // ID tipo String
+            g.setId("mongo-id-123");
             return g;
         });
 
-        // Simulamos la generación del token
         when(jwtService.generateToken(any(), any())).thenReturn("fake-token");
 
-        // WHEN
-        // 👇 CAMBIO: Usamos startNewGame en lugar de createGame
         GameStartResponse response = gameService.startNewGame(username);
         Game nuevoJuego = response.getGame();
 
-        // THEN
         assertNotNull(nuevoJuego);
-        assertEquals("SETUP", nuevoJuego.getStatus()); // Ahora empieza en SETUP, no PLAYING
+        assertEquals("SETUP", nuevoJuego.getStatus());
         assertEquals("mongo-id-123", nuevoJuego.getId());
 
-        // Verificamos que se llamó al repositorio
         verify(gameRepository).save(any(Game.class));
     }
 }
