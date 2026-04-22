@@ -84,7 +84,7 @@ export const audioManager = {
         const audio = document.getElementById("loseAudio");
         if (audio) {
             audio.loop = true;
-            audio.volume = 0.7;
+            audio.volume = 0.9;
             audio.currentTime = 0;
             audio.play().catch(e => console.error(e));
         }
