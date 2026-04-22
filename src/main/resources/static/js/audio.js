@@ -74,7 +74,7 @@ export const audioManager = {
     playWin() {
         const audio = document.getElementById("winAudio");
         if (audio) {
-            audio.volume = 0.25;
+            audio.volume = 0.4;
             audio.currentTime = 0;
             audio.play().catch(e => console.error(e));
         }
@@ -84,7 +84,7 @@ export const audioManager = {
         const audio = document.getElementById("loseAudio");
         if (audio) {
             audio.loop = true;
-            audio.volume = 0.5;
+            audio.volume = 0.7;
             audio.currentTime = 0;
             audio.play().catch(e => console.error(e));
         }
