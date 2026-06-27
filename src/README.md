@@ -1,11 +1,11 @@
 ⚓ Battleship (Hundir la Flota) - API & Web App
 
-Descripción
+Descripción:
 Este proyecto es la implementación del clásico juego de mesa "Battleship" (Hundir la flota) donde un jugador se enfrenta contra la CPU.
 
 El objetivo principal del ejercicio ha sido desarrollar una API RESTful robusta que gestione toda la lógica del juego (colocación de barcos, validación de disparos, cambios de turno y determinación del ganador), acompañada de un Frontend web interactivo y completamente modularizado. El proyecto incluye un sistema de autenticación para proteger las partidas en curso y un ranking global de las mejores puntuaciones.
 
-Tecnologías Utilizadas
+Tecnologías Utilizadas:
 El proyecto se ha desarrollado siguiendo una arquitectura cliente-servidor clásica, separando claramente las responsabilidades:
 
 Backend:
@@ -25,7 +25,7 @@ setup.js: Gestión de eventos para la colocación de la flota.
 main.js: Controlador principal ("Director de orquesta").
 Canvas Confetti: Librería externa para efectos visuales de celebración.
 
-Requisitos
+Requisitos:
 Para poder compilar y ejecutar este proyecto en un entorno local, es necesario disponer del siguiente software instalado:
 
 Java Development Kit (JDK): Versión 17 o superior.
@@ -40,7 +40,7 @@ cd battleship_api
 Abrir el proyecto: Abre la carpeta con tu IDE de preferencia (IntelliJ IDEA, Eclipse, VS Code).**
 Descargar dependencias: Deja que Maven descargue todas las librerías necesarias (o ejecuta mvn clean install desde la terminal).
 
-Ejecución
+Ejecución:
 Inicia la aplicación Backend ejecutando la clase principal BattleshipApiApplication.java desde tu IDE, o mediante la terminal con el pedido:
 
 Bash mvn spring-boot:run Una vez que el servidor arranque correctamente (verás el mensaje "Started BattleshipApiApplication"), abre tu navegador web.
@@ -49,7 +49,7 @@ Acceder al Juego: Navega en http://localhost:8080 para empezar a jugar.
 
 Acceder a la API (Swagger): Navega en http://localhost:8080/swagger-ui/index.html para ver y probar la documentación interactiva de los endpoints.
 
-Despliegue
+Despliegue:
 Para desplegar la aplicación en un entorno de producción (como un servidor VPS, AWS, Heroku o Render):
 
 Genera el archivo ejecutable .jar mediante Maven:
