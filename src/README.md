@@ -1,72 +1,61 @@
-# ⚓ Battleship (Hundir la Flota) - API & Web App
+⚓ Battleship (Hundir la Flota) - API & Web App
 
-## Descripció
-Aquest projecte és la implementació del clàssic joc de taula "Battleship" (Hundir la flota) on un jugador s'enfronta contra la CPU.
+Descripción
+Este proyecto es la implementación del clásico juego de mesa "Battleship" (Hundir la flota) donde un jugador se enfrenta contra la CPU.
 
-L'objectiu principal de l'exercici ha estat desenvolupar una **API RESTful** robusta que gestioni tota la lògica del joc (col·locació de vaixells, validació de trets, canvis de torn i determinació del guanyador), acompanyada d'un **Frontend web interactiu** i completament modularitzat. El projecte inclou un sistema d'autenticació per protegir les partides en curs i un rànquing global de les millors puntuacions.
+El objetivo principal del ejercicio ha sido desarrollar una API RESTful robusta que gestione toda la lógica del juego (colocación de barcos, validación de disparos, cambios de turno y determinación del ganador), acompañada de un Frontend web interactivo y completamente modularizado. El proyecto incluye un sistema de autenticación para proteger las partidas en curso y un ranking global de las mejores puntuaciones.
 
-## Tecnologies Utilitzades
-El projecte s'ha desenvolupat seguint una arquitectura client-servidor clàssica, separant clarament les responsabilitats:
+Tecnologías Utilizadas
+El proyecto se ha desarrollado siguiendo una arquitectura cliente-servidor clásica, separando claramente las responsabilidades:
 
-**Backend:**
-* **Java**: Llenguatge principal de l'aplicació.
-* **Spring Boot (v3.x)**: Framework principal per a la creació de l'API REST.
-* **Spring Security & JWT (JSON Web Tokens)**: Seguretat i autenticació sense estat (stateless) per a protegir els endpoints del joc.
-* **Swagger / OpenAPI 3**: Documentació automàtica i interactiva de l'API.
+Backend:
+Java: Lenguaje principal de la aplicación.
+Spring Boot (v3.x): Framework principal para la creación del API REST.
+Spring Security & JWT (JSON Web Tokens): Seguridad y autenticación sin estado (stateless) para proteger los endpoints del juego.
+Swagger / OpenAPI 3: Documentación automática e interactiva de la API.
 
-**Frontend:**
-* **HTML5 & CSS3**: Maquetació responsiva, ús de Variables CSS (`:root`), Flexbox i Grid. Estils separats en múltiples mòduls (base, layout, components, board, modals).
-* **JavaScript (Vanilla JS)**: Lògica del client implementada amb **Mòduls ES6** (`import`/`export`) dividida en responsabilitats:
-    * `api.js`: Comunicació asíncrona (Fetch API) amb el servidor.
-    * `ui.js`: Manipulació del DOM i renderitzat.
-    * `audio.js`: Gestió d'efectes de so i música de fons.
-    * `state.js`: Emmagatzematge de l'estat local i sessió.
-    * `setup.js`: Gestió d'esdeveniments per a la col·locació de la flota.
-    * `main.js`: Controlador principal ("Director d'orquestra").
-* **Canvas Confetti**: Llibreria externa per a efectes visuals de celebració.
+Frontend:
+HTML5 & CSS3: Maquetación responsiva, uso de Variables CSS (:root), Flexbox y Grid. Estilos separados en múltiples módulos (base, layout, componentes, board, modales).
+JavaScript (Vanilla JS): Lógica del cliente implementada con Módulos ES6 (import/export) dividida en responsabilidades:
+api.js: Comunicación asíncrona (Fetch API) con el servidor.
+ui.js: Manipulación del DOM y renderizado.
+audio.js: Gestión de efectos de sonido y música de fondo.
+state.js: Almacenamiento del estado local y sesión.
+setup.js: Gestión de eventos para la colocación de la flota.
+main.js: Controlador principal ("Director de orquesta").
+Canvas Confetti: Librería externa para efectos visuales de celebración.
 
-## Requisits
-Per poder compilar i executar aquest projecte en un entorn local, cal disposar del següent programari instal·lat:
-* **Java Development Kit (JDK)**: Versió 17 o superior.
-* **Maven**: Gestor de dependències i construcció del projecte.
-* **Navegador Web Modern**: (Chrome, Firefox, Safari, Edge) amb suport complet per a *ES6 Modules*.
+Requisitos
+Para poder compilar y ejecutar este proyecto en un entorno local, es necesario disponer del siguiente software instalado:
 
-## Instal·lació
-Passos per a preparar l'entorn de desenvolupament:
+Java Development Kit (JDK): Versión 17 o superior.
+Maven: Gestor de dependencias y construcción del proyecto.
+Navegador Web Modern: (Chrome, Firefox, Safari, Edge) con soporte completo para ES6 Modules.
+Instalación
+Pasos para preparar el entorno de desarrollo:
 
-1. **Clonar el repositori:**
-   ```bash
-   git clone <url-del-teu-repositori>
-   cd battleship_api
+Clonar el repositorio:
+git clone <url-tu-repositorio>
+cd battleship_api
+Abrir el proyecto: Abre la carpeta con tu IDE de preferencia (IntelliJ IDEA, Eclipse, VS Code).**
+Descargar dependencias: Deja que Maven descargue todas las librerías necesarias (o ejecuta mvn clean install desde la terminal).
 
-2. **Obrir el projecte:**
-Obre la carpeta amb el teu IDE de preferència (IntelliJ IDEA, Eclipse, VS Code).**
+Ejecución
+Inicia la aplicación Backend ejecutando la clase principal BattleshipApiApplication.java desde tu IDE, o mediante la terminal con el pedido:
 
-**Descarregar dependències:** 
-Deixa que Maven descarregui totes les llibreries necessàries (o executa mvn clean install des de la terminal).
+Bash mvn spring-boot:run Una vez que el servidor arranque correctamente (verás el mensaje "Started BattleshipApiApplication"), abre tu navegador web.
 
-## Execució
-Inicia l'aplicació Backend executant la classe principal BattleshipApiApplication.java des del teu IDE, o mitjançant la terminal amb la comanda:
+Acceder al Juego: Navega en http://localhost:8080 para empezar a jugar.
 
-Bash
-mvn spring-boot:run
-Un cop el servidor arrenqui correctament (veuràs el missatge "Started BattleshipApiApplication"), obre el teu navegador web.
+Acceder a la API (Swagger): Navega en http://localhost:8080/swagger-ui/index.html para ver y probar la documentación interactiva de los endpoints.
 
-Accedir al Joc: Navega a http://localhost:8080 per començar a jugar.
+Despliegue
+Para desplegar la aplicación en un entorno de producción (como un servidor VPS, AWS, Heroku o Render):
 
-Accedir a l'API (Swagger): Navega a http://localhost:8080/swagger-ui/index.html per veure i provar la documentació interactiva dels endpoints.
+Genera el archivo ejecutable .jar mediante Maven:
 
-## Desplegament
-Per a desplegar l'aplicació en un entorn de producció (com un servidor VPS, AWS, Heroku o Render):
+Bash mvn clean package Esto generará un archivo dentro de la carpeta target/ (ej: battleship_api-0.0.1-SNAPSHOT.jar).
 
-Genera l'arxiu executable .jar mitjançant Maven:
+Transfiere este archivo a tu servidor y ejecútalo con Java:
 
-Bash
-mvn clean package
-Això generarà un arxiu dins de la carpeta target/ (ex: battleship_api-0.0.1-SNAPSHOT.jar).
-
-Transfereix aquest arxiu al teu servidor i executa'l amb Java:
-
-Bash
-java -jar target/battleship_api-0.0.1-SNAPSHOT.jar
-Nota: Si s'utilitza una base de dades externa en producció (ex: PostgreSQL en lloc de H2), caldrà configurar les variables d'entorn corresponents a l'application.properties abans del desplegament.
+Bash java -jar target/battleship_api-0.0.1-SNAPSHOT.jar Nota: Si se utiliza una base de datos externa en producción (ej: PostgreSQL en lugar de H2), será necesario configurar las variables de entorno correspondientes a la application.properties antes del despliegue.
